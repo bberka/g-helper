@@ -11,7 +11,8 @@ the source tree.
 | `org.ghelper.policy` | `/usr/share/polkit-1/actions/` | polkit action used by `pkexec` to relaunch G-Helper elevated |
 | `ghelper-root-launcher` | `/usr/lib/ghelper/` (mode 0755) | the only program the polkit action authorises; starts `/usr/lib/ghelper/ghelper` with a whitelisted environment |
 | `ghelper.desktop` | `/usr/share/applications/` | application menu entry (the autostart entry is written by the app itself) |
-| `ghelper.service` | `~/.config/systemd/user/` | optional user unit (`GHELPER_STARTUP=systemd`) |
+| `ghelper.service` | `/usr/lib/systemd/user/` (packages) or `~/.config/systemd/user/` | optional user unit (`GHELPER_STARTUP=systemd`) |
+| `ghelper.png` | `/usr/share/icons/hicolor/256x256/apps/` | application icon (256 px image taken from `src/GHelper.App/favicon.ico`) |
 | `ghelper-charge.service` | `/etc/systemd/system/` or `/usr/lib/systemd/system/` | re-applies the charge limit at boot |
 
 The paths inside the rules, the policy and the units assume `/usr/lib/ghelper/ghelper` (the published apphost). Adjust
@@ -20,6 +21,54 @@ them together if the package installs somewhere else (for example `/opt/ghelper`
 Run without root: add the user to the group (`sudo usermod -aG ghelper $USER`, log in again) or rely on the `uaccess`
 tag of the logged in seat user. Without either, G-Helper still starts and every feature that needs a missing
 permission reports "unsupported"; "Run as administrator" in the app uses `pkexec`.
+
+## Building the packages
+
+```sh
+# 1. self-contained single file for one RID (linux-x64, linux-arm64, linux-arm, linux-musl-x64, linux-musl-arm64)
+dotnet publish src/GHelper.App/GHelper.App.csproj -r linux-x64 -c Release -o artifacts/publish/linux-x64
+# 2. packages -> artifacts/dist
+packaging/linux/build-packages.sh --rid linux-x64 [--version 0.286.0] [--formats tar,deb,rpm]
+```
+
+| Output | Notes |
+|---|---|
+| `ghelper-<version>-<rid>.tar.gz` | every RID. `root/` is the final file tree; `install.sh` copies it to `/` (or `$DESTDIR`) and reloads udev, `uninstall.sh` removes it |
+| `ghelper_<version>_<amd64\|arm64\|armhf>.deb` | glibc RIDs. Assembled with `ar`/`tar` by the script itself (no `dpkg-deb`, no fakeroot); check it with `dpkg-deb --info/--contents` |
+| `ghelper-<version>-1.<x86_64\|aarch64\|armv7hl>.rpm` | glibc RIDs, needs `rpmbuild` (`rpm` package on Debian/Ubuntu); spec in `rpm/ghelper.spec`, it repackages the tar.gz |
+
+Installed file tree (identical for all three formats):
+
+| Path | Content |
+|---|---|
+| `/usr/lib/ghelper/ghelper` | the published single file (`GHelper` renamed, the Avalonia/Skia native libraries are extracted to `~/.net` on first start) |
+| `/usr/bin/ghelper` | symlink to the above |
+| `/usr/lib/ghelper/ghelper-root-launcher`, `ghelper-udev-perms` | polkit entry point and udev helper |
+| `/usr/lib/udev/rules.d/99-ghelper.rules`, `/usr/lib/sysusers.d/ghelper.conf` | device access, `ghelper` group |
+| `/usr/share/polkit-1/actions/org.ghelper.policy` | `pkexec` action |
+| `/usr/share/applications/ghelper.desktop`, `/usr/share/icons/hicolor/256x256/apps/ghelper.png` | menu entry and icon |
+| `/usr/lib/systemd/system/ghelper-charge.service`, `/usr/lib/systemd/user/ghelper.service` | units, shipped disabled |
+| `/usr/share/doc/ghelper/{README.md,copyright}` | this file and the GPL-3.0 text |
+
+Maintainer scripts / scriptlets (`deb/postinst|prerm|postrm`, `%post|%preun|%postun` in the spec, `install.sh`): create
+the `ghelper` group (`systemd-sysusers`, else `groupadd`), `udevadm control --reload-rules && udevadm trigger`,
+`systemctl daemon-reload`, refresh the icon cache; on removal disable `ghelper-charge.service` and reload udev. The
+group and `~/.config/ghelper` are never removed.
+
+Runtime dependencies of the self-contained build: glibc (or musl for the `linux-musl-*` archives), `libstdc++`,
+`zlib`, fontconfig, X11 (`libX11`, `libICE`, `libSM`). ICU is needed for localisation; on a system without it start
+with `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1` (the UI then stays English). Weak dependencies: `pkexec`/polkit
+(elevation), `power-profiles-daemon`, `xdg-utils`.
+
+Not packaged, on purpose:
+
+* **AppImage / Flatpak / Snap**: the udev rules, the polkit action, the `ghelper` group and `/dev/uinput`,
+  `/sys/class/*`, `/sys/kernel/debug` access are host integration that a sandbox or a read-only image cannot
+  install or reach. A Flatpak would need `--device=all --filesystem=host-os` and still no udev rules. The tar.gz runs
+  from any directory, which is the portable option.
+* **Arch / Alpine packages (PKGBUILD, apk)**: use the tar.gz (`install.sh` works on busybox); musl archives exist for
+  `linux-musl-x64` and `linux-musl-arm64`.
+* **Trimming / NativeAOT**: not enabled, see `src/GHelper.App/GHelper.App.csproj`.
 
 ## What G-Helper reads and writes
 

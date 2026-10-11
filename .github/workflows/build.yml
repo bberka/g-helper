@@ -2,17 +2,109 @@ name: Build
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 'feat/**' ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, 'feat/**' ]
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
+  # Cross-platform solution (src/ + tests/): build, unit tests and a publish smoke test on each OS.
   build:
+    name: build and test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - os: windows-latest
+          rid: win-x64
+          exe: GHelper.exe
+        - os: ubuntu-latest
+          rid: linux-x64
+          exe: GHelper
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.0.x'
+    - name: Restore
+      run: dotnet restore GHelper.sln
+    - name: Build
+      run: dotnet build GHelper.sln --configuration Release --no-restore
+    - name: Test
+      run: dotnet test GHelper.sln --configuration Release --no-build --logger "trx;LogFileName=test-results.trx" --results-directory TestResults
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: test-results-${{ matrix.os }}
+        path: TestResults
+        if-no-files-found: ignore
+    - name: Publish (self-contained single file)
+      run: dotnet publish src/GHelper.App/GHelper.App.csproj --configuration Release --runtime ${{ matrix.rid }} --output artifacts/publish/${{ matrix.rid }}
+    - name: Smoke test published binary
+      shell: bash
+      run: ./artifacts/publish/${{ matrix.rid }}/${{ matrix.exe }} --version
+
+  # The Linux packaging scripts need real file modes and symlinks, so they are exercised on Linux.
+  linux-packages:
+    name: linux packages
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.0.x'
+    - name: Install rpmbuild
+      run: sudo apt-get update && sudo apt-get install -y --no-install-recommends rpm
+    - name: Shell syntax check
+      run: |
+        for f in packaging/linux/*.sh packaging/linux/ghelper-root-launcher packaging/linux/ghelper-udev-perms packaging/linux/deb/postinst packaging/linux/deb/prerm packaging/linux/deb/postrm; do
+          sh -n "$f"
+        done
+    - name: Publish linux-x64
+      run: dotnet publish src/GHelper.App/GHelper.App.csproj --configuration Release --runtime linux-x64 --output artifacts/publish/linux-x64
+    - name: Build packages
+      run: packaging/linux/build-packages.sh --rid linux-x64
+    - name: Inspect packages
+      run: |
+        ls -l artifacts/dist
+        dpkg-deb --info artifacts/dist/ghelper_*_amd64.deb
+        dpkg-deb --contents artifacts/dist/ghelper_*_amd64.deb
+        rpm -qlp artifacts/dist/ghelper-*.x86_64.rpm
+        rpm -qp --requires artifacts/dist/ghelper-*.x86_64.rpm
+    - name: Test install and uninstall into a staging directory
+      run: |
+        mkdir -p /tmp/ghelper-ext /tmp/ghelper-dest
+        tar -xzf artifacts/dist/ghelper-*-linux-x64.tar.gz -C /tmp/ghelper-ext
+        DESTDIR=/tmp/ghelper-dest /tmp/ghelper-ext/ghelper-*-linux-x64/install.sh
+        test -x /tmp/ghelper-dest/usr/lib/ghelper/ghelper
+        test -L /tmp/ghelper-dest/usr/bin/ghelper
+        DESTDIR=/tmp/ghelper-dest /tmp/ghelper-ext/ghelper-*-linux-x64/uninstall.sh
+        test -z "$(find /tmp/ghelper-dest -type f)"
+    - name: Install the .deb and run it
+      run: |
+        sudo dpkg -i artifacts/dist/ghelper_*_amd64.deb
+        getent group ghelper
+        ghelper --version
+        sudo dpkg -r ghelper
+
+  # LEGACY: the WinForms app in app/ stays buildable until it is deleted (task P6.3). Remove this job together with app/.
+  legacy-winforms:
+    name: legacy WinForms build (app/)
     runs-on: windows-2022
+    timeout-minutes: 20
     steps:
     - uses: actions/checkout@v7
     - name: Setup dotnet
@@ -20,5 +112,4 @@ jobs:
       with:
         dotnet-version: '10.0.x'
     - name: Build
-      run: |
-        dotnet build app/GHelper.sln
+      run: dotnet build app/GHelper.sln
