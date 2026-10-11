@@ -41,11 +41,15 @@ public sealed partial class LinuxPowerService : IPowerService, IDisposable
     private Action<bool>? batterySaverChanged;
     private Action? userPreferencesChanged;
 
-    public LinuxPowerService(LinuxContext ctx, AsusWmiLayout? layout = null)
+    private readonly int pollIntervalMs;
+
+    /// <param name="pollIntervalMs">power source / lid polling period (0 disables, tests drive events directly).</param>
+    public LinuxPowerService(LinuxContext ctx, AsusWmiLayout? layout = null, int pollIntervalMs = 2000)
     {
         this.ctx = ctx;
         root = ctx.Root;
         this.layout = layout ?? new AsusWmiLayout(root);
+        this.pollIntervalMs = pollIntervalMs;
     }
 
     // ------------------------------------------------------------------ profiles
@@ -401,7 +405,8 @@ public sealed partial class LinuxPowerService : IPowerService, IDisposable
 
         lastSource = GetPowerSource();
         lastLid = IsLidClosed();
-        pollTimer = new Timer(_ => Poll(), null, 2000, 2000);
+        if (pollIntervalMs > 0)
+            pollTimer = new Timer(_ => Poll(), null, pollIntervalMs, pollIntervalMs);
 
         if (ctx.Runner.CommandExists("gdbus"))
         {

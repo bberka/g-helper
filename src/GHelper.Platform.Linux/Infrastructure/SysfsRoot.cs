@@ -24,12 +24,21 @@ public sealed class SysfsRoot
         IsRealRoot = RootPath == "/";
     }
 
+    // Kernel names contain ':' ("asus::kbd_backlight", PCI addresses). When a fake tree lives on a host whose file
+    // system forbids that character (unit tests on Windows) it is stored as RATIO and translated back on listing.
+    private static readonly bool EncodeColons = Path.DirectorySeparatorChar != '/';
+    private const char ColonSubstitute = '∶';
+
     /// <summary>Logical path to physical path.</summary>
     public string Map(string logicalPath)
     {
         if (IsRealRoot) return logicalPath;
-        return Path.Combine(RootPath, logicalPath.TrimStart('/'));
+        string relative = logicalPath.TrimStart('/');
+        if (EncodeColons) relative = relative.Replace(':', ColonSubstitute);
+        return Path.Combine(RootPath, relative);
     }
+
+    private static string Decode(string name) => EncodeColons ? name.Replace(ColonSubstitute, ':') : name;
 
     public bool FileExists(string path)
     {
@@ -149,7 +158,7 @@ public sealed class SysfsRoot
             string physical = Map(path);
             if (!Directory.Exists(physical)) return [];
             return Directory.EnumerateDirectories(physical)
-                .Select(p => Combine(path, Path.GetFileName(p)))
+                .Select(p => Combine(path, Decode(Path.GetFileName(p))))
                 .OrderBy(p => p, StringComparer.Ordinal)
                 .ToArray();
         }
@@ -163,7 +172,7 @@ public sealed class SysfsRoot
             string physical = Map(path);
             if (!Directory.Exists(physical)) return [];
             return Directory.EnumerateFiles(physical)
-                .Select(p => Combine(path, Path.GetFileName(p)))
+                .Select(p => Combine(path, Decode(Path.GetFileName(p))))
                 .OrderBy(p => p, StringComparer.Ordinal)
                 .ToArray();
         }
@@ -178,7 +187,7 @@ public sealed class SysfsRoot
             string physical = Map(path);
             if (!Directory.Exists(physical)) return [];
             return Directory.EnumerateFileSystemEntries(physical)
-                .Select(p => Path.GetFileName(p))
+                .Select(p => Decode(Path.GetFileName(p)))
                 .OrderBy(p => p, StringComparer.Ordinal)
                 .ToArray();
         }

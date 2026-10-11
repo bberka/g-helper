@@ -9,4 +9,8 @@
     <ProjectReference Include="..\GHelper.Core\GHelper.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="GHelper.Tests" />
+  </ItemGroup>
+
 </Project>

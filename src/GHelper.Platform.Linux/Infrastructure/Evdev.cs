@@ -107,6 +107,7 @@ internal sealed unsafe class EvdevReader : IDisposable
     public static readonly int EventSize = TimevalSize + 8;
 
     private int fd;
+    private readonly FileStream? stream; // non-Linux hosts (tests, recorded event files): plain file reads
     private readonly byte[] buffer = new byte[EventSize * 64];
 
     public string Path { get; }
@@ -117,10 +118,24 @@ internal sealed unsafe class EvdevReader : IDisposable
         Path = path;
     }
 
+    private EvdevReader(FileStream stream, string path)
+    {
+        fd = -1;
+        this.stream = stream;
+        Path = path;
+    }
+
     public static EvdevReader? Open(string physicalPath)
     {
         try
         {
+            if (!OperatingSystem.IsLinux())
+            {
+                return File.Exists(physicalPath)
+                    ? new EvdevReader(new FileStream(physicalPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite), physicalPath)
+                    : null;
+            }
+
             int fd = Native.open(physicalPath, Native.O_RDONLY | Native.O_NONBLOCK | Native.O_CLOEXEC);
             return fd < 0 ? null : new EvdevReader(fd, physicalPath);
         }
@@ -133,6 +148,8 @@ internal sealed unsafe class EvdevReader : IDisposable
     /// <summary>Waits up to <paramref name="timeoutMs"/>; false on timeout, throws EndOfStreamException when the device is gone.</summary>
     public bool WaitReadable(int timeoutMs)
     {
+        if (stream is not null) return true;
+
         var pfd = new Native.PollFd { fd = fd, events = Native.POLLIN };
         int rc = Native.poll(&pfd, 1, timeoutMs);
         if (rc < 0) return false;
@@ -148,7 +165,9 @@ internal sealed unsafe class EvdevReader : IDisposable
         int count = 0;
         fixed (byte* p = buffer)
         {
-            nint n = Native.read(fd, p, (nuint)buffer.Length);
+            nint n = stream is not null
+                ? stream.Read(buffer, 0, buffer.Length)
+                : Native.read(fd, p, (nuint)buffer.Length);
             if (n == 0) throw new EndOfStreamException();
             if (n < 0) return 0; // EAGAIN / EINTR
             for (int offset = 0; offset + EventSize <= n; offset += EventSize)
@@ -165,6 +184,7 @@ internal sealed unsafe class EvdevReader : IDisposable
 
     public void Dispose()
     {
+        stream?.Dispose();
         int old = Interlocked.Exchange(ref fd, -1);
         if (old >= 0)
         {
