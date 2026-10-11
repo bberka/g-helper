@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>GHelper</RootNamespace>
+    <AssemblyName>GHelper.Core</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FftSharp" Version="2.2.0" />
+    <PackageReference Include="HidSharpCore" Version="1.3.0" />
+  </ItemGroup>
+
+</Project>

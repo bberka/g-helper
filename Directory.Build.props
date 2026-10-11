@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>annotations</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <Version>0.286.0</Version>
+    <Company>GHelper contributors</Company>
+    <Product>G-Helper</Product>
+    <!-- Windows-only code is compiled everywhere and guarded at runtime with OperatingSystem.IsWindows() -->
+    <NoWarn>$(NoWarn);CA1416;CS8632;CS0618</NoWarn>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>GHelper.Platform.Linux</RootNamespace>
+    <AssemblyName>GHelper.Platform.Linux</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GHelper.Core\GHelper.Core.csproj" />
+  </ItemGroup>
+
+</Project>
