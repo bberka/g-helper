@@ -1,0 +1,65 @@
+#!/bin/sh
+# Called by 99-ghelper.rules: make the writable asus-wmi family attributes of a device group-writable for "ghelper".
+# usage: ghelper-udev-perms <kind> <sysfs device path>
+# Only files that already exist and are regular sysfs attributes are touched, nothing is created.
+
+GROUP=ghelper
+kind="$1"
+dev="$2"
+
+[ -n "$kind" ] && [ -d "$dev" ] || exit 0
+getent group "$GROUP" >/dev/null 2>&1 || exit 0
+
+allow() {
+    for f in "$@"; do
+        [ -f "$f" ] && [ ! -L "$f" ] || continue
+        chgrp "$GROUP" "$f" 2>/dev/null && chmod g+w "$f" 2>/dev/null
+    done
+}
+
+# asus-armoury creates its attribute directories after the class device: wait a little for them
+wait_for() {
+    n=0
+    while [ "$n" -lt 20 ]; do
+        [ -d "$1" ] && return 0
+        sleep 0.25
+        n=$((n + 1))
+    done
+    return 1
+}
+
+case "$kind" in
+    platform)
+        # deprecated pre-armoury attributes (kept for kernels < 6.19)
+        for a in throttle_thermal_policy fan_boost_mode dgpu_disable egpu_enable gpu_mux_mode panel_od mini_led_mode \
+                 ppt_pl1_spl ppt_pl2_sppt ppt_fppt ppt_apu_sppt ppt_platform_sppt nv_dynamic_boost nv_temp_target \
+                 boot_sound mcu_powersave kbd_rgb_mode kbd_rgb_state camera cardr touchpad lid_resume; do
+            allow "$dev/$a"
+        done
+        ;;
+    armoury)
+        wait_for "$dev/attributes" || exit 0
+        for d in "$dev"/attributes/*/; do
+            allow "$d/current_value"
+        done
+        ;;
+    profile)
+        allow "$dev/profile"
+        ;;
+    battery)
+        allow "$dev/charge_control_end_threshold" "$dev/charge_type"
+        ;;
+    led)
+        allow "$dev/brightness" "$dev/kbd_rgb_mode" "$dev/kbd_rgb_state"
+        ;;
+    fancurve)
+        for f in "$dev"/pwm*_enable "$dev"/pwm*_auto_point*_temp "$dev"/pwm*_auto_point*_pwm; do
+            allow "$f"
+        done
+        ;;
+    backlight)
+        allow "$dev/brightness"
+        ;;
+esac
+
+exit 0

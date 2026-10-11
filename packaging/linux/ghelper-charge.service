@@ -1,0 +1,13 @@
+# System unit: re-applies the battery charge limit at boot (the firmware forgets it on a power cycle and the kernel
+# resets charge_control_end_threshold to 100 when the battery appears). Replaces the Windows "GHelperCharge" task.
+#   sudo systemctl enable ghelper-charge.service
+[Unit]
+Description=G-Helper battery charge limit
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/ghelper/ghelper charge
+
+[Install]
+WantedBy=multi-user.target

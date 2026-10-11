@@ -1,0 +1,15 @@
+# User unit: autostart alternative to the XDG autostart entry.
+# Install as ~/.config/systemd/user/ghelper.service (G-Helper writes it itself when GHELPER_STARTUP=systemd) and run
+#   systemctl --user enable --now ghelper.service
+[Unit]
+Description=G-Helper ASUS laptop control
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/lib/ghelper/ghelper
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

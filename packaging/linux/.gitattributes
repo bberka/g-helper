@@ -1,0 +1,2 @@
+# Shell scripts, udev rules and unit files must keep LF endings even when packaged from a Windows checkout.
+* text eol=lf
