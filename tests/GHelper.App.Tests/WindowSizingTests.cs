@@ -338,4 +338,14 @@ public class WindowSizingTests
         Assert.Equal(before, new Size(window.Width, window.Height));
         window.Close();
     }
+
+    [Fact]
+    public void ToolkitInternalWindowsAreLeftAlone()
+    {
+        // e.g. Avalonia.Win32's tray menu popup: it sizes itself, locking it broke the tray context menu
+        Assert.True(WindowSizing.IsToolkitInternal(typeof(Avalonia.Controls.Button)));
+        Assert.False(WindowSizing.IsToolkitInternal(typeof(Avalonia.Controls.Window)));
+        Assert.False(WindowSizing.IsToolkitInternal(typeof(WindowSizingTests)));
+        Assert.False(WindowSizing.IsToolkitInternal(typeof(GHelper.App.Views.MainWindow)));
+    }
 }

@@ -145,7 +145,8 @@ public sealed class TrayService : IDisposable
         }
         // Avalonia has no tray mouse-move event (legacy NotifyIcon.MouseMove refreshed the sensors for the tooltip):
         // refresh when the menu opens; the tooltip is also refreshed on every tray click / window show.
-        menu.Opening += (_, _) => _vm.Backend.RefreshArea("sensors", _vm);
+        // Not inline: a cold sensor read can take seconds and would hold the menu back while the UI thread is busy.
+        menu.Opening += (_, _) => Dispatcher.UIThread.Post(() => _vm.Backend.RefreshArea("sensors", _vm), DispatcherPriority.Background);
 
         _icon.Menu = menu;
     }

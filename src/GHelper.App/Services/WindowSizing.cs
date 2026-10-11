@@ -76,8 +76,23 @@ public static class WindowSizing
 
         Visual.IsVisibleProperty.Changed.AddClassHandler<Window>((window, e) =>
         {
-            if (e.NewValue is true) Attach(window);
+            if (e.NewValue is true && !IsToolkitInternal(window)) Attach(window);
         });
+    }
+
+    /// <summary>
+    /// Windows the toolkit creates for itself (the Windows tray icon menu popup, ...) size and position themselves and
+    /// must not be touched: locking the size of Avalonia's TrayPopupRoot made the tray context menu unusable.
+    /// A plain <see cref="Window"/> or any subclass from this application is ours.
+    /// </summary>
+    internal static bool IsToolkitInternal(Window window) => IsToolkitInternal(window.GetType());
+
+    internal static bool IsToolkitInternal(Type type)
+    {
+        if (type == typeof(Window)) return false;
+
+        string? assembly = type.Assembly.GetName().Name;
+        return assembly is not null && assembly.StartsWith("Avalonia.", StringComparison.Ordinal);
     }
 
     /// <summary>Whether <paramref name="window"/> currently has its size fixed by this policy.</summary>
