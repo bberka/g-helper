@@ -53,6 +53,9 @@ namespace GHelper.AnimeMatrix
 
         public AniMatrixControl()
         {
+            // Program.matrixControl and the Instance property must be the same controller (one USB owner)
+            _instance ??= this;
+
             if (!AppConfig.IsSlash() && !AppConfig.IsAnimeMatrix()) return;
             
             try
