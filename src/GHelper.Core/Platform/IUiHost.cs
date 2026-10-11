@@ -28,6 +28,13 @@ public interface IUiHost
 
     /// <summary>Exit the application (legacy Application.Exit).</summary>
     void Quit();
+
+    /// <summary>
+    /// Open a secondary window by name (legacy settingsForm.FansToggle / extraForm.Show / ...):
+    /// "fans" (arg = tab: 0 cpu, 1 gpu, 2 undervolt), "extra" (arg = 1: services page), "updates", "matrix", "handheld".
+    /// Default implementation ignores the request (added by W1-A core-engine; additive).
+    /// </summary>
+    void ShowWindow(string name, int arg = 0) { }
 }
 
 public sealed class NullUiHost : IUiHost
