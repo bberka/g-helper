@@ -165,6 +165,17 @@ public static unsafe class NvmlHelper
         _loadTried = false;
     }
 
+    /// <summary>
+    /// Picks the internal discrete GPU out of the NVML device names: the first "... Laptop GPU" (legacy: NVAPI
+    /// SystemType.Laptop, keeps an XG Mobile / eGPU out), otherwise the first device. -1 when there is none.
+    /// </summary>
+    public static int SelectInternalDevice(IReadOnlyList<string?> names)
+    {
+        for (int i = 0; i < names.Count; i++)
+            if (names[i]?.Contains("Laptop", StringComparison.OrdinalIgnoreCase) == true) return i;
+        return names.Count > 0 && names[0] is not null ? 0 : -1;
+    }
+
     /// <summary>The NVML library could be located and initialised.</summary>
     public static bool IsAvailable
     {

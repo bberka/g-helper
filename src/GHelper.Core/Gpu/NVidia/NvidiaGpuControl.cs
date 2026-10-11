@@ -50,17 +50,6 @@ public class NvidiaGpuControl : IGpuControl
         }
     }
 
-    /// <summary>
-    /// The internal discrete GPU: the first NVML device called "... Laptop GPU" (legacy: NVAPI SystemType.Laptop),
-    /// otherwise the first device.
-    /// </summary>
-    public static int SelectDevice(IReadOnlyList<string?> names)
-    {
-        for (int i = 0; i < names.Count; i++)
-            if (names[i]?.Contains("Laptop", StringComparison.OrdinalIgnoreCase) == true) return i;
-        return names.Count > 0 && names[0] is not null ? 0 : -1;
-    }
-
     private void FindInternalDiscreteGpu()
     {
         try
@@ -71,7 +60,7 @@ public class NvidiaGpuControl : IGpuControl
             var names = new List<string?>();
             for (int i = 0; i < count; i++) names.Add(NvmlHelper.GetDeviceName((uint)i));
 
-            int selected = SelectDevice(names);
+            int selected = NvmlHelper.SelectInternalDevice(names);
             if (selected < 0) return;
 
             _index = (uint)selected;
