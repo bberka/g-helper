@@ -4,6 +4,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:c="using:GHelper.App.Controls"
         xmlns:vm="using:GHelper.App.ViewModels"
+        xmlns:t="using:GHelper.App.Theme"
         mc:Ignorable="d"
         x:Class="GHelper.App.Views.MainWindow"
         x:DataType="vm:MainViewModel"
@@ -21,21 +22,15 @@
   </Design.DataContext>
 
   <Window.Styles>
-    <!-- 4 px gutters between the buttons of a row (legacy Margin 4 at 192 dpi) -->
-    <Style Selector="UniformGrid > :is(c|RButton)">
-      <Setter Property="Margin" Value="2" />
+    <!-- 4 px gutters between the buttons / combo boxes of a row (legacy Margin 4 at 192 dpi); the row height is
+         ControlHeight + gutters (UiMetrics.ControlRowHeight) so a button and a combo box are the same height. -->
+    <Style Selector="UniformGrid > :is(c|RButton), UniformGrid > c|RComboBox">
+      <Setter Property="Margin" Value="{x:Static t:UiMetrics.GridItemMargin}" />
     </Style>
-    <Style Selector="UniformGrid > c|RComboBox">
-      <Setter Property="Margin" Value="3,4" />
-    </Style>
-    <Style Selector="c|TintedImage.sectionIcon">
-      <Setter Property="Width" Value="16" />
-      <Setter Property="Height" Value="16" />
-      <Setter Property="Margin" Value="4,0,6,0" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
+    <!-- section blocks: 12 px between two sections -->
     <Style Selector="Border.section">
       <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Padding" Value="10,6" />
     </Style>
   </Window.Styles>
 
@@ -43,7 +38,7 @@
     <StackPanel Margin="6" Spacing="0">
 
       <!-- ================= Performance mode ================= -->
-      <Border Classes="section" Padding="10"
+      <Border Classes="section"
               AutomationProperties.Name="{Binding PerformanceAccessibleName}">
         <StackPanel Spacing="0">
           <Grid ColumnDefinitions="Auto,*,Auto" Height="20">
@@ -51,7 +46,7 @@
             <TextBlock Grid.Column="1" Classes="title" Text="{Binding PerformanceTitle}" />
             <TextBlock Grid.Column="2" Classes="sensor" Name="CpuFanLabel" Text="{Binding CpuFanText}" />
           </Grid>
-          <UniformGrid Columns="4" Height="64" Margin="0,10,0,0">
+          <UniformGrid Columns="4" Height="{x:Static t:UiMetrics.ModeRowHeight}" Margin="0,6,0,0">
             <c:RButton Name="ButtonSilent" State="{Binding Silent}" IconOrientation="Vertical" IconSpacing="2"
                        Icon="avares://GHelper/Assets/Icons/icons8-bicycle-48.png" />
             <c:RButton Name="ButtonBalanced" State="{Binding Balanced}" IconOrientation="Vertical" IconSpacing="2"
@@ -65,7 +60,7 @@
       </Border>
 
       <!-- ================= GPU mode ================= -->
-      <Border Classes="section" Padding="10,10,10,0" IsVisible="{Binding GpuSectionVisible}"
+      <Border Classes="section" IsVisible="{Binding GpuSectionVisible}"
               AutomationProperties.Name="{Binding GpuAccessibleName}">
         <StackPanel Spacing="0">
           <Grid ColumnDefinitions="Auto,*,Auto" Height="20">
@@ -81,7 +76,7 @@
             <TextBlock Grid.Column="2" Classes="sensor" Name="GpuFanLabel" Text="{Binding GpuFanText}" />
           </Grid>
 
-          <UniformGrid Name="GpuRow" Columns="{Binding GpuColumns}" Height="64" Margin="0,10,0,0"
+          <UniformGrid Name="GpuRow" Columns="{Binding GpuColumns}" Height="{x:Static t:UiMetrics.ModeRowHeight}" Margin="0,6,0,0"
                        IsVisible="{Binding GpuButtonsVisible}">
             <c:RButton Name="ButtonEco" State="{Binding Eco}" IconOrientation="Vertical" IconSpacing="2"
                        Icon="avares://GHelper/Assets/Icons/icons8-leaf-48.png" />
@@ -98,7 +93,7 @@
           </UniformGrid>
 
           <!-- ROG Ally: AutoTDP / Overlay / FPS limit -->
-          <UniformGrid Columns="3" Height="40" Margin="0,10,0,0" IsVisible="{Binding GpuStripVisible}">
+          <UniformGrid Columns="3" Height="{x:Static t:UiMetrics.LargeRowHeight}" Margin="0,6,0,0" IsVisible="{Binding GpuStripVisible}">
             <c:RButton State="{Binding AutoTdp}" IconSpacing="6"
                        Icon="avares://GHelper/Assets/Icons/icons8-gauge-32.png" />
             <c:RButton State="{Binding OverlayAlly}" IconSpacing="6"
@@ -112,7 +107,7 @@
       </Border>
 
       <!-- ================= Screen ================= -->
-      <Border Classes="section" Padding="10,5.5,10,0" IsVisible="{Binding ScreenSectionVisible}"
+      <Border Classes="section" IsVisible="{Binding ScreenSectionVisible}"
               AutomationProperties.Name="{Binding ScreenAccessibleName}">
         <StackPanel Spacing="0">
           <Grid ColumnDefinitions="Auto,*,Auto" Height="20">
@@ -120,7 +115,7 @@
             <TextBlock Grid.Column="1" Classes="title" Text="{Binding ScreenTitle}" />
             <TextBlock Grid.Column="2" Classes="sensor" Name="MidFanLabel" Text="{Binding MidFanText}" />
           </Grid>
-          <UniformGrid Name="ScreenRow" Columns="{Binding ScreenColumns}" Height="40" Margin="0,5,0,0"
+          <UniformGrid Name="ScreenRow" Columns="{Binding ScreenColumns}" Height="{x:Static t:UiMetrics.LargeRowHeight}" Margin="0,6,0,0"
                        IsVisible="{Binding ScreenButtonsVisible}">
             <c:RButton Name="ButtonScreenAuto" State="{Binding ScreenAuto}" />
             <c:RButton Name="Button60Hz" State="{Binding Hz60}" />
@@ -134,7 +129,7 @@
       </Border>
 
       <!-- ================= Flicker-free dimming / visual modes ================= -->
-      <Border Classes="section" Padding="10,5.5" IsVisible="{Binding GammaSectionVisible}">
+      <Border Classes="section" IsVisible="{Binding GammaSectionVisible}">
         <StackPanel Spacing="0">
           <Grid ColumnDefinitions="Auto,*,Auto" Height="20">
             <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-brightness-32.png" />
@@ -146,7 +141,7 @@
                      IsVisible="{Binding GammaSliderVisible}"
                      Value="{Binding Gamma, Mode=TwoWay}"
                      AutomationProperties.Name="{Binding GammaTitle}" />
-          <UniformGrid Columns="3" Height="40" Margin="0,5,0,0" IsVisible="{Binding VisualTableVisible}">
+          <UniformGrid Columns="3" Height="{x:Static t:UiMetrics.ControlRowHeight}" Margin="0,6,0,0" IsVisible="{Binding VisualTableVisible}">
             <c:RComboBox ItemsSource="{Binding VisualModes}" SelectedItem="{Binding SelectedVisualMode, Mode=TwoWay}"
                          IsVisible="{Binding VisualModeVisible}" />
             <c:RComboBox ItemsSource="{Binding ColorTemps}" SelectedItem="{Binding SelectedColorTemp, Mode=TwoWay}"
@@ -162,33 +157,33 @@
       </Border>
 
       <!-- ================= Anime Matrix / Slash ================= -->
-      <Border Classes="section" Padding="10,10,10,5.5" IsVisible="{Binding MatrixSectionVisible}"
+      <Border Classes="section" IsVisible="{Binding MatrixSectionVisible}"
               AutomationProperties.Name="{Binding MatrixTitle}">
         <StackPanel Spacing="0">
           <Grid ColumnDefinitions="Auto,*" Height="20">
             <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-matrix-32.png" />
             <TextBlock Grid.Column="1" Classes="title" Text="{Binding MatrixTitle}" />
           </Grid>
-          <UniformGrid Columns="3" Height="38" Margin="0,5,0,0">
+          <UniformGrid Columns="3" Height="{x:Static t:UiMetrics.ControlRowHeight}" Margin="0,6,0,0">
             <c:RComboBox ItemsSource="{Binding MatrixBrightnessItems}"
                          SelectedItem="{Binding SelectedMatrixBrightness, Mode=TwoWay}"
                          AutomationProperties.Name="{Binding MatrixTitle}" />
             <c:RComboBox ItemsSource="{Binding MatrixRunningItems}"
                          SelectedItem="{Binding SelectedMatrixRunning, Mode=TwoWay}" />
-            <c:RButton State="{Binding MatrixButton}" Secondary="True" CornerRadius="1" />
+            <c:RButton State="{Binding MatrixButton}" Secondary="True" />
           </UniformGrid>
         </StackPanel>
       </Border>
 
       <!-- ================= ROG Ally controller ================= -->
-      <Border Classes="section" Padding="10,10,10,0" IsVisible="{Binding AllySectionVisible}"
+      <Border Classes="section" IsVisible="{Binding AllySectionVisible}"
               AutomationProperties.Name="{Binding AllyTitle}">
         <StackPanel Spacing="0">
           <Grid ColumnDefinitions="Auto,*" Height="20">
             <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-controller-32.png" />
             <TextBlock Grid.Column="1" Classes="title" Text="{Binding AllyTitle}" />
           </Grid>
-          <UniformGrid Columns="3" Height="40" Margin="0,10,0,0">
+          <UniformGrid Columns="3" Height="{x:Static t:UiMetrics.LargeRowHeight}" Margin="0,6,0,0">
             <c:RButton State="{Binding AllyMode}" IconSpacing="6"
                        Icon="avares://GHelper/Assets/Icons/icons8-game-controller-48.png" />
             <c:RButton State="{Binding AllyBacklight}" IconSpacing="6"
@@ -200,7 +195,7 @@
       </Border>
 
       <!-- ================= Laptop keyboard ================= -->
-      <Border Classes="section" Padding="10,10,10,0"
+      <Border Classes="section"
               AutomationProperties.Name="{Binding KeyboardTitle}">
         <StackPanel Spacing="0">
           <Grid ColumnDefinitions="Auto,*,*,*" Height="20" IsVisible="{Binding KeyboardHeaderVisible}">
@@ -213,14 +208,14 @@
                          Borderless="True" Margin="2,0,0,0" />
             </Grid>
           </Grid>
-          <UniformGrid Columns="3" Height="40" Margin="0,6,0,0">
+          <UniformGrid Columns="3" Height="{x:Static t:UiMetrics.ControlRowHeight}" Margin="0,6,0,0">
             <c:RComboBox ItemsSource="{Binding AuraModes}" SelectedItem="{Binding SelectedAuraMode, Mode=TwoWay}"
                          IsVisible="{Binding AuraModeVisible}"
                          AutomationProperties.Name="{Binding AuraAccessibleName}" />
-            <c:RColorButton Name="ButtonKeyboardColor" State="{Binding KeyboardColor}" CornerRadius="1"
+            <c:RColorButton Name="ButtonKeyboardColor" State="{Binding KeyboardColor}"
                             IsVisible="{Binding KeyboardColorVisible}"
                             SwatchColor="{Binding KeyboardSwatch}" SwatchColor2="{Binding KeyboardSwatch2}" />
-            <c:RButton Name="ButtonKeyboardExtra" State="{Binding KeyboardExtra}" Secondary="True" CornerRadius="1"
+            <c:RButton Name="ButtonKeyboardExtra" State="{Binding KeyboardExtra}" Secondary="True"
                        IconSpacing="6" Icon="avares://GHelper/Assets/Icons/icons8-settings-32.png" />
           </UniformGrid>
           <TextBlock Name="BacklightHintLabel" Margin="4,0" Height="17" Cursor="Hand"
@@ -229,7 +224,7 @@
       </Border>
 
       <!-- ================= Rear light ================= -->
-      <Border Classes="section" Padding="10,10,10,0" IsVisible="{Binding RearSectionVisible}"
+      <Border Classes="section" IsVisible="{Binding RearSectionVisible}"
               AutomationProperties.Name="{Binding RearTitle}">
         <StackPanel Spacing="0">
           <Grid ColumnDefinitions="Auto,*" Height="20">
@@ -237,16 +232,16 @@
                            Source="avares://GHelper/Assets/Icons/icons8-show-right-side-panel-48.png" />
             <TextBlock Grid.Column="1" Classes="title" Text="{Binding RearTitle}" />
           </Grid>
-          <UniformGrid Columns="3" Height="40" Margin="0,6,0,0">
+          <UniformGrid Columns="3" Height="{x:Static t:UiMetrics.ControlRowHeight}" Margin="0,6,0,0">
             <c:RComboBox ItemsSource="{Binding RearModes}" SelectedItem="{Binding SelectedRearMode, Mode=TwoWay}" />
-            <c:RColorButton Name="ButtonRearColor" State="{Binding RearColor}" CornerRadius="1"
+            <c:RColorButton Name="ButtonRearColor" State="{Binding RearColor}"
                             SwatchColor="{Binding RearSwatch}" />
           </UniformGrid>
         </StackPanel>
       </Border>
 
       <!-- ================= Peripherals ================= -->
-      <Border Classes="section" Padding="10,2.5,10,5" IsVisible="{Binding PeripheralsVisible}">
+      <Border Classes="section" IsVisible="{Binding PeripheralsVisible}">
         <UniformGrid Columns="3" Height="60">
           <c:RButton Name="ButtonPeripheral1" State="{Binding Peripheral1}" Secondary="True" FontSize="11"
                      IconSpacing="6" Icon="avares://GHelper/Assets/Icons/icons8-maus-48.png" />
@@ -258,7 +253,7 @@
       </Border>
 
       <!-- ================= Battery charge limit ================= -->
-      <Border Classes="section" Padding="10,7.5,10,0">
+      <Border Classes="section">
         <StackPanel Spacing="0">
           <Grid ColumnDefinitions="Auto,*,Auto" Height="22">
             <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-charging-battery-32.png" />
@@ -270,21 +265,21 @@
                        Value="{Binding BatteryLimit, Mode=TwoWay}"
                        AutomationProperties.Name="{Binding BatteryAccessibleName}" />
             <c:RButton Name="ButtonBatteryFull" Grid.Column="1" State="{Binding BatteryFull}" Classes="flag"
-                       Secondary="True" Borderless="True" Width="37" Height="18" Margin="6,0,0,0" />
+                       Secondary="True" Borderless="True" Width="37" Margin="6,0,0,0" />
           </Grid>
         </StackPanel>
       </Border>
 
       <!-- ================= Run on startup / charge ================= -->
-      <Grid Margin="10,0" Height="25" ColumnDefinitions="*,Auto">
+      <Grid Margin="12,2,10,2" MinHeight="28" ColumnDefinitions="*,Auto">
         <c:RCheckBox IsChecked="{Binding RunOnStartup, Mode=TwoWay}" Content="{Binding RunOnStartupText}"
-                     VerticalAlignment="Center" Padding="8,0,0,0" MinHeight="0" />
+                     VerticalAlignment="Center" />
         <TextBlock Name="ChargeLabel" Grid.Column="1" Text="{Binding ChargeText}" Cursor="Hand"
                    Foreground="{DynamicResource ControlDarkBrush}" VerticalAlignment="Center" />
       </Grid>
 
       <!-- ================= Version / OEM software ================= -->
-      <Grid Margin="10,2.5,12,2.5" MinHeight="25" ColumnDefinitions="*,Auto,Auto,Auto">
+      <Grid Margin="10,2,12,2" MinHeight="{x:Static t:UiMetrics.FlagHeight}" ColumnDefinitions="*,Auto,Auto,Auto">
         <TextBlock Name="VersionLabel" Text="{Binding VersionText}" TextDecorations="Underline" Cursor="Hand"
                    Padding="5,0" VerticalAlignment="Center" Opacity="0.75"
                    Foreground="{DynamicResource ControlDarkBrush}">
@@ -296,21 +291,21 @@
           </TextBlock.Styles>
         </TextBlock>
         <c:RButton Name="ButtonEnergySaver" Grid.Column="1" State="{Binding EnergySaver}" Classes="flag" Secondary="True"
-                   Borderless="True" Width="82" Height="20" Margin="4,0,0,0" />
+                   Borderless="True" Width="82" Margin="4,0,0,0" />
         <c:RButton Name="ButtonAmdOled" Grid.Column="2" State="{Binding AmdOled}" Classes="flag" Secondary="True"
-                   Borderless="True" Width="90" Height="20" Margin="4,0,0,0" />
+                   Borderless="True" Width="90" Margin="4,0,0,0" />
         <c:RButton Name="ButtonArmoury" Grid.Column="3" State="{Binding Armoury}" Classes="flag" Secondary="True"
-                   Borderless="True" Width="90" Height="20" Margin="4,0,0,0" />
+                   Borderless="True" Width="90" Margin="4,0,0,0" />
       </Grid>
 
       <!-- ================= Footer ================= -->
-      <Border Classes="section" Padding="10,5,10,10">
-        <UniformGrid Columns="3" Height="29">
-          <c:RBadgeButton Name="ButtonDonate" State="{Binding Donate}" Secondary="True" CornerRadius="1"
+      <Border Classes="section">
+        <UniformGrid Columns="3" Height="{x:Static t:UiMetrics.ControlRowHeight}">
+          <c:RBadgeButton Name="ButtonDonate" State="{Binding Donate}" Secondary="True"
                           Icon="avares://GHelper/Assets/Icons/icons8-heart-32.png" IconSpacing="6" />
-          <c:RButton Name="ButtonUpdates" State="{Binding Updates}" Secondary="True" CornerRadius="1"
+          <c:RButton Name="ButtonUpdates" State="{Binding Updates}" Secondary="True"
                      Icon="avares://GHelper/Assets/Icons/icons8-software-32-white.png" IconSpacing="6" />
-          <c:RButton Name="ButtonQuit" State="{Binding Quit}" Secondary="True" CornerRadius="1"
+          <c:RButton Name="ButtonQuit" State="{Binding Quit}" Secondary="True"
                      Icon="avares://GHelper/Assets/Icons/icons8-quit-32.png" IconSpacing="6" />
         </UniformGrid>
       </Border>

@@ -17,8 +17,6 @@
     </Style>
     <Style Selector="Canvas > c|RButton">
       <Setter Property="Width" Value="74" />
-      <Setter Property="Height" Value="28" />
-      <Setter Property="CornerRadius" Value="5" />
       <Setter Property="Padding" Value="4,0" />
       <Setter Property="Secondary" Value="True" />
     </Style>
@@ -57,18 +55,18 @@
       <c:RButton Name="ButtonB" Canvas.Left="605" Canvas.Top="170" Content="B" />
       <c:RButton Name="ButtonRS" Canvas.Left="605" Canvas.Top="202" Content="RStick" />
 
-      <Border Name="PanelBinding" Canvas.Left="198" Canvas.Top="96" Width="292" Height="102" IsVisible="False"
+      <Border Name="PanelBinding" Canvas.Left="198" Canvas.Top="92" Width="292" Height="110" IsVisible="False"
               Background="{DynamicResource FormBackBrush}" BorderBrush="{DynamicResource BorderMainBrush}"
               BorderThickness="1" CornerRadius="3">
         <Canvas>
           <TextBlock Name="LabelBinding" Canvas.Left="8" Canvas.Top="8" FontWeight="Bold" />
-          <TextBlock Name="LabelPrimary" Canvas.Left="8" Canvas.Top="38" />
-          <TextBlock Name="LabelSecondary" Canvas.Left="8" Canvas.Top="68" />
-          <TextBlock Name="LabelTurbo" Canvas.Left="212" Canvas.Top="8" Text="Repeat (ms)" />
-          <c:RComboBox Name="ComboPrimary" Canvas.Left="70" Canvas.Top="32" Width="138" Height="26" />
-          <c:RComboBox Name="ComboSecondary" Canvas.Left="70" Canvas.Top="62" Width="138" Height="26" />
-          <c:RComboBox Name="ComboTurboPrimary" Canvas.Left="216" Canvas.Top="32" Width="66" Height="26" />
-          <c:RComboBox Name="ComboTurboSecondary" Canvas.Left="216" Canvas.Top="62" Width="66" Height="26" />
+          <TextBlock Name="LabelPrimary" Canvas.Left="8" Canvas.Top="42" />
+          <TextBlock Name="LabelSecondary" Canvas.Left="8" Canvas.Top="76" />
+          <TextBlock Name="LabelTurbo" Canvas.Left="206" Canvas.Top="8" Text="Repeat (ms)" />
+          <c:RComboBox Name="ComboPrimary" Canvas.Left="70" Canvas.Top="36" Width="130" />
+          <c:RComboBox Name="ComboSecondary" Canvas.Left="70" Canvas.Top="70" Width="130" />
+          <c:RComboBox Name="ComboTurboPrimary" Canvas.Left="206" Canvas.Top="36" Width="78" />
+          <c:RComboBox Name="ComboTurboSecondary" Canvas.Left="206" Canvas.Top="70" Width="78" />
         </Canvas>
       </Border>
     </Canvas>
@@ -127,12 +125,12 @@
                    Margin="8,8,8,0" />
       </Grid>
 
-      <c:RCheckBox Name="CheckController" Grid.Column="1" ShowBorder="True" Padding="8,4"
+      <c:RCheckBox Name="CheckController" Grid.Column="1" ShowBorder="True"
                    HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,16,10,0" />
-      <c:RButton Name="ButtonReset" Grid.Column="2" Width="84" Height="26" CornerRadius="5" Secondary="True"
+      <c:RButton Name="ButtonReset" Grid.Column="2" Width="84" Secondary="True"
                  VerticalAlignment="Center" Margin="0,16,0,0" />
 
-      <c:RCheckBox Name="CheckVibra" Grid.Row="1" ShowBorder="True" Padding="8,4" IsVisible="False"
+      <c:RCheckBox Name="CheckVibra" Grid.Row="1" ShowBorder="True" IsVisible="False"
                    HorizontalAlignment="Left" Margin="6,6,0,0" />
     </Grid>
   </StackPanel>

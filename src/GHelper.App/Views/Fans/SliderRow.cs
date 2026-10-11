@@ -32,7 +32,7 @@ internal sealed class SliderRow : Grid
     public static readonly StyledProperty<double> ValueProperty =
         AvaloniaProperty.Register<SliderRow, double>(nameof(Value), 0, defaultBindingMode: Avalonia.Data.BindingMode.TwoWay);
 
-    private readonly TextBlock _title = new() { VerticalAlignment = VerticalAlignment.Center, TextTrimming = TextTrimming.CharacterEllipsis };
+    private readonly TextBlock _title = new() { VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
     private readonly TextBlock _value = new()
     {
         FontWeight = FontWeight.Bold,

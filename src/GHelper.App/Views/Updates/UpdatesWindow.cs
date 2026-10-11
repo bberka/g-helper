@@ -60,8 +60,8 @@ public sealed class UpdatesWindow : SideWindow
 
     private readonly TextBlock _titleBios = new() { Text = "BIOS", Classes = { "title" } };
     private readonly TextBlock _titleDrivers = new() { Classes = { "title" } };
-    private readonly TextBlock _labelUpdates = new() { FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center };
-    private readonly RButton _buttonRefresh = new() { Secondary = true, Width = 52, Height = 34, HorizontalAlignment = HorizontalAlignment.Right };
+    private readonly TextBlock _labelUpdates = new() { FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center, TextWrapping = TextWrapping.Wrap };
+    private readonly RButton _buttonRefresh = new() { Secondary = true, Width = 52, HorizontalAlignment = HorizontalAlignment.Right };
     private readonly SelectableTextBlock _textSerial = new() { VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _legendTitle = new() { FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center };
     private readonly TextBlock _serialTitle = new() { FontWeight = FontWeight.Bold, VerticalAlignment = VerticalAlignment.Center };
@@ -193,8 +193,9 @@ public sealed class UpdatesWindow : SideWindow
         {
             // fixed-contrast chips: white text on the status colour in both themes
             label.Foreground = Brushes.White;
-            label.Padding = new Thickness(6, 5);
-            label.TextTrimming = TextTrimming.CharacterEllipsis;
+            label.Padding = new Thickness(6, 4);
+            label.TextWrapping = TextWrapping.Wrap;
+            label.VerticalAlignment = VerticalAlignment.Center;
         }
 
         var legend = new Grid
@@ -208,7 +209,8 @@ public sealed class UpdatesWindow : SideWindow
         var serialBox = new Border
         {
             Child = _textSerial,
-            Padding = new Thickness(8, 6),
+            Padding = new Thickness(8, 0),
+            MinHeight = UiMetrics.ControlHeight,
             Margin = new Thickness(5, 0),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(3),
@@ -248,7 +250,8 @@ public sealed class UpdatesWindow : SideWindow
         var chip = new Border
         {
             Background = new SolidColorBrush(color),
-            CornerRadius = new CornerRadius(3),
+            CornerRadius = new CornerRadius(UiMetrics.Radius),
+            MinHeight = UiMetrics.ControlHeight,
             Margin = new Thickness(5, 0),
             Child = label,
         };
@@ -347,7 +350,7 @@ public sealed class UpdatesWindow : SideWindow
         var label = new TextBlock
         {
             Text = text,
-            TextTrimming = TextTrimming.CharacterEllipsis,
+            TextWrapping = TextWrapping.Wrap,
             VerticalAlignment = VerticalAlignment.Center,
             Padding = new Thickness(5, 5),
         };
@@ -456,7 +459,7 @@ public sealed class UpdatesWindow : SideWindow
             Focusable = true;
             Cursor = new Cursor(StandardCursorType.Hand);
             TextDecorations = Avalonia.Media.TextDecorations.Underline;
-            TextTrimming = TextTrimming.CharacterEllipsis;
+            TextWrapping = TextWrapping.Wrap;
             VerticalAlignment = VerticalAlignment.Center;
             AutomationProperties.SetAccessibilityView(this, AccessibilityView.Content);
         }

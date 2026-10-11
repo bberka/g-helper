@@ -5,6 +5,7 @@
                  xmlns:c="using:GHelper.App.Controls"
                  xmlns:views="using:GHelper.App.Views"
                  xmlns:f="using:GHelper.App.Views.Fans"
+                 xmlns:t="using:GHelper.App.Theme"
                  mc:Ignorable="d"
                  x:Class="GHelper.App.Views.Fans.FansWindow"
                  x:DataType="f:FansViewModel"
@@ -16,15 +17,13 @@
                  d:DesignWidth="675" d:DesignHeight="560">
 
   <views:SideWindow.Styles>
-    <Style Selector="c|TintedImage.sectionIcon">
-      <Setter Property="Width" Value="16" />
-      <Setter Property="Height" Value="16" />
-      <Setter Property="Margin" Value="4,0,6,0" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
     <Style Selector="Grid.sectionHeader">
-      <Setter Property="Height" Value="30" />
-      <Setter Property="Margin" Value="0,2,0,0" />
+      <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.ControlHeight}" />
+      <Setter Property="Margin" Value="0,8,0,2" />
+    </Style>
+    <!-- check boxes: 4 px between rows -->
+    <Style Selector="c|RCheckBox">
+      <Setter Property="Margin" Value="0,2" />
     </Style>
     <Style Selector="TextBlock.status">
       <Setter Property="Foreground" Value="Red" />
@@ -34,12 +33,13 @@
     </Style>
   </views:SideWindow.Styles>
 
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
   <Grid ColumnDefinitions="265,*">
 
     <!-- ============================ left: navigation + sliders ============================ -->
     <Grid RowDefinitions="Auto,*" Margin="5,0,0,0">
 
-      <UniformGrid Name="NavRow" Columns="3" Height="36" Margin="0,3,0,0">
+      <UniformGrid Name="NavRow" Columns="3" Height="{x:Static t:UiMetrics.ControlRowHeight}" Margin="0,4,0,0">
         <c:RButton Name="ButtonCpu" Margin="2" Content="CPU" Secondary="True" BorderColor="#FF3AAEEF"
                    Activated="{Binding IsCpuTab}" Command="{Binding ShowCpuCommand}" />
         <c:RButton Name="ButtonGpu" Margin="2" Content="GPU" Secondary="True" BorderColor="#FFFF2020"
@@ -59,7 +59,7 @@
               <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-gauge-32.png" />
               <TextBlock Grid.Column="1" Classes="title" Text="{Binding PowerModeCaption}" />
             </Grid>
-            <c:RComboBox Name="ComboPowerMode" Margin="5,0,0,6" Height="24"
+            <c:RComboBox Name="ComboPowerMode" Margin="5,0,0,6"
                          ItemsSource="{Binding PowerModes}"
                          SelectedItem="{Binding SelectedPowerMode, Mode=TwoWay}"
                          IsEnabled="{Binding PowerModeEnabled}"
@@ -69,7 +69,7 @@
               <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-rocket-32.png" />
               <TextBlock Grid.Column="1" Classes="title" Text="{Binding BoostCaption}" />
             </Grid>
-            <c:RComboBox Name="ComboBoost" Margin="5,0,0,6" Height="24"
+            <c:RComboBox Name="ComboBoost" Margin="5,0,0,6"
                          ItemsSource="{Binding BoostModes}"
                          SelectedIndex="{Binding BoostIndex, Mode=TwoWay}"
                          AutomationProperties.Name="{Binding BoostCaption}" />
@@ -101,7 +101,7 @@
                          Title="{Binding CpuTempTitle}" ValueText="{Binding CpuTempLimitText}"
                          Value="{Binding CpuTempLimit, Mode=TwoWay}" />
 
-            <c:RCheckBox Name="CheckApplyPower" Margin="5,4,0,0" IsVisible="{Binding PowerSectionVisible}"
+            <c:RCheckBox Name="CheckApplyPower" Margin="5,6,0,2" IsVisible="{Binding PowerSectionVisible}"
                          Content="{Binding ApplyPowerCaption}" IsChecked="{Binding ApplyPower, Mode=TwoWay}" />
           </StackPanel>
 
@@ -132,7 +132,7 @@
           <StackPanel Name="PanelAdvanced" IsVisible="{Binding IsAdvancedTab}" Margin="0,0,5,8">
 
             <StackPanel IsVisible="{Binding DownloadVisible}" Margin="5,10,0,0">
-              <c:RButton Name="ButtonDownload" Height="32" Secondary="True"
+              <c:RButton Name="ButtonDownload" Secondary="True"
                          Content="{Binding DownloadCaption}" Command="{Binding DownloadCommand}" />
             </StackPanel>
 
@@ -160,13 +160,13 @@
                 <TextBlock Text="{Binding RiskyText}" Foreground="White" TextWrapping="Wrap" />
               </Border>
 
-              <c:RButton Name="ButtonApplyAdvanced" Height="26" Margin="5,4,0,4" Secondary="True"
+              <c:RButton Name="ButtonApplyAdvanced" Margin="5,6,0,4" Secondary="True"
                          IsVisible="{Binding UvVisible}"
                          Content="{Binding ApplyCaption}" Command="{Binding ApplyAdvancedCommand}" />
-              <c:RCheckBox Name="CheckApplyUV" Margin="5,2,0,0" IsVisible="{Binding UvVisible}"
+              <c:RCheckBox Name="CheckApplyUV" Margin="5,2,0,2" IsVisible="{Binding UvVisible}"
                            IsEnabled="{Binding ApplyUVEnabled}"
                            Content="{Binding AutoApplyCaption}" IsChecked="{Binding ApplyUV, Mode=TwoWay}" />
-              <c:RButton Name="ButtonReadLimits" Height="26" Margin="5,8,0,4" Secondary="True"
+              <c:RButton Name="ButtonReadLimits" Margin="5,8,0,4" Secondary="True"
                          Content="{Binding ReadLimitsCaption}" Command="{Binding ReadLimitsCommand}" />
             </StackPanel>
           </StackPanel>
@@ -179,10 +179,10 @@
     <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto,Auto,Auto" Margin="0,0,5,0">
 
       <!-- title + performance mode picker -->
-      <Grid Height="33" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,0">
+      <Grid MinHeight="36" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,0">
         <c:TintedImage Classes="sectionIcon" Margin="9,0,6,0" Source="avares://GHelper/Assets/Icons/icons8-fan-32.png" />
-        <TextBlock Grid.Column="1" Classes="title" Text="{Binding FanCurvesCaption}" TextTrimming="CharacterEllipsis" />
-        <Grid Grid.Column="2" Width="250" ColumnDefinitions="30,30,*,30" Margin="0,5,2,5">
+        <TextBlock Grid.Column="1" Classes="title" Text="{Binding FanCurvesCaption}" TextWrapping="Wrap" />
+        <Grid Grid.Column="2" Width="250" ColumnDefinitions="30,30,*,30" Margin="0,4,2,4">
           <c:RButton Name="ButtonRemove" Grid.Column="0" Margin="1,0" Secondary="True" Padding="2,0"
                      IsVisible="{Binding RemoveVisible}" Command="{Binding RemoveModeCommand}"
                      Icon="avares://GHelper/Assets/Icons/icons8-remove-64.png"
@@ -195,8 +195,7 @@
                        ItemsSource="{Binding Modes}" SelectedItem="{Binding SelectedMode, Mode=TwoWay}"
                        AutomationProperties.Name="{Binding FanCurvesCaption}" />
           <c:RTextBox Name="TextModeName" Grid.Column="2" Margin="1,0" IsVisible="{Binding IsRenaming}"
-                      Text="{Binding ModeName, Mode=TwoWay}" MinHeight="0" Padding="6,0"
-                      VerticalContentAlignment="Center"
+                      Text="{Binding ModeName, Mode=TwoWay}"
                       AutomationProperties.Name="Mode name" />
           <c:RButton Name="ButtonAdd" Grid.Column="3" Margin="1,0" Secondary="True" Padding="2,0"
                      Command="{Binding AddModeCommand}"
@@ -226,7 +225,7 @@
       </UniformGrid>
 
       <!-- clamp + status / drag hint -->
-      <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="9,4,4,0" MinHeight="24">
+      <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="9,6,4,0" MinHeight="28">
         <c:RCheckBox Name="CheckFanClamp" Content="{Binding ClampCaption}"
                      IsChecked="{Binding ClampFanDots, Mode=TwoWay}" />
         <TextBlock Name="LabelFansResult" Grid.Column="1" Margin="12,0,0,0" TextWrapping="Wrap"
@@ -237,7 +236,7 @@
 
       <!-- hysteresis -->
       <Grid Grid.Row="3" Name="PanelHysteresis" IsVisible="{Binding HysteresisVisible}"
-            ColumnDefinitions="Auto,*,86" RowDefinitions="Auto,Auto" Margin="9,6,4,0">
+            ColumnDefinitions="Auto,*,86" RowDefinitions="Auto,Auto" Margin="9,8,4,0">
         <TextBlock Text="{Binding HysteresisUpCaption}" VerticalAlignment="Center" Margin="0,0,10,0" />
         <c:RSlider Name="SliderHysteresisUp" Grid.Column="1" Margin="0,4" Minimum="1" Maximum="5" Step="1"
                    Value="{Binding HysteresisUp, Mode=TwoWay}"
@@ -253,7 +252,7 @@
       </Grid>
 
       <!-- reset / calibrate / apply -->
-      <Grid Grid.Row="4" ColumnDefinitions="Auto,Auto,*,Auto" Margin="9,8,4,8" Height="34">
+      <Grid Grid.Row="4" ColumnDefinitions="Auto,Auto,*,Auto" Margin="9,10,4,10" MinHeight="28">
         <c:RButton Name="ButtonReset" Width="130" Margin="0,0,6,0" Secondary="True"
                    Content="{Binding ResetCaption}" Command="{Binding ResetCommand}" />
         <c:RButton Name="ButtonCalibrate" Grid.Column="1" Width="75" Secondary="True"
@@ -265,4 +264,5 @@
     </Grid>
 
   </Grid>
+  </ScrollViewer>
 </views:SideWindow>

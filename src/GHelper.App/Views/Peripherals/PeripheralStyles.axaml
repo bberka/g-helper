@@ -1,6 +1,7 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:c="using:GHelper.App.Controls"
+        xmlns:t="using:GHelper.App.Theme"
         xmlns:p="using:GHelper.App.Views.Peripherals">
 
   <!-- layout vocabulary shared by the mouse / keyboard / headset windows (legacy panels of 40 px = 20 dip rows) -->
@@ -10,9 +11,17 @@
     <Setter Property="TextTrimming" Value="CharacterEllipsis" />
   </Style>
 
+  <!-- one control height, 4 px between two rows -->
   <Style Selector="Grid.row">
-    <Setter Property="MinHeight" Value="30" />
+    <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.ControlHeight}" />
+    <Setter Property="Margin" Value="{x:Static t:UiMetrics.RowMargin}" />
+  </Style>
+
+  <Style Selector="c|RCheckBox">
     <Setter Property="Margin" Value="0,2" />
+  </Style>
+  <Style Selector="Grid.row > c|RCheckBox">
+    <Setter Property="Margin" Value="0" />
   </Style>
 
   <Style Selector="Grid.row > c|RComboBox, Grid.row > p|BindingComboBox">
@@ -24,14 +33,15 @@
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
 
+  <!-- section header: SectionGap above, 4 px below -->
   <Style Selector="Grid.header">
-    <Setter Property="Height" Value="28" />
-    <Setter Property="Margin" Value="0,10,0,4" />
+    <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.ControlHeight}" />
+    <Setter Property="Margin" Value="0,12,0,4" />
   </Style>
 
   <Style Selector="c|TintedImage.headerIcon">
-    <Setter Property="Width" Value="16" />
-    <Setter Property="Height" Value="16" />
+    <Setter Property="Width" Value="{x:Static t:UiMetrics.IconSize}" />
+    <Setter Property="Height" Value="{x:Static t:UiMetrics.IconSize}" />
     <Setter Property="Margin" Value="4,0,8,0" />
     <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
@@ -43,9 +53,7 @@
   </Style>
 
   <Style Selector="c|RButton.small">
-    <Setter Property="MinHeight" Value="26" />
-    <Setter Property="Height" Value="28" />
-    <Setter Property="Margin" Value="2" />
+    <Setter Property="Margin" Value="{x:Static t:UiMetrics.GridItemMargin}" />
   </Style>
 
 </Styles>

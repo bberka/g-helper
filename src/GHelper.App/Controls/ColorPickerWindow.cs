@@ -87,7 +87,7 @@ public class ColorPickerWindow : Window
     private readonly SvPanel _sv = new();
     private readonly HuePanel _huePanel = new();
     private readonly Border _preview = new();
-    private readonly TextBox _hex = new() { MaxLength = 7 };
+    private readonly RTextBox _hex = new() { MaxLength = 7 };
     private readonly TextBlock _rgbLabel = new();
     private readonly List<Swatch> _customSwatches = new();
     private Swatch? _active;
@@ -175,13 +175,11 @@ public class ColorPickerWindow : Window
         var hexLabel = new TextBlock { Text = "Hex" };
         Place(canvas, hexLabel, rightX, Pad + 118);
 
-        _hex.Padding = new Thickness(6, 2);
-        _hex.MinHeight = 0;
         _hex.TextChanged += (_, _) => { if (!_suppressHex) ApplyHex(false); };
         _hex.LostFocus += (_, _) => ApplyHex(true);
-        Place(canvas, _hex, rightX, Pad + 140, RightW, 24);
+        Place(canvas, _hex, rightX, Pad + 140, RightW, UiMetrics.ControlHeight);
 
-        Place(canvas, _rgbLabel, rightX, Pad + 174);
+        Place(canvas, _rgbLabel, rightX, Pad + 140 + UiMetrics.ControlHeight + 8);
 
         int gridY = Pad + Square + 10;
         for (int i = 0; i < Defaults.Length; i++)
@@ -201,22 +199,22 @@ public class ColorPickerWindow : Window
         int formW = rightX + RightW + Pad;
         int buttonsY = customY + Sw + 14;
 
-        var ok = new RButton { Content = "OK", Width = 84, Height = 28 };
+        var ok = new RButton { Content = "OK", Width = 84 };
         ok.Click += (_, _) => { Accepted = true; Close(); };
-        var cancel = new RButton { Content = "Cancel", Width = 84, Height = 28 };
+        var cancel = new RButton { Content = "Cancel", Width = 84 };
         cancel.Click += (_, _) => { Accepted = false; Close(); };
         Place(canvas, cancel, formW - Pad - 84, buttonsY);
         Place(canvas, ok, formW - Pad - 84 - 8 - 84, buttonsY);
 
         if (_allowRandom)
         {
-            var random = new RButton { Content = Properties.Strings.AuraRandomColor, Width = 84, Height = 28 };
+            var random = new RButton { Content = Properties.Strings.AuraRandomColor, Width = 84 };
             random.Click += (_, _) => Apply(Colors.Black);
             Place(canvas, random, Pad, buttonsY);
         }
 
         Width = formW;
-        Height = buttonsY + 28 + Pad;
+        Height = buttonsY + UiMetrics.ControlHeight + Pad;
         Content = canvas;
 
         KeyDown += (_, e) =>

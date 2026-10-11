@@ -54,13 +54,13 @@
         <c:RCheckBox Content="{Binding Texts.SyncAura}" IsChecked="{Binding SyncAura, Mode=TwoWay}"
                      VerticalAlignment="Center" />
         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" IsEnabled="{Binding ManualEnabled}">
-          <c:RColorButton Name="Color1Button" Width="104" Height="28" Content="{Binding Texts.Color}"
+          <c:RColorButton Name="Color1Button" Width="104" Content="{Binding Texts.Color}"
                           SwatchColor="{Binding Color1}" IsVisible="{Binding Color1Visible}"
                           AutomationProperties.Name="{Binding Texts.Color}" />
-          <c:RColorButton Name="Color2Button" Width="104" Height="28" Content="{Binding Texts.Color2}"
+          <c:RColorButton Name="Color2Button" Width="104" Content="{Binding Texts.Color2}"
                           SwatchColor="{Binding Color2}" IsVisible="{Binding Color2Visible}"
                           AutomationProperties.Name="{Binding Texts.Color2}" />
-          <c:RColorButton Name="Color3Button" Width="104" Height="28" Content="{Binding Texts.Background}"
+          <c:RColorButton Name="Color3Button" Width="104" Content="{Binding Texts.Background}"
                           SwatchColor="{Binding Color3}" IsVisible="{Binding Color3Visible}"
                           AutomationProperties.Name="{Binding Texts.Background}" />
         </StackPanel>
@@ -89,10 +89,10 @@
         <!-- paint row (custom mode) -->
         <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2,0,6" IsVisible="{Binding PaintRowVisible}"
               IsEnabled="{Binding PaintEnabled}">
-          <c:RColorButton Name="PaintColorButton" Width="104" Height="28" Content="{Binding Texts.Color}"
+          <c:RColorButton Name="PaintColorButton" Width="104" Content="{Binding Texts.Color}"
                           SwatchColor="{Binding PaintColor}" AutomationProperties.Name="{Binding Texts.Color}" />
           <StackPanel Name="PalettePanel" Grid.Column="1" Orientation="Horizontal" Spacing="3" Margin="8,0" />
-          <c:RButton Name="FillAllButton" Grid.Column="2" Width="90" Height="28" Content="{Binding Texts.FillAll}"
+          <c:RButton Name="FillAllButton" Grid.Column="2" Width="90" Content="{Binding Texts.FillAll}"
                      Command="{Binding FillAllCommand}"
                      Icon="avares://GHelper/Assets/Icons/icons8-fill-color-48.png" />
         </Grid>
@@ -110,7 +110,7 @@
             <c:RTextBox Text="{Binding LaunchPath, Mode=TwoWay}" IsVisible="{Binding LaunchVisible}"
                         AutomationProperties.Name="Launch command" />
           </StackPanel>
-          <c:RButton Name="ResetBindingsButton" Grid.Column="2" Width="90" Height="28" Margin="8,0,0,0"
+          <c:RButton Name="ResetBindingsButton" Grid.Column="2" Width="90" Margin="8,0,0,0"
                      VerticalAlignment="Top" Content="{Binding Texts.Reset}"
                      Command="{Binding ResetBindingsCommand}"
                      Icon="avares://GHelper/Assets/Icons/icons8-refresh-48.png" />

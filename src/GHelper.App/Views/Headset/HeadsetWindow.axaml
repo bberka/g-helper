@@ -43,11 +43,11 @@
                        AutomationProperties.Name="{Binding Texts.LightingMode}" />
         </Grid>
         <Grid Classes="row" ColumnDefinitions="*,190" IsVisible="{Binding ColorVisible}">
-          <c:RColorButton Name="LightingColorButton" Grid.Column="1" Height="28"
+          <c:RColorButton Name="LightingColorButton" Grid.Column="1"
                           Content="{Binding Texts.Color}" SwatchColor="{Binding LightingColor}"
                           AutomationProperties.Name="{Binding Texts.Color}" />
         </Grid>
-        <c:RCheckBox Margin="0,2" Content="{Binding Texts.SyncAura}" IsChecked="{Binding SyncAura, Mode=TwoWay}" />
+        <c:RCheckBox Content="{Binding Texts.SyncAura}" IsChecked="{Binding SyncAura, Mode=TwoWay}" />
       </StackPanel>
 
       <!-- ===== audio ===== -->
@@ -156,7 +156,7 @@
         </Grid>
       </StackPanel>
 
-      <c:RButton Classes="small" Height="36" Margin="0,14,0,0" Content="{Binding Texts.Reset}"
+      <c:RButton Margin="0,16,0,0" Content="{Binding Texts.Reset}"
                  Command="{Binding ResetCommand}" IsVisible="{Binding ResetVisible}" />
     </StackPanel>
   </ScrollViewer>

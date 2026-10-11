@@ -3,6 +3,7 @@
         xmlns:c="using:GHelper.App.Controls"
         xmlns:p="using:GHelper.App.Views.Peripherals"
         xmlns:m="using:GHelper.App.Views.Mouse"
+        xmlns:t="using:GHelper.App.Theme"
         x:Class="GHelper.App.Views.Mouse.MouseWindow"
         x:DataType="m:MouseViewModel"
         x:CompileBindings="True"
@@ -24,7 +25,7 @@
           <TextBlock Grid.Column="1" Classes="title" Text="{Binding Texts.KeyBindings}" />
         </Grid>
 
-        <UniformGrid Columns="2" Height="34" Margin="0,4" IsVisible="{Binding HasSpeedShift}">
+        <UniformGrid Columns="2" Height="{x:Static t:UiMetrics.ControlRowHeight}" Margin="0,4" IsVisible="{Binding HasSpeedShift}">
           <c:RButton Classes="small" Content="{Binding Texts.Buttons}" Command="{Binding NormalLayerCommand}"
                      Activated="{Binding NormalLayerActivated}" Secondary="{Binding ShiftLayerActivated}"
                      BorderColor="#FF3AAEEF" />
@@ -50,7 +51,7 @@
           </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <c:RButton Classes="small" Height="32" Margin="0,10,0,0" Content="{Binding Texts.Reset}"
+        <c:RButton Margin="0,12,0,0" Content="{Binding Texts.Reset}"
                    Command="{Binding ResetBindingsCommand}" />
       </StackPanel>
 
@@ -84,7 +85,7 @@
           </Grid>
 
           <!-- DPI profiles -->
-          <ItemsControl Name="DpiSlotsList" ItemsSource="{Binding DpiSlots}" Height="64"
+          <ItemsControl Name="DpiSlotsList" ItemsSource="{Binding DpiSlots}" Height="64" Margin="0,0,2,0"
                         IsEnabled="{Binding NormalControlsEnabled}">
             <ItemsControl.ItemsPanel>
               <ItemsPanelTemplate>
@@ -110,7 +111,7 @@
           <Grid ColumnDefinitions="*,Auto" Height="36" Margin="0,6,0,0" IsVisible="{Binding DpiColorVisible}"
                 IsEnabled="{Binding NormalControlsEnabled}">
             <TextBlock Classes="row" Text="{Binding Texts.Dpi}" />
-            <c:RColorButton Name="DpiColorButton" Grid.Column="1" Width="130" Height="28"
+            <c:RColorButton Name="DpiColorButton" Grid.Column="1" Width="130"
                             Content="{Binding Texts.Color}" SwatchColor="{Binding DpiColor}"
                             AutomationProperties.Name="DPI color" />
           </Grid>
@@ -220,7 +221,7 @@
                        AutomationProperties.Name="{Binding Texts.Lighting}" />
           </Grid>
 
-          <UniformGrid Rows="1" Height="40" Margin="0,2,0,6" IsVisible="{Binding ZonesVisible}">
+          <UniformGrid Rows="1" Height="{x:Static t:UiMetrics.ControlRowHeight}" Margin="0,2,0,6" IsVisible="{Binding ZonesVisible}">
             <c:RButton Name="ZoneAllButton" Margin="2" Content="{Binding Texts.ZoneAll}" Command="{Binding ZoneAllCommand}"
                        Activated="{Binding ZoneAllActivated}" Secondary="{Binding ZoneAllSecondary}" />
             <c:RButton Name="ZoneLogoButton" Margin="2" Content="{Binding Texts.ZoneLogo}" IsVisible="{Binding ZoneLogoVisible}"
@@ -247,7 +248,7 @@
           <Grid Classes="row" ColumnDefinitions="*,190" IsEnabled="{Binding LightingControlsEnabled}"
                 IsVisible="{Binding ColorRowVisible}">
             <Grid Grid.Column="1" ColumnDefinitions="100,*">
-              <c:RColorButton Name="LightingColorButton" Height="28" Margin="0,0,8,0"
+              <c:RColorButton Name="LightingColorButton" Margin="0,0,8,0"
                               IsVisible="{Binding ColorVisible}"
                               Content="{Binding Texts.Color}" SwatchColor="{Binding LightingColor}"
                               AutomationProperties.Name="{Binding Texts.Color}" />
@@ -302,7 +303,7 @@
         </StackPanel>
 
         <!-- ===== import / export / sync ===== -->
-        <UniformGrid Name="BottomButtons" Rows="1" Height="40" Margin="0,14,0,0"
+        <UniformGrid Name="BottomButtons" Rows="1" Height="{x:Static t:UiMetrics.ControlRowHeight}" Margin="0,16,0,0"
                      IsVisible="{Binding BottomButtonsVisible}">
           <c:RButton Name="SyncButton" Margin="2" Content="{Binding Texts.Synchronize}"
                      Command="{Binding SyncCommand}" />
