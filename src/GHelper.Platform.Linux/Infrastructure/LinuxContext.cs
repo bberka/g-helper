@@ -25,6 +25,32 @@ public sealed class LinuxContext
     /// <summary>Path of the executable to relaunch (autostart entry, elevation).</summary>
     public string ProcessPath { get; }
 
+    /// <summary>
+    /// Command line that starts this application again: the apphost, or "dotnet app.dll" when launched through the
+    /// dotnet host (development, framework dependent run).
+    /// </summary>
+    public IReadOnlyList<string> LaunchCommand
+    {
+        get
+        {
+            if (string.Equals(Path.GetFileNameWithoutExtension(ProcessPath), "dotnet", StringComparison.Ordinal))
+            {
+                string? entry = System.Reflection.Assembly.GetEntryAssembly()?.Location;
+                if (!string.IsNullOrEmpty(entry)) return [ProcessPath, entry];
+            }
+            return [ProcessPath];
+        }
+    }
+
+    /// <summary>
+    /// After writing a file into the interactive user's profile while running elevated: hand it back to that user.
+    /// </summary>
+    public void FixOwnership(string logicalPath)
+    {
+        if (!Root.IsRealRoot || InvokingUid is not uint uid) return;
+        try { Native.chown(logicalPath, uid, uint.MaxValue); } catch { }
+    }
+
     public string? Env(string name)
     {
         string? value = getEnv(name);

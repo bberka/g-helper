@@ -51,6 +51,10 @@ internal static unsafe class Native
     [DllImport("libc")]
     public static extern uint geteuid();
 
+    /// <summary>glibc only; throws EntryPointNotFoundException on musl (callers catch).</summary>
+    [DllImport("libc")]
+    public static extern int malloc_trim(nuint pad);
+
     [DllImport("libc", SetLastError = true)]
     public static extern int chown([MarshalAs(UnmanagedType.LPStr)] string path, uint owner, uint group);
 
