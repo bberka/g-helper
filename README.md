@@ -15,6 +15,60 @@ architectures. The original author's work, history and license are preserved; se
 > port has not had a full hardware regression against the original application. Expect missing features and bugs,
 > and report them with the log file (see [Troubleshooting](#troubleshooting)).
 
+## How the Linux port works
+
+G-Helper never "emulates" Armoury Crate: it talks to the laptop firmware through the ASUS ATK ACPI/WMI *device* interface
+(get = `DSTS`, set = `DEVS`, keyed by a 32-bit device id: performance mode, PPT limits, GPU mode, fan curves, charge
+limit ...). The port keeps all of that logic and only swaps the **transport**:
+
+| | Windows | Linux |
+|---|---|---|
+| ASUS device ids | `\\.\ATKACPI` `DeviceIoControl` (+ WMI) | the kernel's `asus-wmi` driver: sysfs attributes (`throttle_thermal_policy` / `platform_profile`, `ppt_*`, `nv_*`, `dgpu_disable`, `gpu_mux_mode`, `panel_od`, `charge_control_end_threshold`, hwmon fan curves, `asus-armoury`), debugfs `dev_id/ctrl_param/devs/dsts` as raw fallback |
+| Hotkeys (Fn / M / ROG keys) | `AsusAtkWmiEvent` + keyboard hook | evdev nodes of "Asus WMI hotkeys" / "Asus Keyboard", `uinput` for key injection |
+| Power profile, lid, suspend, AC/DC | power plans + `SystemEvents` | `platform_profile` / power-profiles-daemon, logind, UPower |
+| Screen | CCD / GDI / WMI backlight | DRM + `/sys/class/backlight`, refresh rate via `xrandr`, `wlr-randr`, `kscreen-doctor`, Mutter |
+| GPU | NVAPI + NVML, ADL | NVML (`libnvidia-ml.so`), amdgpu / i915 / xe sysfs |
+| Ryzen / Intel tuning | PawnIO driver | `ryzen_smu` module, `msr`, RAPL |
+| Aura, Anime Matrix, mice, keyboards, headsets | HID via HidSharp | the same code over `hidraw` (needs the udev rules from the package) |
+| Elevation / autostart | UAC, Task Scheduler | `pkexec` + polkit action, XDG autostart / systemd user unit |
+
+Code layout: `GHelper.Core` holds all logic and only knows interfaces (`src/GHelper.Core/Platform/I*.cs`);
+`GHelper.Platform.Windows` and `GHelper.Platform.Linux` implement them; `GHelper.App` is the Avalonia UI. A feature the
+platform cannot provide reports "unsupported" instead of failing, so the same binary runs on a desktop PC or a
+non-ASUS laptop (it just shows nothing to control). The seam table (which Core call is served by which platform
+member, and what is N/A on Linux) is [tasks/seams.md](tasks/seams.md).
+
+Things that are Windows-only by nature and therefore absent on Linux: Armoury Crate service control, Splendid /
+GameVisual colour modes, ELMB, Dynamic Lighting, BIOS/driver update *installation*, the ETW FPS counter of the overlay.
+Wayland: the tray icon needs StatusNotifier support in the desktop, and global hotkeys / overlay click-through are
+best effort there. Do not run it next to `asusd` / `supergfxd`.
+
+## Upstream sync and releases
+
+This fork follows the original project:
+
+* **Upstream merges are regular.** The original WinForms sources stay in `app/` as an untouched mirror of upstream
+  (it is no longer built into releases). A sync is: `git remote add upstream https://github.com/seerge/g-helper`,
+  `git fetch upstream`, `git merge upstream/main` (changes land in `app/`), then port the changed lines into
+  `src/` (the files map one to one, the Core class names are the legacy ones) and run the test suite.
+* **One release, every platform.** A tag `v*` builds Windows (x64, x86, arm64) and Linux (x64, arm64, arm, musl-x64,
+  musl-arm64) archives, `.deb` and `.rpm` packages and a checksum file through GitHub Actions.
+* **Distribution targets** (status is honest, nothing below "scripted" has been published yet):
+
+| Target | Status |
+|---|---|
+| Windows zip (x64 / x86 / arm64) | scripted, release workflow written, not yet run on CI |
+| Generic Linux tar.gz + `install.sh` (all Linux RIDs) | scripted |
+| Debian / Ubuntu / Linux Mint `.deb` (amd64, arm64, armhf) | scripted |
+| Fedora / RHEL / openSUSE `.rpm` (x86_64, aarch64, armv7hl) | scripted, `rpmbuild` untested |
+| Arch / Manjaro / EndeavourOS (AUR `ghelper-bin`, `PKGBUILD` over the release tarball) | planned |
+| Nix / NixOS (flake + nixpkgs package, udev rules via `services.udev.packages`) | planned |
+| AppImage | planned: needs a separate host-side package or script for the udev rules and polkit action |
+| Flatpak | undecided: the sandbox blocks sysfs/hidraw/uinput writes, probably only usable with broad `--device=all` |
+| Alpine `apk`, Gentoo ebuild, Void template | planned after the above, community help welcome |
+
+Linux hardware reports decide the order: the first distros that get packaged are the ones people test on.
+
 ## Supported platforms
 
 | OS | Architecture | Runtime identifier | Release artifact | Notes |
@@ -68,8 +122,8 @@ sudo ./install.sh        # copies root/ to /, creates the ghelper group, reloads
 
 Then log in again (or `sudo usermod -aG ghelper $USER`) and start **G-Helper** from the application menu or `ghelper`.
 The package installs everything below `/usr/lib/ghelper` plus a udev rules file, a polkit action, a desktop entry and
-an icon. There is no AppImage or Flatpak: the hardware access needs host-level udev and polkit integration that a
-sandbox cannot provide.
+an icon. Arch, Nix, AppImage and other formats are planned, see [Upstream sync and releases](#upstream-sync-and-releases);
+a sandboxed format needs the udev rules and polkit action installed on the host separately.
 
 #### Linux requirements
 
@@ -141,7 +195,7 @@ details are in [packaging/linux/README.md](packaging/linux/README.md).
 | `src/GHelper.App` | Avalonia 12 application: tray, windows, controls, theme |
 | `tests/` | unit tests and headless UI tests |
 | `packaging/linux` | udev rules, polkit action, systemd units, desktop entry, deb / rpm / tar.gz build |
-| `app/` | the original WinForms application, kept as behavioural reference until the port reaches parity |
+| `app/` | upstream's WinForms application, kept as an untouched mirror so upstream changes can be merged and ported; not part of the release build |
 
 ## Troubleshooting
 

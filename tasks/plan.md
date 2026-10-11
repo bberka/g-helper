@@ -1,7 +1,7 @@
 # Implementation Plan: G-Helper cross-platform port (Avalonia, Windows + Linux, all CPU architectures)
 
 Fork: https://github.com/bberka/g-helper (GPL-3.0, upstream copyright notices stay in LICENSE / headers).
-Branch: `feat/avalonia-port`. Legacy WinForms app stays in `app/` as the **reference spec** until parity, then is deleted (task P6.3).
+Branch: `feat/avalonia-port`. Legacy WinForms app stays in `app/` as the **reference spec** and as an untouched mirror of upstream (we merge upstream regularly, see README "Upstream sync and releases"); it is not deleted (task P6.3 changed accordingly).
 
 ## Overview
 G-Helper is a Windows-only WinForms tray app for ASUS laptops (ROG/TUF/Zenbook/Vivobook/Ally): performance modes, fan curves,
