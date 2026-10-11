@@ -140,9 +140,10 @@ namespace GHelper.Mode
 
             if (!Modes.Exists(mode)) mode = 0;
 
-            Program.Ui.Refresh("mode");
-
             Modes.SetCurrent(mode);
+
+            // after SetCurrent: the UI re-reads Modes.GetCurrent() on another thread
+            Program.Ui.Refresh("mode");
 
 
             _modeCts.Cancel();
