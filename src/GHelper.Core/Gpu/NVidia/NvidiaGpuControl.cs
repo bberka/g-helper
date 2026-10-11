@@ -240,11 +240,21 @@ public class NvidiaGpuControl : IGpuControl
     }
 
 
+    /// <summary>NVAPI (Windows) clock backend of the platform, preferred over NVML when present.</summary>
+    private static IGpuOverclock? Overclock => PlatformCapabilities.GetOptional<IGpuOverclock>();
+
     public bool GetClocks(out int core, out int memory)
     {
         try
         {
             var temp = ReadCurrentTemperature(true); // Force wake up GPU for clock reading
+
+            var overclock = Overclock;
+            if (overclock is not null && overclock.GetClockOffsets(out core, out memory))
+            {
+                Logger.WriteLine($"GET GPU CLOCKS: {core}, {memory}");
+                return true;
+            }
 
             if (!NvmlHelper.GetClockOffsets(out core, out memory, _index))
             {
@@ -281,11 +291,30 @@ public class NvidiaGpuControl : IGpuControl
 
     }
 
+    /// <summary>Current clock lock in MHz, -1 = none (NVAPI reports the real state, NVML only what this session set).</summary>
     public int GetMaxGPUCLock()
     {
-        int limit = NvmlHelper.LockedClockMhz;
+        int limit = GetClockLock(out _);
         Logger.WriteLine("GET CLOCK LIMIT: " + limit);
         return limit;
+    }
+
+    // authoritative = the platform backend could read the lock, so "no lock" needs no extra reset
+    private static int GetClockLock(out bool authoritative)
+    {
+        authoritative = false;
+
+        int backend = -1;
+        try { backend = Overclock?.GetClockLock() ?? -1; }
+        catch (Exception ex) { Logger.WriteLine("GET CLOCK LIMIT: " + ex.Message); }
+
+        if (backend >= 0)
+        {
+            authoritative = true;
+            return backend == 0 ? -1 : backend;
+        }
+
+        return NvmlHelper.LockedClockMhz;
     }
 
 
@@ -294,11 +323,11 @@ public class NvidiaGpuControl : IGpuControl
 
         if (clock < MinClockLimit || clock >= MaxClockLimit) clock = 0;
 
-        int _clockLimit = GetMaxGPUCLock();
+        int _clockLimit = GetClockLock(out bool authoritative);
 
         // NVML has no getter for a clock lock: -1 = none / set by someone else. A reset is applied once per session.
         if (clock > 0 && _clockLimit == clock) return 0;
-        if (clock == 0 && _clockLimit < 0 && _resetApplied) return 0;
+        if (clock == 0 && _clockLimit < 0 && (authoritative || _resetApplied)) return 0;
 
         int rc = NvmlHelper.SetLockedClock(clock, _index);
         if (rc != 0)
@@ -352,6 +381,16 @@ public class NvidiaGpuControl : IGpuControl
         if (Math.Abs(core - currentCore) < 5 && Math.Abs(memory - currentMemory) < 5) return 0;
 
         Logger.WriteLine($"SET GPU CLOCKS: {core}, {memory}");
+
+        try
+        {
+            if (Overclock?.SetClockOffsets(core, memory) == 1) return 1;
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine("SET GPU CLOCKS: " + ex.Message);
+        }
+
         int rc = NvmlHelper.SetClockOffsets(core, memory, _index);
         if (rc != 0)
         {

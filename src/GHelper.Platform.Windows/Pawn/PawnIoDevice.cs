@@ -2,11 +2,12 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Win32.SafeHandles;
+using PawnIO;
 
 namespace GHelper.Platform.Windows.Pawn
 {
-    /// <summary>Thin PawnIO driver client (IOCTL load module / execute function). Lifted from legacy app/Pawn/PawnIOWrapper.cs.</summary>
-    internal sealed class PawnIoDevice : IDisposable
+    /// <summary>Thin PawnIO driver client (IOCTL load module / execute function) implementing Core's <see cref="IPawnIo"/>. Lifted from legacy app/Pawn/PawnIOWrapper.cs.</summary>
+    internal sealed class PawnIoDevice : IPawnIo
     {
         private const int FN_LEN = 32;
         private const uint DEV_TYPE = 41394u << 16;     // 0xA1B20000
@@ -40,11 +41,9 @@ namespace GHelper.Platform.Windows.Pawn
         public bool IsConnected    => _raw != IntPtr.Zero && _raw.ToInt64() != -1;
         public bool IsModuleLoaded => _loaded && _safe != null && !_safe.IsInvalid;
 
-        public enum ConnectResult { OK, NotInstalled, AccessDenied, OtherError }
-
-        public ConnectResult Connect()
+        public PawnConnectResult Connect()
         {
-            if (IsConnected) return ConnectResult.OK;
+            if (IsConnected) return PawnConnectResult.OK;
 
             const string path = @"\\?\GLOBALROOT\Device\PawnIO";
             _raw = CreateFile(path, 0xC0000000u, 0x3, IntPtr.Zero, 3, 0, IntPtr.Zero);
@@ -54,12 +53,12 @@ namespace GHelper.Platform.Windows.Pawn
                 _raw = IntPtr.Zero;
                 return err switch
                 {
-                    2 or 3 => ConnectResult.NotInstalled,  // ERROR_FILE_NOT_FOUND / ERROR_PATH_NOT_FOUND
-                    5      => ConnectResult.AccessDenied,  // ERROR_ACCESS_DENIED
-                    _      => ConnectResult.OtherError,
+                    2 or 3 => PawnConnectResult.NotInstalled,  // ERROR_FILE_NOT_FOUND / ERROR_PATH_NOT_FOUND
+                    5      => PawnConnectResult.AccessDenied,  // ERROR_ACCESS_DENIED
+                    _      => PawnConnectResult.OtherError,
                 };
             }
-            return ConnectResult.OK;
+            return PawnConnectResult.OK;
         }
 
         public bool LoadModule(byte[] data)
