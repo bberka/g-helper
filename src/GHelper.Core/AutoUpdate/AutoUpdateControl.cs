@@ -120,10 +120,13 @@ namespace GHelper.AutoUpdate
 
             if (preferZip && config.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
             {
+                // releases carry one zip per Windows architecture: prefer the one for this process, keep the last zip as fallback
+                string arch = System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
                 for (int i = 0; i < assets.GetArrayLength(); i++)
                 {
                     string asset = assets[i].GetProperty("browser_download_url").ToString();
-                    if (asset.Contains(".zip")) url = asset;
+                    if (!asset.Contains(".zip")) continue;
+                    if (url is null || !url.Contains(arch) || asset.Contains(arch)) url = asset;
                 }
 
                 if (url is null && assets.GetArrayLength() > 0)
