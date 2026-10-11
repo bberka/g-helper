@@ -203,14 +203,15 @@ public sealed class WindowsSystemSensors : ISystemSensors
         var status = lastBatteryStatus;
 
         double? fullWh = system is { MaxCapacity: > 0 } ? system.Value.MaxCapacity / 1000.0 : null;
-        double? remainingWh = status is not null ? status.Value.Capacity / 1000.0 : null;
+        // BATTERY_UNKNOWN_CAPACITY = 0xFFFFFFFF, BATTERY_UNKNOWN_RATE = 0x80000000, BATTERY_UNKNOWN_VOLTAGE = 0xFFFFFFFF
+        double? remainingWh = status is { Capacity: not uint.MaxValue } ? status.Value.Capacity / 1000.0 : null;
 
         double percent = BatteryMath.Percent(remainingWh, fullWh, haveSystemPower ? power.BatteryLifePercent : (byte)255);
 
         bool onAc = system?.AcOnLine ?? (haveSystemPower && power.ACLineStatus == 1);
         bool charging = system?.Charging ?? (haveSystemPower && (power.BatteryFlag & 8) != 0);
 
-        double? rateW = status is not null ? status.Value.Rate / 1000.0 : null;
+        double? rateW = status is { Rate: not int.MinValue } ? status.Value.Rate / 1000.0 : null;
         double? voltage = status is not null && status.Value.Voltage > 0 && status.Value.Voltage != -1 ? status.Value.Voltage / 1000.0 : null;
 
         return new BatteryState(present, charging, onAc, percent, rateW, ReadDesignCapacityWh(), fullWh, voltage);

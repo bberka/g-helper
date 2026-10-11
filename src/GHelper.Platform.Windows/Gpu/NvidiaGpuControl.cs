@@ -281,7 +281,7 @@ internal class NvidiaGpuControl : IGpuControl, IGpuOverclock
     {
         try
         {
-            new Processes.WindowsProcessService(PlatformServices.Current.System).RunCommand("powershell", script, timeoutMs: timeoutMs);
+            PlatformServices.Current.Process.RunCommand("powershell", script, timeoutMs: timeoutMs);
             return true;
         }
         catch (Exception ex)

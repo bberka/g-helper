@@ -91,6 +91,17 @@ public interface IVendorServices
     /// effect: 0 solid, 1 breathing, 2 rainbow, 4 wave, 5 wheel, 6 gradient.
     /// </summary>
     void SetDynamicLightingEffect(int effect, System.Drawing.Color? color = null, System.Drawing.Color? color2 = null, int? brightness = null, int? speed = null) { }
+
+    /// <summary>
+    /// Directory of the ASUS Splendid command line tool (Windows: folder of the ATKWMIACPIIO driver, contains
+    /// AsusSplendid.exe), null when unknown. Legacy VisualControl.GetSplendidPath.
+    /// </summary>
+    string? GetSplendidPath() => null;
+
+    /// <summary>GameVisual service flag (HKCU\Software\ASUS\ARMOURY CRATE Service\GameVisual ActiveGVStatus). True when unset.</summary>
+    bool IsGameVisualEnabled() => true;
+
+    void SetGameVisualStatus(int status) { }
 }
 
 /// <summary>Ryzen SMU / Intel MSR access (legacy Pawn folder: PawnIO driver on Windows, ryzen_smu + msr module on Linux).</summary>

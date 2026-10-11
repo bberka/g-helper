@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using Microsoft.Win32;
 using static GHelper.Platform.Windows.Display.DisplayNative;
 
 namespace GHelper.Platform.Windows.Display;
@@ -22,6 +23,37 @@ public sealed class WindowsDisplayService : IDisplayService
     {
         this.process = process;
     }
+
+    // --- display configuration changes ---------------------------------------------------------
+
+    private event Action? displaySettingsChanged;
+    private int displayHooked;
+
+    public event Action? DisplaySettingsChanged
+    {
+        add
+        {
+            displaySettingsChanged += value;
+            HookDisplayEvents();
+        }
+        remove => displaySettingsChanged -= value;
+    }
+
+    private void HookDisplayEvents()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        if (Interlocked.Exchange(ref displayHooked, 1) == 1) return;
+
+        try { Subscribe(); }
+        catch (Exception ex) { Logger.WriteLine("Display events: " + ex.Message); }
+    }
+
+    [SupportedOSPlatform("windows")]
+    private void Subscribe() => SystemEvents.DisplaySettingsChanged += (_, _) =>
+    {
+        try { displaySettingsChanged?.Invoke(); }
+        catch (Exception ex) { Logger.WriteLine("Display settings handler: " + ex.Message); }
+    };
 
     // --- internal / external displays -------------------------------------------------------
 
@@ -266,7 +298,9 @@ public sealed class WindowsDisplayService : IDisplayService
             {
                 var info = NewTargetName(path.targetInfo.adapterId, path.targetInfo.id);
                 int err = DisplayConfigGetDeviceInfo(ref info);
-                if (err != 0) throw new Win32Exception(err);
+                if (err != 0) continue;
+
+                if (!DisplayLogic.IsInternal(info.outputTechnology, info.monitorFriendlyDeviceName, internalName)) continue;
 
                 var colorInfo = new DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO();
                 colorInfo.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.GET_ADVANCED_COLOR_INFO;
@@ -274,9 +308,11 @@ public sealed class WindowsDisplayService : IDisplayService
                 colorInfo.header.adapterId = path.targetInfo.adapterId;
                 colorInfo.header.id = path.targetInfo.id;
                 err = DisplayConfigGetDeviceInfo(ref colorInfo);
-                if (err != 0) throw new Win32Exception(err);
-
-                if (!DisplayLogic.IsInternal(info.outputTechnology, info.monitorFriendlyDeviceName, internalName)) continue;
+                if (err != 0)
+                {
+                    Logger.WriteLine("HDR Detection Error: " + new Win32Exception(err).Message);
+                    return false;
+                }
 
                 var (hdr, acmState) = DisplayLogic.DecodeAdvancedColor(colorInfo.value, colorInfo.bitsPerColorChannel);
                 acm = acmState;

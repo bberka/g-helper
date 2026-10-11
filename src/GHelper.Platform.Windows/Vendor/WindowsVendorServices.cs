@@ -292,6 +292,60 @@ public sealed class WindowsVendorServices : IVendorServices
         }
     }
 
+    // --- GameVisual / Splendid ----------------------------------------------------------------
+
+    private const string GameVisualKey = @"HKEY_CURRENT_USER\Software\ASUS\ARMOURY CRATE Service\GameVisual";
+    private const string GameVisualValue = "ActiveGVStatus";
+    private string? splendidPath;
+
+    public string? GetSplendidPath()
+    {
+        if (splendidPath is not null || !OperatingSystem.IsWindows()) return splendidPath;
+
+        try
+        {
+            splendidPath = FindSplendidPath();
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine(ex.Message);
+        }
+
+        return splendidPath;
+    }
+
+    [SupportedOSPlatform("windows")]
+    private static string? FindSplendidPath()
+    {
+        using var searcher = new ManagementObjectSearcher("Select * from Win32_SystemDriver WHERE Name='ATKWMIACPIIO'");
+        foreach (ManagementBaseObject driver in searcher.Get())
+        {
+            using (driver)
+            {
+                string? path = driver["PathName"]?.ToString();
+                return path is null ? null : Path.GetDirectoryName(path);
+            }
+        }
+
+        return null;
+    }
+
+    public bool IsGameVisualEnabled()
+    {
+        if (!OperatingSystem.IsWindows()) return true;
+
+        try { return Registry.GetValue(GameVisualKey, GameVisualValue, 1) is not int status || status > 0; }
+        catch { return true; }
+    }
+
+    public void SetGameVisualStatus(int status)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        try { Registry.SetValue(GameVisualKey, GameVisualValue, status, RegistryValueKind.DWord); }
+        catch (Exception ex) { Logger.WriteLine("GameVisual status: " + ex.Message); }
+    }
+
     // --- GPU problem detection ----------------------------------------------------------------
 
     public string? GetGpuError()

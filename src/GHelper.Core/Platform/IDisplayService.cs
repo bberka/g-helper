@@ -38,4 +38,7 @@ public interface IDisplayService
 
     /// <summary>Legacy ScreenELMB.Set. No-op when unsupported.</summary>
     void SetElmbStatus(int status) { }
+
+    /// <summary>Monitors added / removed or resolution, refresh rate, layout changed (legacy SystemEvents.DisplaySettingsChanged).</summary>
+    event Action? DisplaySettingsChanged { add { } remove { } }
 }
