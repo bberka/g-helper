@@ -170,7 +170,7 @@
                                 Value="{Binding ZoneModeDpi, Mode=OneWay}"
                                 IsEnabled="{Binding ZoneModeControlsEnabled}" />
             </Grid>
-            <c:RSlider Name="ZoneDpiSlider" Margin="0,0,0,4"
+            <c:RSlider Name="ZoneDpiSlider" Margin="0,4,0,4"
                        Minimum="{Binding DpiMin}" Maximum="{Binding DpiMax}" Step="{Binding DpiStep}"
                        Value="{Binding ZoneModeDpi, Mode=OneWay}"
                        IsEnabled="{Binding ZoneModeControlsEnabled}" />

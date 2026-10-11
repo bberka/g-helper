@@ -37,10 +37,10 @@
       <c:RButton Name="ButtonLB" Canvas.Left="10" Canvas.Top="12" Content="LBumper" />
       <c:RButton Name="ButtonLT" Canvas.Left="10" Canvas.Top="44" Content="LTrigger" />
       <c:RButton Name="ButtonDPU" Canvas.Left="10" Canvas.Top="76" Content="DpadUp" />
-      <c:RButton Name="ButtonDPD" Canvas.Left="10" Canvas.Top="107" Content="DpadDown" />
-      <c:RButton Name="ButtonDPL" Canvas.Left="10" Canvas.Top="139" Content="DpadLeft" />
-      <c:RButton Name="ButtonDPR" Canvas.Left="10" Canvas.Top="170" Content="DpadRight" />
-      <c:RButton Name="ButtonLS" Canvas.Left="10" Canvas.Top="202" Content="LStick" />
+      <c:RButton Name="ButtonDPD" Canvas.Left="10" Canvas.Top="108" Content="DpadDown" />
+      <c:RButton Name="ButtonDPL" Canvas.Left="10" Canvas.Top="140" Content="DpadLeft" />
+      <c:RButton Name="ButtonDPR" Canvas.Left="10" Canvas.Top="172" Content="DpadRight" />
+      <c:RButton Name="ButtonLS" Canvas.Left="10" Canvas.Top="204" Content="LStick" />
 
       <c:RButton Name="ButtonView" Canvas.Left="88" Canvas.Top="13" Content="View" />
       <c:RButton Name="ButtonM2" Canvas.Left="165" Canvas.Top="13" Content="M2" />
@@ -50,10 +50,10 @@
       <c:RButton Name="ButtonRB" Canvas.Left="605" Canvas.Top="12" Content="RBumper" />
       <c:RButton Name="ButtonRT" Canvas.Left="605" Canvas.Top="44" Content="RTrigger" />
       <c:RButton Name="ButtonX" Canvas.Left="605" Canvas.Top="76" Content="X" />
-      <c:RButton Name="ButtonY" Canvas.Left="605" Canvas.Top="107" Content="Y" />
-      <c:RButton Name="ButtonA" Canvas.Left="605" Canvas.Top="139" Content="A" />
-      <c:RButton Name="ButtonB" Canvas.Left="605" Canvas.Top="170" Content="B" />
-      <c:RButton Name="ButtonRS" Canvas.Left="605" Canvas.Top="202" Content="RStick" />
+      <c:RButton Name="ButtonY" Canvas.Left="605" Canvas.Top="108" Content="Y" />
+      <c:RButton Name="ButtonA" Canvas.Left="605" Canvas.Top="140" Content="A" />
+      <c:RButton Name="ButtonB" Canvas.Left="605" Canvas.Top="172" Content="B" />
+      <c:RButton Name="ButtonRS" Canvas.Left="605" Canvas.Top="204" Content="RStick" />
 
       <Border Name="PanelBinding" Canvas.Left="198" Canvas.Top="92" Width="292" Height="110" IsVisible="False"
               Background="{DynamicResource FormBackBrush}" BorderBrush="{DynamicResource BorderMainBrush}"

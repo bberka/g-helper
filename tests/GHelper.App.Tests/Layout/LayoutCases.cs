@@ -105,7 +105,9 @@ internal static class LayoutCases
             new("slash", "slash", () =>
             {
                 var (control, _, _) = SideWindowEnv.SlashControl();
-                return new SlashWindow(control);
+                var window = new SlashWindow(control);
+                window.Closed += (_, _) => control.Dispose();
+                return window;
             }),
             new("handheld", "handheld", () => { Env(); return new HandheldWindow(new NoActions()); }),
             new("updates", "updates", () =>
@@ -157,7 +159,13 @@ internal static class LayoutCases
         AppConfig.Set("matrix_text", "G-Helper");
         AppConfig.Set("matrix_text2", "Second line");
         MatrixWindow.FontDownloader = () => Task.FromResult(false);
-        return new MatrixWindow(control);
+        var window = new MatrixWindow(control);
+        window.Closed += (_, _) =>
+        {
+            control.Dispose();
+            foreach (var key in new[] { "matrix_running", "matrix_text", "matrix_text2" }) AppConfig.Remove(key);
+        };
+        return window;
     }
 
     private sealed class NoActions : IControllerActions
