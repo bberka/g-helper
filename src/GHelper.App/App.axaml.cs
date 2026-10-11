@@ -98,6 +98,9 @@ public partial class App : Application
 
         try
         {
+            // the overlay is a window: it has to be created on the UI thread
+            AppHooks.CreateHardwareOverlay ??= () => Dispatcher.UIThread.Invoke(Views.Overlay.OverlayHost.Create);
+
             if (Program.hardwareOverlay is null)
                 Program.hardwareOverlay = AppHooks.CreateHardwareOverlay?.Invoke();
 

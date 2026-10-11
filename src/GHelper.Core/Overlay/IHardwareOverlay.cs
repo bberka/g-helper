@@ -16,9 +16,6 @@ namespace GHelper.Overlay
         void SuspendForDisplayOff();
         void ResumeForDisplayOn();
 
-        /// <summary>Legacy HardwareOverlay.StopOverlay (toggle off, game-only restart). Additive default: no-op.</summary>
-        void StopOverlay() { }
-
         /// <summary>
         /// Legacy HardwareOverlay.RefreshSettings: re-read the overlay_* options after the config window changed them.
         /// Additive default: no-op.
