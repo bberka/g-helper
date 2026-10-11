@@ -60,5 +60,8 @@ and from the driver sources.
   (`asus-armoury` `requires_fan_curve`); a PPT change that fails on such a model needs a custom fan curve first.
 * The kernel resets `charge_control_end_threshold` to 100 whenever the battery is (re)registered; install and enable
   `ghelper-charge.service`.
-* The desktop environment already handles brightness, volume, keyboard backlight, touchpad and rfkill keys. G-Helper
-  does not forward those key events to its hotkey handler (they would act twice).
+* asus-wmi consumes some hotkeys itself and never reports them to user space: Fn+F5 / fan key (it cycles the
+  platform profile), keyboard backlight up/down/toggle and Fn lock. The desktop environment handles brightness,
+  volume, touchpad and rfkill keys. G-Helper does not forward the latter to its hotkey handler (they would act
+  twice); the ROG / M keys, Aura key, camera, mic mute and unknown ATK codes (reported as `KEY_UNKNOWN` with the code in
+  `MSC_SCAN`) are forwarded.

@@ -10,6 +10,10 @@ namespace GHelper.Platform.Linux;
 ///   - hid-asus ("Asus Keyboard", N-KEY devices): vendor usage page 0xFF31, MSC_SCAN carries 0xFF31xxxx, the low
 ///     byte is the same ATK id.
 /// When no scancode was seen (other drivers), a small table maps the Linux key codes the drivers use for ASUS keys.
+///
+/// Note: asus-wmi consumes some codes itself (keyboard backlight 0xC4/0xC5/0xC7, Fn lock 0x4E, fan / throttle policy
+/// key 0x99/0xAE which cycles the platform profile) and never reports them as input events. Codes without a keymap
+/// entry are reported as KEY_UNKNOWN with the code in MSC_SCAN, which this translator forwards unchanged.
 /// </summary>
 public static class AtkEventTranslator
 {

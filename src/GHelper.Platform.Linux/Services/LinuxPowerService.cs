@@ -11,7 +11,7 @@ namespace GHelper.Platform.Linux;
 ///   tunables : cpufreq boost, PCIe ASPM policy, logind lid action / sleep.conf (root only)
 /// Every setter silently does nothing when the kernel/daemon does not offer the knob.
 /// </summary>
-public sealed partial class LinuxPowerService : IPowerService, IDisposable
+public sealed class LinuxPowerService : IPowerService, IDisposable
 {
     public const string PowerSaver = "power-saver";
     public const string Balanced = "balanced";
