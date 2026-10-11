@@ -1,0 +1,58 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>GHelper.App</RootNamespace>
+    <AssemblyName>GHelper</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>favicon.ico</ApplicationIcon>
+    <!-- must stay true: System.Management (WMI) and the task scheduler wrapper are COM based -->
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <RuntimeIdentifiers>win-x64;win-x86;win-arm64;linux-x64;linux-arm64;linux-arm;linux-musl-x64;linux-musl-arm64</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <!--
+    Publish settings. `dotnet publish -r <rid> -c Release` produces a self-contained single file.
+      * Avalonia/SkiaSharp native libraries cannot be loaded from inside a bundle, so they are extracted to
+        $DOTNET_BUNDLE_EXTRACT_BASE_DIR (default %TEMP%\.net or ~/.net) on first start.
+      * Trimming is OFF on purpose: Core relies on reflection (resx lookup, System.Text.Json, HidSharp, platform
+        discovery) and has not been verified trim safe. Do not enable it without a full run on every RID.
+      * ReadyToRun is opt in (-p:PublishReadyToRun=true): faster start up, larger download.
+      * Windows: app.manifest is embedded through ApplicationManifest (asInvoker; the app elevates itself on request).
+  -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <PublishTrimmed>false</PublishTrimmed>
+    <PublishReadyToRun Condition="'$(PublishReadyToRun)' == ''">false</PublishReadyToRun>
+  </PropertyGroup>
+
+  <!-- SkiaSharp / HarfBuzzSharp ship 100+ MB of native debug symbols (libSkiaSharp.pdb, libHarfBuzzSharp.pdb): never publish them. -->
+  <Target Name="GHelperDropNativePdbs" AfterTargets="ComputeResolvedFilesToPublishList">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(ResolvedFileToPublish)"
+                             Condition="'%(Extension)' == '.pdb' And $([System.String]::Copy('%(Filename)').StartsWith('lib'))" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <InternalsVisibleTo Include="GHelper.App.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GHelper.Core\GHelper.Core.csproj" />
+    <ProjectReference Include="..\GHelper.Platform.Windows\GHelper.Platform.Windows.csproj" />
+    <ProjectReference Include="..\GHelper.Platform.Linux\GHelper.Platform.Linux.csproj" />
+  </ItemGroup>
+
+</Project>

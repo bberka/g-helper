@@ -1,0 +1,13 @@
+#!/bin/sh
+# Debian maintainer script: stop what the package may have enabled before the files go away.
+set -e
+
+case "$1" in
+    remove|deconfigure)
+        if command -v systemctl >/dev/null 2>&1; then
+            systemctl disable --now ghelper-charge.service >/dev/null 2>&1 || true
+        fi
+        ;;
+esac
+
+exit 0

@@ -93,6 +93,7 @@ namespace GHelper
             labelSreen.Text = Properties.Strings.LaptopScreen;
             UpdateKeyboardLabel();
             labelMatrix.Text = Properties.Strings.AnimeMatrix;
+            labelRearLight.Text = Properties.Strings.RearLight;
             labelBatteryTitle.Text = Properties.Strings.BatteryChargeLimit;
 
             checkStartup.Text = Properties.Strings.RunOnStartup;
@@ -673,78 +674,9 @@ namespace GHelper
                 return;
             }
 
-            PositionNearTaskbar(Screen.FromControl(this));
-        }
-
-        private enum TaskbarEdge
-        {
-            Bottom,
-            Top,
-            Left,
-            Right
-        }
-
-        public void PositionNearTaskbar(Screen screen)
-        {
-            const int margin = 10;
-
-            Rectangle bounds = screen.Bounds;
-            Rectangle workingArea = screen.WorkingArea;
-
-            int left = workingArea.Right - margin - Width;
-            int top = workingArea.Bottom - margin - Height;
-            // The working area excludes the taskbar, so its largest inset identifies the taskbar edge and size.
-            TaskbarEdge taskbarEdge = GetTaskbarEdge(bounds, workingArea);
-
-            switch (taskbarEdge)
-            {
-                case TaskbarEdge.Top:
-                    top = workingArea.Top + margin;
-                    break;
-                case TaskbarEdge.Left:
-                    left = workingArea.Left + margin;
-                    break;
-                case TaskbarEdge.Right:
-                    left = workingArea.Right - margin - Width;
-                    break;
-            }
-
-            if (AppConfig.IsAlly() && taskbarEdge == TaskbarEdge.Bottom)
-            {
-                top = Math.Min(top, bounds.Bottom - 110 - Height);
-                top = Math.Max(bounds.Top + margin, top);
-            }
-
-            Location = new Point(left, top);
-        }
-
-        /// <summary>
-        /// Left edge for a side window. Prefers the left of the settings window; when the taskbar is on the left
-        /// there is no room there, so the side window goes to the right of the settings window instead.
-        /// </summary>
-        public int GetSideWindowLeft(int width)
-        {
-            const int gap = 5;
-            Rectangle workingArea = Screen.FromControl(this).WorkingArea;
-
-            int leftOfSettings = Left - width - gap;
-            if (leftOfSettings >= workingArea.Left) return leftOfSettings;
-
-            return Math.Max(workingArea.Left, Math.Min(Right + gap, workingArea.Right - width));
-        }
-
-        private static TaskbarEdge GetTaskbarEdge(Rectangle bounds, Rectangle workingArea)
-        {
-            int top = Math.Max(0, workingArea.Top - bounds.Top);
-            int bottom = Math.Max(0, bounds.Bottom - workingArea.Bottom);
-            int left = Math.Max(0, workingArea.Left - bounds.Left);
-            int right = Math.Max(0, bounds.Right - workingArea.Right);
-            int largestInset = Math.Max(Math.Max(top, bottom), Math.Max(left, right));
-
-            if (largestInset == 0) return TaskbarEdge.Bottom;
-            if (largestInset == top) return TaskbarEdge.Top;
-            if (largestInset == left) return TaskbarEdge.Left;
-            return TaskbarEdge.Right;
+            var screen = Screen.FromControl(this);
+            Left = screen.WorkingArea.Right - 10 - Width;
+            Top = screen.WorkingArea.Top > screen.Bounds.Top ? screen.WorkingArea.Top + 10 : screen.WorkingArea.Bottom - 10 - Height;
         }
 
         private void PanelBattery_MouseEnter(object? sender, EventArgs e)

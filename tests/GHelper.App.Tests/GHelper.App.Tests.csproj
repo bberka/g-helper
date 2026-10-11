@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Avalonia.Headless.XUnit 12 is built on xunit v3 (self hosting test executable) -->
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit.v3" Version="3.2.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+    <PackageReference Include="Avalonia.Headless.XUnit" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Skia" Version="12.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\GHelper.App\GHelper.App.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- the fake platform of the engine tests, shared by the MainBackend tests -->
+    <Compile Include="..\GHelper.Tests\Engine\FakePlatform.cs" Link="Fakes\FakePlatform.cs" />
+    <Compile Include="..\GHelper.Tests\Engine\EngineTestBase.cs" Link="Fakes\EngineTestBase.cs" />
+  </ItemGroup>
+
+</Project>

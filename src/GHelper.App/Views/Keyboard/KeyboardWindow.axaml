@@ -1,0 +1,161 @@
+<p:PeripheralWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:GHelper.App.Controls"
+        xmlns:p="using:GHelper.App.Views.Peripherals"
+        xmlns:k="using:GHelper.App.Views.Keyboard"
+        x:Class="GHelper.App.Views.Keyboard.KeyboardWindow"
+        x:DataType="k:KeyboardViewModel"
+        x:CompileBindings="True"
+        Icon="avares://GHelper/Assets/Tray/standard.png">
+
+  <Window.Styles>
+    <StyleInclude Source="avares://GHelper/Views/Peripherals/PeripheralStyles.axaml" />
+  </Window.Styles>
+
+  <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+    <StackPanel Name="RootPanel" Width="460" Margin="14,10,14,14">
+
+      <!-- profile + battery -->
+      <Grid ColumnDefinitions="*,Auto" MinHeight="34">
+        <Grid ColumnDefinitions="Auto,*,Auto" IsVisible="{Binding ProfilesVisible}">
+          <TextBlock Classes="row" Text="{Binding Texts.Profile}" Margin="0,0,10,0" />
+          <c:RComboBox Grid.Column="1" ItemsSource="{Binding ProfileItems}"
+                       SelectedIndex="{Binding ProfileIndex, Mode=TwoWay}" VerticalAlignment="Center" />
+          <Border Grid.Column="2" Width="16" />
+        </Grid>
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center"
+                    IsVisible="{Binding BatteryVisible}">
+          <TextBlock Classes="row" Text="{Binding BatteryText}" />
+          <TextBlock Classes="row" Text="{Binding ChargingText}" IsVisible="{Binding BatteryCharging}" />
+          <c:TintedImage Width="20" Height="20" IsVisible="{Binding BatteryNotCharging}"
+                         Source="avares://GHelper/Assets/Icons/icons8-batterie-voll-geladen-48.png" />
+          <c:TintedImage Width="20" Height="20" IsVisible="{Binding BatteryCharging}"
+                         Source="avares://GHelper/Assets/Icons/icons8-ladende-batterie-48.png" />
+        </StackPanel>
+      </Grid>
+
+      <!-- ===== lighting ===== -->
+      <Grid Classes="header" ColumnDefinitions="Auto,*,190">
+        <c:TintedImage Classes="headerIcon" Source="avares://GHelper/Assets/Icons/backlight.png" />
+        <TextBlock Grid.Column="1" Classes="title" Text="{Binding Texts.Lighting}" />
+        <c:RSlider Name="BrightnessSlider" Grid.Column="2" Minimum="0" Maximum="{Binding BrightnessMax}" Step="1"
+                   Value="{Binding Brightness, Mode=OneWay}"
+                   AutomationProperties.Name="{Binding Texts.Lighting}" />
+      </Grid>
+
+      <Grid Classes="row" ColumnDefinitions="*,190" IsEnabled="{Binding ManualEnabled}">
+        <TextBlock Classes="row" Text="{Binding Texts.LightingMode}" />
+        <c:RComboBox Grid.Column="1" ItemsSource="{Binding ModeItems}"
+                     SelectedIndex="{Binding ModeIndex, Mode=TwoWay}"
+                     AutomationProperties.Name="{Binding Texts.LightingMode}" />
+      </Grid>
+
+      <Grid Classes="row" ColumnDefinitions="*,Auto">
+        <c:RCheckBox Content="{Binding Texts.SyncAura}" IsChecked="{Binding SyncAura, Mode=TwoWay}"
+                     VerticalAlignment="Center" />
+        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" IsEnabled="{Binding ManualEnabled}">
+          <c:RColorButton Name="Color1Button" Width="104" Content="{Binding Texts.Color}"
+                          SwatchColor="{Binding Color1}" IsVisible="{Binding Color1Visible}"
+                          AutomationProperties.Name="{Binding Texts.Color}" />
+          <c:RColorButton Name="Color2Button" Width="104" Content="{Binding Texts.Color2}"
+                          SwatchColor="{Binding Color2}" IsVisible="{Binding Color2Visible}"
+                          AutomationProperties.Name="{Binding Texts.Color2}" />
+          <c:RColorButton Name="Color3Button" Width="104" Content="{Binding Texts.Background}"
+                          SwatchColor="{Binding Color3}" IsVisible="{Binding Color3Visible}"
+                          AutomationProperties.Name="{Binding Texts.Background}" />
+        </StackPanel>
+      </Grid>
+
+      <Grid Classes="row" ColumnDefinitions="*,190" IsEnabled="{Binding SpeedEnabled}">
+        <TextBlock Classes="row" Text="{Binding Texts.AnimationSpeed}" />
+        <c:RComboBox Grid.Column="1" ItemsSource="{Binding SpeedItems}"
+                     SelectedIndex="{Binding SpeedIndex, Mode=TwoWay}"
+                     AutomationProperties.Name="{Binding Texts.AnimationSpeed}" />
+      </Grid>
+
+      <Grid Classes="row" ColumnDefinitions="*,190" IsVisible="{Binding TestLayoutVisible}">
+        <TextBlock Classes="row" Text="{Binding Texts.TestLayout}" />
+        <c:RComboBox Grid.Column="1" ItemsSource="{Binding TestLayoutItems}"
+                     SelectedIndex="{Binding TestLayoutIndex, Mode=TwoWay}" />
+      </Grid>
+
+      <!-- ===== keys ===== -->
+      <StackPanel IsVisible="{Binding GridVisible}">
+        <Grid Classes="header" ColumnDefinitions="Auto,*">
+          <c:TintedImage Classes="headerIcon" Source="avares://GHelper/Assets/Icons/icons8-keyboard-32.png" />
+          <TextBlock Grid.Column="1" Classes="title" Text="{Binding Texts.Keys}" />
+        </Grid>
+
+        <!-- paint row (custom mode) -->
+        <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2,0,6" IsVisible="{Binding PaintRowVisible}"
+              IsEnabled="{Binding PaintEnabled}">
+          <c:RColorButton Name="PaintColorButton" Width="104" Content="{Binding Texts.Color}"
+                          SwatchColor="{Binding PaintColor}" AutomationProperties.Name="{Binding Texts.Color}" />
+          <StackPanel Name="PalettePanel" Grid.Column="1" Orientation="Horizontal" Spacing="3" Margin="8,0" />
+          <c:RButton Name="FillAllButton" Grid.Column="2" Width="90" Content="{Binding Texts.FillAll}"
+                     Command="{Binding FillAllCommand}"
+                     Icon="avares://GHelper/Assets/Icons/icons8-fill-color-48.png" />
+        </Grid>
+
+        <Border Name="KeysHost" HorizontalAlignment="Left" />
+
+        <!-- key binding -->
+        <Grid Classes="row" ColumnDefinitions="Auto,*,Auto" Margin="0,8,0,0" IsVisible="{Binding BindingsVisible}">
+          <TextBlock Classes="row" Text="{Binding SelectedKeyCaption}" MinWidth="110" Margin="0,0,10,0" />
+          <StackPanel Grid.Column="1" Spacing="4">
+            <p:BindingComboBox ItemsSource="{Binding BindingEntries}"
+                               SelectedItem="{Binding SelectedBinding, Mode=TwoWay}"
+                               IsEnabled="{Binding BindingComboEnabled}"
+                               AutomationProperties.Name="{Binding Texts.KeyBindings}" />
+            <c:RTextBox Text="{Binding LaunchPath, Mode=TwoWay}" IsVisible="{Binding LaunchVisible}"
+                        AutomationProperties.Name="Launch command" />
+          </StackPanel>
+          <c:RButton Name="ResetBindingsButton" Grid.Column="2" Width="90" Margin="8,0,0,0"
+                     VerticalAlignment="Top" Content="{Binding Texts.Reset}"
+                     Command="{Binding ResetBindingsCommand}"
+                     Icon="avares://GHelper/Assets/Icons/icons8-refresh-48.png" />
+        </Grid>
+      </StackPanel>
+
+      <!-- ===== energy ===== -->
+      <StackPanel IsVisible="{Binding EnergyVisible}">
+        <Grid Classes="header" ColumnDefinitions="Auto,*">
+          <c:TintedImage Classes="headerIcon"
+                         Source="avares://GHelper/Assets/Icons/icons8-charging-battery-32.png" />
+          <TextBlock Grid.Column="1" Classes="title" Text="{Binding Texts.Energy}" />
+        </Grid>
+        <Grid Classes="row" ColumnDefinitions="*,190" IsVisible="{Binding AutoPowerOffVisible}">
+          <TextBlock Classes="row" Text="{Binding Texts.AutoPowerOff}" />
+          <c:RComboBox Grid.Column="1" ItemsSource="{Binding AutoPowerOffItems}"
+                       SelectedIndex="{Binding AutoPowerOffIndex, Mode=TwoWay}"
+                       AutomationProperties.Name="{Binding Texts.AutoPowerOff}" />
+        </Grid>
+        <Grid Classes="row" ColumnDefinitions="*,150,60" IsVisible="{Binding LowBatteryWarningVisible}">
+          <TextBlock Classes="row" Text="{Binding Texts.LowBatteryWarning}" />
+          <c:RSlider Name="LowBatterySlider" Grid.Column="1" Minimum="0" Maximum="{Binding LowBatteryWarningMax}"
+                     Step="{Binding LowBatteryWarningStep}"
+                     Value="{Binding LowBatteryWarning, Mode=OneWay}"
+                     AutomationProperties.Name="{Binding Texts.LowBatteryWarning}" />
+          <TextBlock Grid.Column="2" Classes="row value" Text="{Binding LowBatteryWarningText}" />
+        </Grid>
+      </StackPanel>
+
+      <!-- ===== OLED (Azoth) ===== -->
+      <StackPanel IsVisible="{Binding OledVisible}">
+        <Grid Classes="header" ColumnDefinitions="Auto,*,190">
+          <c:TintedImage Classes="headerIcon" Source="avares://GHelper/Assets/Icons/icons8-matrix-32.png" />
+          <TextBlock Grid.Column="1" Classes="title" Text="{Binding Texts.Oled}" />
+          <c:RSlider Name="OledBrightnessSlider" Grid.Column="2" Minimum="0" Maximum="100" Step="25"
+                     Value="{Binding OledBrightness, Mode=OneWay}"
+                     AutomationProperties.Name="{Binding Texts.Oled}" />
+        </Grid>
+        <Grid Classes="row" ColumnDefinitions="*,190">
+          <TextBlock Classes="row" Text="{Binding Texts.Animation}" />
+          <c:RComboBox Grid.Column="1" ItemsSource="{Binding OledModeItems}"
+                       SelectedIndex="{Binding OledModeIndex, Mode=TwoWay}"
+                       AutomationProperties.Name="{Binding Texts.Animation}" />
+        </Grid>
+      </StackPanel>
+    </StackPanel>
+  </ScrollViewer>
+</p:PeripheralWindow>

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=G-Helper
+GenericName=ASUS laptop control
+Comment=Performance modes, fan curves, GPU mode, battery limit and lighting for ASUS laptops
+Exec=ghelper
+Icon=ghelper
+Terminal=false
+Categories=Utility;System;HardwareSettings;
+Keywords=asus;rog;tuf;zenbook;fan;gpu;battery;aura;
+StartupWMClass=ghelper
+StartupNotify=false

@@ -1,3 +1,12 @@
 files:
-  - source: /app/Properties/Strings.resx
-    translation: /app/Properties/Strings.%two_letters_code%.resx
+  - source: /src/GHelper.Core/Properties/Strings.resx
+    translation: /src/GHelper.Core/Properties/Strings.%two_letters_code%.resx
+    # file names in the repository carry the region where the language is not unique, or where the
+    # resource was created with a region (Strings.cs-CZ.resx, Strings.pt-BR.resx, ...)
+    languages_mapping:
+      two_letters_code:
+        cs: cs-CZ
+        pt-BR: pt-BR
+        pt-PT: pt-PT
+        zh-CN: zh-CN
+        zh-TW: zh-TW

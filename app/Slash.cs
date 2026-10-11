@@ -193,7 +193,7 @@ namespace GHelper
         public void FormPosition()
         {
             Top = Program.settingsForm.Top;
-            Left = Program.settingsForm.GetSideWindowLeft(Width);
+            Left = Program.settingsForm.Left - Width - 5;
         }
     }
 }

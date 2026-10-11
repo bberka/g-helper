@@ -1,18 +1,51 @@
 name: Release
 
+# Push a tag v<major>.<minor>.<patch>[-suffix] (the version in Directory.Build.props should match).
+# Tags containing "-" are published as pre-releases. workflow_dispatch only builds the artifacts.
 on:
-  release:
-    types: [ published ]
+  push:
+    tags: [ 'v*' ]
   workflow_dispatch:
+    inputs:
+      ready_to_run:
+        description: 'Publish with ReadyToRun (faster start up, larger files)'
+        type: boolean
+        default: false
 
 permissions:
-  contents: write
-  id-token: write
-  attestations: write
+  contents: read
 
 jobs:
-  release:
-    runs-on: windows-2022
+  test:
+    name: unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v7
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.0.x'
+    - name: Test
+      run: dotnet test GHelper.sln --configuration Release
+
+  publish:
+    name: publish ${{ matrix.rid }}
+    needs: test
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - { rid: win-x64,          os: windows-latest, kind: win,   smoke: true }
+        - { rid: win-x86,          os: windows-latest, kind: win,   smoke: true }
+        - { rid: win-arm64,        os: windows-latest, kind: win,   smoke: false }
+        - { rid: linux-x64,        os: ubuntu-latest,  kind: linux, smoke: true }
+        - { rid: linux-arm64,      os: ubuntu-latest,  kind: linux, smoke: false }
+        - { rid: linux-arm,        os: ubuntu-latest,  kind: linux, smoke: false }
+        - { rid: linux-musl-x64,   os: ubuntu-latest,  kind: linux, smoke: false }
+        - { rid: linux-musl-arm64, os: ubuntu-latest,  kind: linux, smoke: false }
     steps:
     - uses: actions/checkout@v7
     - name: Setup dotnet
@@ -20,52 +53,98 @@ jobs:
       with:
         dotnet-version: '10.0.x'
 
-    - name: Check tag matches version
-      if: github.event_name == 'release'
+    - name: Version
+      id: ver
+      shell: bash
       run: |
-        $version = ([xml](Get-Content app/GHelper.csproj)).Project.PropertyGroup.AssemblyVersion
-        $tag = "${{ github.event.release.tag_name }}"
-        if ($tag -ne "v$version") { throw "Tag $tag does not match AssemblyVersion $version" }
+        if [ "$GITHUB_REF_TYPE" = tag ]; then
+          v="${GITHUB_REF_NAME#v}"
+        else
+          v=$(sed -n 's:.*<Version>\(.*\)</Version>.*:\1:p' Directory.Build.props | head -n 1)
+        fi
+        echo "version=$v" >> "$GITHUB_OUTPUT"
+        echo "Publishing G-Helper $v for ${{ matrix.rid }}"
 
-    - name: Publish
+    - name: Publish (self-contained single file)
+      shell: bash
       run: |
-        dotnet publish app/GHelper.sln --configuration Release --runtime win-x64 -p:PublishSingleFile=true --no-self-contained
+        r2r=false
+        if [ "${{ inputs.ready_to_run }}" = true ]; then r2r=true; fi
+        dotnet publish src/GHelper.App/GHelper.App.csproj \
+          --configuration Release --runtime ${{ matrix.rid }} \
+          --output artifacts/publish/${{ matrix.rid }} \
+          -p:Version=${{ steps.ver.outputs.version }} -p:PublishReadyToRun=$r2r
 
-    - name: Upload unsigned EXE
-      id: upload-unsigned
+    - name: Smoke test
+      if: matrix.smoke
+      shell: bash
+      run: |
+        if [ "${{ matrix.kind }}" = win ]; then exe=GHelper.exe; else exe=GHelper; fi
+        ./artifacts/publish/${{ matrix.rid }}/$exe --version
+
+    - name: Zip (Windows)
+      if: matrix.kind == 'win'
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force artifacts/dist | Out-Null
+        Compress-Archive -Path "artifacts/publish/${{ matrix.rid }}/GHelper.exe" `
+          -DestinationPath "artifacts/dist/GHelper-${{ steps.ver.outputs.version }}-${{ matrix.rid }}.zip"
+
+    - name: Install rpmbuild
+      if: matrix.kind == 'linux'
+      run: sudo apt-get update && sudo apt-get install -y --no-install-recommends rpm
+
+    - name: Packages (tar.gz, deb, rpm)
+      if: matrix.kind == 'linux'
+      run: >
+        packaging/linux/build-packages.sh --rid ${{ matrix.rid }} --version ${{ steps.ver.outputs.version }}
+        --publish-dir artifacts/publish/${{ matrix.rid }} --out artifacts/dist
+
+    - name: Upload artifacts
       uses: actions/upload-artifact@v7
       with:
-        path: app/bin/x64/Release/net10.0-windows/win-x64/publish/GHelper.exe
+        name: dist-${{ matrix.rid }}
+        path: artifacts/dist/*
+        if-no-files-found: error
 
-    - id: sign-exe
-      uses: signpath/github-action-submit-signing-request@v2
+  release:
+    name: GitHub release
+    needs: publish
+    if: github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    steps:
+    - name: Download artifacts
+      uses: actions/download-artifact@v8
       with:
-        api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
-        organization-id: ${{ secrets.SIGNPATH_ORG_ID }}
-        project-slug: ${{ secrets.SIGNPATH_PROJECT }}
-        signing-policy-slug: ${{ secrets.SIGNPATH_POLICY }}
-        github-artifact-id: ${{ steps.upload-unsigned.outputs.artifact-id }}
-        wait-for-completion: true
-        output-artifact-directory: './signed'
+        pattern: dist-*
+        merge-multiple: true
+        path: dist
 
-    - name: Create ZIP from signed EXE
-      run: powershell Compress-Archive ./signed/GHelper.exe ./signed/GHelper.zip
-
-    - name: Upload signed EXE as workflow artifact
-      uses: actions/upload-artifact@v7
-      with:
-        name: GHelper-signed
-        path: ./signed/GHelper.exe
-
-    - name: Upload signed EXE and ZIP
-      if: github.event_name == 'release'
-      env:
-        GH_TOKEN: ${{ github.token }}
+    - name: Checksums
+      working-directory: dist
       run: |
-        gh release upload "${{ github.event.release.tag_name }}" ./signed/GHelper.exe ./signed/GHelper.zip --clobber
-    - name: Generate SLSA build provenance attestation
+        ls -l
+        sha256sum * > SHA256SUMS
+        cat SHA256SUMS
+
+    - name: Generate build provenance attestation
       uses: actions/attest-build-provenance@v4
       with:
-        subject-path: |
-          ./signed/GHelper.exe
-          ./signed/GHelper.zip
+        subject-path: dist/*
+
+    - name: Create release
+      env:
+        GH_TOKEN: ${{ github.token }}
+        TAG: ${{ github.ref_name }}
+      run: |
+        prerelease=""
+        case "$TAG" in *-*) prerelease="--prerelease" ;; esac
+        # win-x64 last: the in-app updater picks the last .zip asset of a release
+        gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --title "G-Helper $TAG" --generate-notes $prerelease \
+          dist/*.tar.gz dist/*.deb dist/*.rpm dist/SHA256SUMS \
+          dist/GHelper-*-win-arm64.zip dist/GHelper-*-win-x86.zip dist/GHelper-*-win-x64.zip

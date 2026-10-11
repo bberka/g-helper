@@ -1,0 +1,163 @@
+<p:PeripheralWindow xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:GHelper.App.Controls"
+        xmlns:p="using:GHelper.App.Views.Peripherals"
+        xmlns:h="using:GHelper.App.Views.Headset"
+        x:Class="GHelper.App.Views.Headset.HeadsetWindow"
+        x:DataType="h:HeadsetViewModel"
+        x:CompileBindings="True"
+        Icon="avares://GHelper/Assets/Tray/standard.png">
+
+  <Window.Styles>
+    <StyleInclude Source="avares://GHelper/Views/Peripherals/PeripheralStyles.axaml" />
+  </Window.Styles>
+
+  <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+    <StackPanel Width="442" Margin="14,10,14,14">
+
+      <!-- battery -->
+      <StackPanel Orientation="Horizontal" Spacing="6" HorizontalAlignment="Right" MinHeight="30"
+                  IsVisible="{Binding BatteryVisible}">
+        <TextBlock Classes="row" Text="{Binding BatteryText}" />
+        <TextBlock Classes="row" Text="{Binding ChargingText}" IsVisible="{Binding BatteryCharging}" />
+        <c:TintedImage Width="20" Height="20" IsVisible="{Binding BatteryNotCharging}"
+                       Source="avares://GHelper/Assets/Icons/icons8-batterie-voll-geladen-48.png" />
+        <c:TintedImage Width="20" Height="20" IsVisible="{Binding BatteryCharging}"
+                       Source="avares://GHelper/Assets/Icons/icons8-ladende-batterie-48.png" />
+      </StackPanel>
+
+      <!-- ===== lighting ===== -->
+      <StackPanel IsVisible="{Binding LightingVisible}">
+        <Grid Classes="header" ColumnDefinitions="Auto,*,190">
+          <c:TintedImage Classes="headerIcon" Source="avares://GHelper/Assets/Icons/backlight.png" />
+          <TextBlock Grid.Column="1" Classes="title" Text="{Binding Texts.Lighting}" />
+          <c:RSlider Name="BrightnessSlider" Grid.Column="2" Minimum="0" Maximum="100" Step="1"
+                     IsVisible="{Binding BrightnessVisible}"
+                     Value="{Binding Brightness, Mode=OneWay}"
+                     AutomationProperties.Name="{Binding Texts.Lighting}" />
+        </Grid>
+        <Grid Classes="row" ColumnDefinitions="*,190">
+          <TextBlock Classes="row" Text="{Binding Texts.LightingMode}" />
+          <c:RComboBox Grid.Column="1" ItemsSource="{Binding LightingModeItems}"
+                       SelectedIndex="{Binding LightingModeIndex, Mode=TwoWay}"
+                       AutomationProperties.Name="{Binding Texts.LightingMode}" />
+        </Grid>
+        <Grid Classes="row" ColumnDefinitions="*,190" IsVisible="{Binding ColorVisible}">
+          <c:RColorButton Name="LightingColorButton" Grid.Column="1"
+                          Content="{Binding Texts.Color}" SwatchColor="{Binding LightingColor}"
+                          AutomationProperties.Name="{Binding Texts.Color}" />
+        </Grid>
+        <c:RCheckBox Content="{Binding Texts.SyncAura}" IsChecked="{Binding SyncAura, Mode=TwoWay}" />
+      </StackPanel>
+
+      <!-- ===== audio ===== -->
+      <StackPanel IsVisible="{Binding AudioVisible}">
+        <Grid Classes="header" ColumnDefinitions="Auto,*">
+          <c:TintedImage Classes="headerIcon" Source="avares://GHelper/Assets/Icons/icons8-headphones-48.png" />
+          <TextBlock Grid.Column="1" Classes="title" Text="{Binding Texts.Audio}" />
+        </Grid>
+
+        <!-- equalizer -->
+        <StackPanel IsVisible="{Binding EqualizerVisible}">
+          <Grid Classes="row" ColumnDefinitions="*,190">
+            <c:RCheckBox Content="{Binding Texts.Equalizer}" IsChecked="{Binding EqualizerEnabled, Mode=TwoWay}"
+                         VerticalAlignment="Center" />
+            <c:RComboBox Grid.Column="1" ItemsSource="{Binding PresetItems}"
+                         SelectedIndex="{Binding PresetIndex, Mode=TwoWay}"
+                         AutomationProperties.Name="{Binding Texts.Equalizer}" />
+          </Grid>
+          <UniformGrid Name="BandsGrid" Rows="1" Height="170" Margin="0,4" />
+        </StackPanel>
+
+        <!-- sidetone -->
+        <Grid Classes="row" ColumnDefinitions="*,150,40" IsVisible="{Binding SidetoneVisible}">
+          <c:RCheckBox Content="{Binding Texts.Sidetone}" IsChecked="{Binding SidetoneEnabled, Mode=TwoWay}"
+                       VerticalAlignment="Center" />
+          <c:RSlider Name="SidetoneSlider" Grid.Column="1" Minimum="0" Maximum="{Binding SidetoneMax}" Step="1"
+                     Value="{Binding Sidetone, Mode=OneWay}"
+                     AutomationProperties.Name="{Binding Texts.Sidetone}" />
+          <TextBlock Grid.Column="2" Classes="row value" Text="{Binding SidetoneText}" />
+        </Grid>
+
+        <!-- noise reduction -->
+        <Grid Classes="row" ColumnDefinitions="*,190" IsVisible="{Binding NoiseReductionVisible}">
+          <c:RCheckBox Content="{Binding Texts.NoiseReduction}" IsChecked="{Binding NoiseReductionEnabled, Mode=TwoWay}"
+                       VerticalAlignment="Center" />
+          <c:RComboBox Grid.Column="1" ItemsSource="{Binding NoiseReductionItems}"
+                       SelectedIndex="{Binding NoiseReductionLevel, Mode=TwoWay}"
+                       IsVisible="{Binding NoiseReductionLevelVisible}"
+                       AutomationProperties.Name="{Binding Texts.NoiseReduction}" />
+        </Grid>
+
+        <!-- microphone type -->
+        <Grid Classes="row" ColumnDefinitions="*,190" IsVisible="{Binding MicrophoneTypeVisible}">
+          <TextBlock Classes="row" Text="{Binding Texts.MicrophoneType}" />
+          <c:RComboBox Grid.Column="1" ItemsSource="{Binding MicrophoneTypeItems}"
+                       SelectedIndex="{Binding MicrophoneType, Mode=TwoWay}"
+                       AutomationProperties.Name="{Binding Texts.MicrophoneType}" />
+        </Grid>
+
+        <!-- voice prompt -->
+        <Grid Classes="row" ColumnDefinitions="*,190" IsVisible="{Binding VoicePromptVisible}">
+          <TextBlock Classes="row" Text="{Binding Texts.VoicePrompt}" />
+          <c:RComboBox Grid.Column="1" ItemsSource="{Binding VoicePromptItems}"
+                       SelectedIndex="{Binding VoicePromptIndex, Mode=TwoWay}"
+                       AutomationProperties.Name="{Binding Texts.VoicePrompt}" />
+        </Grid>
+      </StackPanel>
+
+      <!-- ===== ANC ===== -->
+      <StackPanel IsVisible="{Binding AncVisible}">
+        <Grid Classes="header" ColumnDefinitions="Auto,*">
+          <c:TintedImage Classes="headerIcon" Source="avares://GHelper/Assets/Icons/icons8-headphones-48.png" />
+          <TextBlock Grid.Column="1" Classes="title" Text="{Binding Texts.Anc}" />
+        </Grid>
+        <Grid Classes="row" ColumnDefinitions="*,190">
+          <TextBlock Classes="row" Text="{Binding Texts.Anc}" />
+          <c:RComboBox Grid.Column="1" ItemsSource="{Binding AncItems}"
+                       SelectedIndex="{Binding AncMode, Mode=TwoWay}"
+                       AutomationProperties.Name="{Binding Texts.Anc}" />
+        </Grid>
+        <Grid Classes="row" ColumnDefinitions="*,190" IsEnabled="{Binding AncLevelEnabled}">
+          <c:RCheckBox Content="{Binding Texts.AdaptiveAnc}" IsChecked="{Binding AdaptiveAnc, Mode=TwoWay}"
+                       VerticalAlignment="Center" />
+          <c:RComboBox Grid.Column="1" ItemsSource="{Binding AncLevelItems}"
+                       SelectedIndex="{Binding AncLevel, Mode=TwoWay}"
+                       AutomationProperties.Name="{Binding Texts.AdaptiveAnc}" />
+        </Grid>
+      </StackPanel>
+
+      <!-- ===== Dirac ===== -->
+      <Grid Classes="row" ColumnDefinitions="*" Margin="0,8,0,0" IsVisible="{Binding DiracVisible}">
+        <c:RCheckBox Content="{Binding Texts.Dirac}" IsChecked="{Binding Dirac, Mode=TwoWay}"
+                     VerticalAlignment="Center" />
+      </Grid>
+
+      <!-- ===== energy ===== -->
+      <StackPanel IsVisible="{Binding EnergyVisible}">
+        <Grid Classes="header" ColumnDefinitions="Auto,*">
+          <c:TintedImage Classes="headerIcon"
+                         Source="avares://GHelper/Assets/Icons/icons8-charging-battery-32.png" />
+          <TextBlock Grid.Column="1" Classes="title" Text="{Binding Texts.Energy}" />
+        </Grid>
+        <Grid Classes="row" ColumnDefinitions="*,190">
+          <TextBlock Classes="row" Text="{Binding Texts.AutoPowerOff}" />
+          <c:RComboBox Grid.Column="1" ItemsSource="{Binding AutoPowerOffItems}"
+                       SelectedIndex="{Binding AutoPowerOffIndex, Mode=TwoWay}"
+                       AutomationProperties.Name="{Binding Texts.AutoPowerOff}" />
+        </Grid>
+        <Grid Classes="row" ColumnDefinitions="*,150,50" IsVisible="{Binding LowBatteryWarningVisible}">
+          <TextBlock Classes="row" Text="{Binding Texts.LowBatteryWarning}" />
+          <c:RSlider Name="LowBatterySlider" Grid.Column="1" Minimum="0" Maximum="{Binding LowBatteryWarningMax}"
+                     Step="{Binding LowBatteryWarningStep}"
+                     Value="{Binding LowBatteryWarning, Mode=OneWay}"
+                     AutomationProperties.Name="{Binding Texts.LowBatteryWarning}" />
+          <TextBlock Grid.Column="2" Classes="row value" Text="{Binding LowBatteryWarningText}" />
+        </Grid>
+      </StackPanel>
+
+      <c:RButton Margin="0,16,0,0" Content="{Binding Texts.Reset}"
+                 Command="{Binding ResetCommand}" IsVisible="{Binding ResetVisible}" />
+    </StackPanel>
+  </ScrollViewer>
+</p:PeripheralWindow>

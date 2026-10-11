@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <RootNamespace>GHelper</RootNamespace>
+    <AssemblyName>GHelper.Core</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FftSharp" Version="2.2.0" />
+    <PackageReference Include="HidSharpCore" Version="1.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- PawnIO modules (Windows driver) used by RyzenSmuService / IntelMsr through IPawnIo -->
+    <EmbeddedResource Include="Pawn\RyzenSMU.bin" LogicalName="GHelper.RyzenSMU.bin" />
+    <EmbeddedResource Include="Pawn\IntelMSR.bin" LogicalName="GHelper.IntelMSR.bin" />
+  </ItemGroup>
+
+</Project>

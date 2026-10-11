@@ -1,0 +1,268 @@
+<views:SideWindow xmlns="https://github.com/avaloniaui"
+                 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                 xmlns:c="using:GHelper.App.Controls"
+                 xmlns:views="using:GHelper.App.Views"
+                 xmlns:f="using:GHelper.App.Views.Fans"
+                 xmlns:t="using:GHelper.App.Theme"
+                 mc:Ignorable="d"
+                 x:Class="GHelper.App.Views.Fans.FansWindow"
+                 x:DataType="f:FansViewModel"
+                 x:CompileBindings="True"
+                 Title="{Binding WindowTitle}"
+                 Width="675"
+                 SizeToContent="Height"
+                 Icon="avares://GHelper/Assets/Tray/standard.png"
+                 d:DesignWidth="675" d:DesignHeight="560">
+
+  <views:SideWindow.Styles>
+    <Style Selector="Grid.sectionHeader">
+      <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.ControlHeight}" />
+      <Setter Property="Margin" Value="0,8,0,2" />
+    </Style>
+    <!-- check boxes: 4 px between rows -->
+    <Style Selector="c|RCheckBox">
+      <Setter Property="Margin" Value="0,2" />
+    </Style>
+    <Style Selector="TextBlock.status">
+      <Setter Property="Foreground" Value="Red" />
+    </Style>
+    <Style Selector="TextBlock.status.hint">
+      <Setter Property="Foreground" Value="{DynamicResource GrayTextBrush}" />
+    </Style>
+  </views:SideWindow.Styles>
+
+  <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+  <Grid ColumnDefinitions="265,*">
+
+    <!-- ============================ left: navigation + sliders ============================ -->
+    <Grid RowDefinitions="Auto,*" Margin="5,0,0,0">
+
+      <UniformGrid Name="NavRow" Columns="3" Height="{x:Static t:UiMetrics.ControlRowHeight}" Margin="0,4,0,0">
+        <c:RButton Name="ButtonCpu" Margin="2" Content="CPU" Secondary="True" BorderColor="#FF3AAEEF"
+                   Activated="{Binding IsCpuTab}" Command="{Binding ShowCpuCommand}" />
+        <c:RButton Name="ButtonGpu" Margin="2" Content="GPU" Secondary="True" BorderColor="#FFFF2020"
+                   IsVisible="{Binding GpuButtonVisible}"
+                   Activated="{Binding IsGpuTab}" Command="{Binding ShowGpuCommand}" />
+        <c:RButton Name="ButtonAdvanced" Margin="2" Content="Advanced" Secondary="True" BorderColor="#FFA8A8A8"
+                   IsVisible="{Binding AdvancedButtonVisible}"
+                   Activated="{Binding IsAdvancedTab}" Command="{Binding ShowAdvancedCommand}" />
+      </UniformGrid>
+
+      <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <Panel>
+
+          <!-- CPU: power plan, boost, power limits -->
+          <StackPanel Name="PanelPower" IsVisible="{Binding IsCpuTab}" Margin="0,0,5,8">
+            <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*">
+              <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-gauge-32.png" />
+              <TextBlock Grid.Column="1" Classes="title" Text="{Binding PowerModeCaption}" />
+            </Grid>
+            <c:RComboBox Name="ComboPowerMode" Margin="5,0,0,6"
+                         ItemsSource="{Binding PowerModes}"
+                         SelectedItem="{Binding SelectedPowerMode, Mode=TwoWay}"
+                         IsEnabled="{Binding PowerModeEnabled}"
+                         AutomationProperties.Name="{Binding PowerModeCaption}" />
+
+            <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*">
+              <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-rocket-32.png" />
+              <TextBlock Grid.Column="1" Classes="title" Text="{Binding BoostCaption}" />
+            </Grid>
+            <c:RComboBox Name="ComboBoost" Margin="5,0,0,6"
+                         ItemsSource="{Binding BoostModes}"
+                         SelectedIndex="{Binding BoostIndex, Mode=TwoWay}"
+                         AutomationProperties.Name="{Binding BoostCaption}" />
+
+            <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*" IsVisible="{Binding PowerSectionVisible}">
+              <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-processor-32.png" />
+              <TextBlock Grid.Column="1" Classes="title" Text="{Binding PowerLimitsCaption}" />
+            </Grid>
+
+            <f:SliderRow Name="SliderTotal" IsVisible="{Binding TotalVisible}"
+                         Title="{Binding TotalTitle}" ValueText="{Binding TotalText}"
+                         Value="{Binding Total, Mode=TwoWay}" />
+            <f:SliderRow Name="SliderSlow" IsVisible="{Binding SlowVisible}"
+                         Title="{Binding SlowTitle}" ValueText="{Binding SlowText}"
+                         Value="{Binding Slow, Mode=TwoWay}" />
+            <f:SliderRow Name="SliderFast" IsVisible="{Binding FastVisible}"
+                         Title="{Binding FastTitle}" ValueText="{Binding FastText}"
+                         Value="{Binding Fast, Mode=TwoWay}" />
+            <f:SliderRow Name="SliderCpu" IsVisible="{Binding CpuLimitVisible}"
+                         Title="{Binding CpuLimitTitle}" ValueText="{Binding CpuLimitText}"
+                         Value="{Binding CpuLimit, Mode=TwoWay}" />
+            <f:SliderRow Name="SliderCrossLoad" IsVisible="{Binding CrossVisible}"
+                         Title="{Binding CrossLoadTitle}" ValueText="{Binding CrossLoadText}"
+                         Value="{Binding CrossLoad, Mode=TwoWay}" />
+            <f:SliderRow Name="SliderGpuToCpu" IsVisible="{Binding GpuToCpuVisible}"
+                         Title="{Binding GpuToCpuTitle}" ValueText="{Binding GpuToCpuText}"
+                         Value="{Binding GpuToCpu, Mode=TwoWay}" />
+            <f:SliderRow Name="SliderCpuTemp" IsVisible="{Binding CpuTempLimitVisible}"
+                         Title="{Binding CpuTempTitle}" ValueText="{Binding CpuTempLimitText}"
+                         Value="{Binding CpuTempLimit, Mode=TwoWay}" />
+
+            <c:RCheckBox Name="CheckApplyPower" Margin="5,6,0,2" IsVisible="{Binding PowerSectionVisible}"
+                         Content="{Binding ApplyPowerCaption}" IsChecked="{Binding ApplyPower, Mode=TwoWay}" />
+          </StackPanel>
+
+          <!-- GPU -->
+          <StackPanel Name="PanelGpu" IsVisible="{Binding IsGpuTab}" Margin="0,0,5,8">
+            <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*">
+              <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-video-card-32.png" />
+              <TextBlock Grid.Column="1" Classes="title" Text="{Binding GpuTitle}" />
+            </Grid>
+            <f:SliderRow Name="SliderGpuClock" Title="{Binding GpuClockTitle}" ValueText="{Binding GpuClockLimitText}"
+                         Step="5" Value="{Binding GpuClockLimit, Mode=TwoWay}" />
+            <f:SliderRow Name="SliderGpuCore" Title="{Binding GpuCoreTitle}" ValueText="{Binding GpuCoreText}"
+                         Step="5" Value="{Binding GpuCore, Mode=TwoWay}" />
+            <f:SliderRow Name="SliderGpuMemory" Title="{Binding GpuMemoryTitle}" ValueText="{Binding GpuMemoryText}"
+                         Step="5" Value="{Binding GpuMemory, Mode=TwoWay}" />
+            <f:SliderRow Name="SliderGpuPower" IsVisible="{Binding GpuPowerVisible}"
+                         Title="{Binding GpuPowerTitle}" ValueText="{Binding GpuPowerText}"
+                         Value="{Binding GpuPower, Mode=TwoWay}" />
+            <f:SliderRow Name="SliderGpuBoost" IsVisible="{Binding GpuBoostVisible}"
+                         Title="{Binding GpuBoostTitle}" ValueText="{Binding GpuBoostText}"
+                         Value="{Binding GpuBoost, Mode=TwoWay}" />
+            <f:SliderRow Name="SliderGpuTemp" IsVisible="{Binding GpuTempVisible}"
+                         Title="{Binding GpuTempTitle}" ValueText="{Binding GpuTempText}"
+                         Value="{Binding GpuTemp, Mode=TwoWay}" />
+          </StackPanel>
+
+          <!-- Advanced: temperature limit, undervolting (PawnIO) -->
+          <StackPanel Name="PanelAdvanced" IsVisible="{Binding IsAdvancedTab}" Margin="0,0,5,8">
+
+            <StackPanel IsVisible="{Binding DownloadVisible}" Margin="5,10,0,0">
+              <c:RButton Name="ButtonDownload" Secondary="True"
+                         Content="{Binding DownloadCaption}" Command="{Binding DownloadCommand}" />
+            </StackPanel>
+
+            <StackPanel Name="PanelPawn" IsVisible="{Binding PawnVisible}">
+              <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*">
+                <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-temperature-32.png" />
+                <TextBlock Grid.Column="1" Classes="title" Text="{Binding TempLimitCaption}" />
+              </Grid>
+              <f:SliderRow Name="SliderTemp" Title="{Binding TempTitle}" ValueText="{Binding TempText}"
+                           Value="{Binding Temp, Mode=TwoWay}" />
+
+              <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*" IsVisible="{Binding UvTitleVisible}">
+                <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-voltage-32.png" />
+                <TextBlock Grid.Column="1" Classes="title" Text="{Binding UndervoltingCaption}" />
+              </Grid>
+              <f:SliderRow Name="SliderUv" IsVisible="{Binding UvVisible}"
+                           Title="{Binding UvTitle}" ValueText="{Binding UvText}"
+                           Value="{Binding Uv, Mode=TwoWay}" />
+              <f:SliderRow Name="SliderIGpuUv" IsVisible="{Binding IGpuUvVisible}"
+                           Title="{Binding IGpuUvTitle}" ValueText="{Binding IGpuUvText}"
+                           Value="{Binding IGpuUv, Mode=TwoWay}" />
+
+              <Border Name="LabelRisky" IsVisible="{Binding RiskyVisible}" Background="IndianRed"
+                      CornerRadius="3" Padding="5,5,5,3" Margin="0,4,5,6">
+                <TextBlock Text="{Binding RiskyText}" Foreground="White" TextWrapping="Wrap" />
+              </Border>
+
+              <c:RButton Name="ButtonApplyAdvanced" Margin="5,6,0,4" Secondary="True"
+                         IsVisible="{Binding UvVisible}"
+                         Content="{Binding ApplyCaption}" Command="{Binding ApplyAdvancedCommand}" />
+              <c:RCheckBox Name="CheckApplyUV" Margin="5,2,0,2" IsVisible="{Binding UvVisible}"
+                           IsEnabled="{Binding ApplyUVEnabled}"
+                           Content="{Binding AutoApplyCaption}" IsChecked="{Binding ApplyUV, Mode=TwoWay}" />
+              <c:RButton Name="ButtonReadLimits" Margin="5,8,0,4" Secondary="True"
+                         Content="{Binding ReadLimitsCaption}" Command="{Binding ReadLimitsCommand}" />
+            </StackPanel>
+          </StackPanel>
+
+        </Panel>
+      </ScrollViewer>
+    </Grid>
+
+    <!-- ============================ right: fan curves ============================ -->
+    <Grid Grid.Column="1" RowDefinitions="Auto,*,Auto,Auto,Auto" Margin="0,0,5,0">
+
+      <!-- title + performance mode picker -->
+      <Grid MinHeight="36" ColumnDefinitions="Auto,*,Auto" Margin="0,0,0,0">
+        <c:TintedImage Classes="sectionIcon" Margin="9,0,6,0" Source="avares://GHelper/Assets/Icons/icons8-fan-32.png" />
+        <TextBlock Grid.Column="1" Classes="title" Text="{Binding FanCurvesCaption}" TextWrapping="Wrap" />
+        <Grid Grid.Column="2" Width="250" ColumnDefinitions="30,30,*,30" Margin="0,4,2,4">
+          <c:RButton Name="ButtonRemove" Grid.Column="0" Margin="1,0" Secondary="True" Padding="2,0"
+                     IsVisible="{Binding RemoveVisible}" Command="{Binding RemoveModeCommand}"
+                     Icon="avares://GHelper/Assets/Icons/icons8-remove-64.png"
+                     AutomationProperties.Name="Remove mode" />
+          <c:RButton Name="ButtonRename" Grid.Column="1" Margin="1,0" Secondary="True" Padding="2,0"
+                     IsVisible="{Binding RenameVisible}" Command="{Binding RenameModeCommand}"
+                     Icon="avares://GHelper/Assets/Icons/icons8-edit-32.png"
+                     AutomationProperties.Name="Rename mode" />
+          <c:RComboBox Name="ComboModes" Grid.Column="2" Margin="1,0" IsVisible="{Binding ModePickerVisible}"
+                       ItemsSource="{Binding Modes}" SelectedItem="{Binding SelectedMode, Mode=TwoWay}"
+                       AutomationProperties.Name="{Binding FanCurvesCaption}" />
+          <c:RTextBox Name="TextModeName" Grid.Column="2" Margin="1,0" IsVisible="{Binding IsRenaming}"
+                      Text="{Binding ModeName, Mode=TwoWay}"
+                      AutomationProperties.Name="Mode name" />
+          <c:RButton Name="ButtonAdd" Grid.Column="3" Margin="1,0" Secondary="True" Padding="2,0"
+                     Command="{Binding AddModeCommand}"
+                     Icon="avares://GHelper/Assets/Icons/icons8-add-64.png"
+                     AutomationProperties.Name="Add mode" />
+        </Grid>
+      </Grid>
+
+      <!-- charts -->
+      <UniformGrid Grid.Row="1" Name="ChartStack" Columns="1" Margin="9,2,4,0">
+        <f:FanChartView Name="ChartCpu" MinHeight="170" Margin="0,2" XMin="20" XMax="110"
+                        IsVisible="{Binding Cpu.IsVisible}" Title="{Binding Cpu.Title}"
+                        LineBrush="{Binding Cpu.LineBrush}" ClampDots="{Binding ClampFanDots}"
+                        AutomationProperties.Name="CPU fan curve" />
+        <f:FanChartView Name="ChartGpu" MinHeight="170" Margin="0,2" XMin="20" XMax="110"
+                        IsVisible="{Binding Gpu.IsVisible}" Title="{Binding Gpu.Title}"
+                        LineBrush="{Binding Gpu.LineBrush}" ClampDots="{Binding ClampFanDots}"
+                        AutomationProperties.Name="GPU fan curve" />
+        <f:FanChartView Name="ChartMid" MinHeight="170" Margin="0,2" XMin="20" XMax="110"
+                        IsVisible="{Binding Mid.IsVisible}" Title="{Binding Mid.Title}"
+                        LineBrush="{Binding Mid.LineBrush}" ClampDots="{Binding ClampFanDots}"
+                        AutomationProperties.Name="Mid fan curve" />
+        <f:FanChartView Name="ChartXgm" MinHeight="170" Margin="0,2" XMin="20" XMax="110"
+                        IsVisible="{Binding Xgm.IsVisible}" Title="{Binding Xgm.Title}"
+                        LineBrush="{Binding Xgm.LineBrush}" ClampDots="{Binding ClampFanDots}"
+                        AutomationProperties.Name="XG Mobile fan curve" />
+      </UniformGrid>
+
+      <!-- clamp + status / drag hint -->
+      <Grid Grid.Row="2" ColumnDefinitions="Auto,*" Margin="9,6,4,0" MinHeight="28">
+        <c:RCheckBox Name="CheckFanClamp" Content="{Binding ClampCaption}"
+                     IsChecked="{Binding ClampFanDots, Mode=TwoWay}" />
+        <TextBlock Name="LabelFansResult" Grid.Column="1" Margin="12,0,0,0" TextWrapping="Wrap"
+                   VerticalAlignment="Center" HorizontalAlignment="Right" TextAlignment="Right"
+                   IsVisible="{Binding StatusVisible}" Text="{Binding StatusText}"
+                   Classes="status" Classes.hint="{Binding StatusIsHint}" />
+      </Grid>
+
+      <!-- hysteresis -->
+      <Grid Grid.Row="3" Name="PanelHysteresis" IsVisible="{Binding HysteresisVisible}"
+            ColumnDefinitions="Auto,*,86" RowDefinitions="Auto,Auto" Margin="9,8,4,0">
+        <TextBlock Text="{Binding HysteresisUpCaption}" VerticalAlignment="Center" Margin="0,0,10,0" />
+        <c:RSlider Name="SliderHysteresisUp" Grid.Column="1" Margin="0,4" Minimum="1" Maximum="5" Step="1"
+                   Value="{Binding HysteresisUp, Mode=TwoWay}"
+                   AutomationProperties.Name="{Binding HysteresisUpCaption}" />
+        <TextBlock Grid.Column="2" Text="{Binding HysteresisUpText}" VerticalAlignment="Center"
+                   HorizontalAlignment="Right" TextAlignment="Right" />
+        <TextBlock Grid.Row="1" Text="{Binding HysteresisDownCaption}" VerticalAlignment="Center" Margin="0,0,10,0" />
+        <c:RSlider Name="SliderHysteresisDown" Grid.Row="1" Grid.Column="1" Margin="0,4" Minimum="1" Maximum="5" Step="1"
+                   Value="{Binding HysteresisDown, Mode=TwoWay}"
+                   AutomationProperties.Name="{Binding HysteresisDownCaption}" />
+        <TextBlock Grid.Row="1" Grid.Column="2" Text="{Binding HysteresisDownText}" VerticalAlignment="Center"
+                   HorizontalAlignment="Right" TextAlignment="Right" />
+      </Grid>
+
+      <!-- reset / calibrate / apply -->
+      <Grid Grid.Row="4" ColumnDefinitions="Auto,Auto,*,Auto" Margin="9,10,4,10" MinHeight="28">
+        <c:RButton Name="ButtonReset" Width="130" Margin="0,0,6,0" Secondary="True"
+                   Content="{Binding ResetCaption}" Command="{Binding ResetCommand}" />
+        <c:RButton Name="ButtonCalibrate" Grid.Column="1" Width="75" Secondary="True"
+                   IsVisible="{Binding CalibrateVisible}" IsEnabled="{Binding CalibrateEnabled}"
+                   Content="{Binding CalibrateCaption}" Command="{Binding CalibrateCommand}" />
+        <c:RCheckBox Name="CheckApplyFans" Grid.Column="3" HorizontalAlignment="Right" VerticalAlignment="Center"
+                     Content="{Binding ApplyFansCaption}" IsChecked="{Binding ApplyFans, Mode=TwoWay}" />
+      </Grid>
+    </Grid>
+
+  </Grid>
+  </ScrollViewer>
+</views:SideWindow>
