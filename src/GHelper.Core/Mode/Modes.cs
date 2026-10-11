@@ -1,6 +1,6 @@
 ﻿namespace GHelper.Mode
 {
-    internal class Modes
+    public class Modes
     {
         static Dictionary<string, string> settings = new Dictionary<string, string>
         {
