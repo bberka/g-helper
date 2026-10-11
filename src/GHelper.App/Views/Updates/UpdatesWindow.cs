@@ -121,7 +121,7 @@ public sealed class UpdatesWindow : SideWindow
 
     // ---- layout ------------------------------------------------------------------------------------------
 
-    private static Bitmap? Icon(string file)
+    private static Bitmap? LoadIcon(string file)
     {
         try
         {
@@ -147,7 +147,7 @@ public sealed class UpdatesWindow : SideWindow
             Orientation = Orientation.Horizontal,
             Spacing = 10,
             VerticalAlignment = VerticalAlignment.Center,
-            Children = { new TintedImage { Source = Icon(iconFile), Width = 16, Height = 16, VerticalAlignment = VerticalAlignment.Center }, title },
+            Children = { new TintedImage { Source = LoadIcon(iconFile), Width = 16, Height = 16, VerticalAlignment = VerticalAlignment.Center }, title },
         };
         Grid.SetColumnSpan(title2, 2);
         grid.Children.Add(title2);
@@ -160,7 +160,7 @@ public sealed class UpdatesWindow : SideWindow
             grid.Children.Add(_labelUpdates);
 
             Grid.SetColumn(_buttonRefresh, 4);
-            _buttonRefresh.Icon = Icon("icons8-refresh-32.png");
+            _buttonRefresh.Icon = LoadIcon("icons8-refresh-32.png");
             AutomationProperties.SetName(_buttonRefresh, "Refresh");
             grid.Children.Add(_buttonRefresh);
         }
