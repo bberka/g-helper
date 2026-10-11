@@ -29,10 +29,10 @@ namespace GHelper.Mode
         {
             get
             {
-                var catalog = PlatformCapabilities.GetOptional<IPowerModeCatalog>();
-                return catalog is null
+                var modes = PlatformCapabilities.GetOptional<IPowerModeCatalog>()?.PowerModes;
+                return modes is null || modes.Count == 0
                     ? new Dictionary<string, string>(windowsPowerModes)
-                    : catalog.PowerModes.ToDictionary(p => p.Key, p => p.Value);
+                    : modes.ToDictionary(p => p.Key, p => p.Value);
             }
         }
 

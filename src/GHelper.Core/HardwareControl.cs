@@ -309,18 +309,18 @@ public static class HardwareControl
     public static (int percent, int usedMb)? GetRAMInfo() => Sensors.GetRamInfo();
 
 
-    private static IGpuControl? _amdApuControl;
+    private static AmdGpuControl? _amdApuControl;
     private static bool _amdApuPowerFailed;
 
     /// <summary>
     /// AMD iGPU / APU control (OLED power optimisation, iGPU sensors). Same instance as <see cref="GpuControl"/> when the
-    /// discrete GPU is AMD; otherwise created through <see cref="IGpuProvider.CreateAmdApu"/>.
+    /// discrete GPU is AMD; otherwise created through <see cref="IGpuProvider.CreateAmdApu"/> (legacy: always a new
+    /// <see cref="AmdGpuControl"/>, so the result is never null).
     /// </summary>
-    public static AmdGpuControl? AmdApu()
+    public static AmdGpuControl AmdApu()
     {
         if (GpuControl is AmdGpuControl amd) return amd;
-        _amdApuControl ??= PlatformServices.Current.Gpu.CreateAmdApu();
-        return _amdApuControl as AmdGpuControl;
+        return _amdApuControl ??= PlatformServices.Current.Gpu.CreateAmdApu() as AmdGpuControl ?? new AmdGpuControl();
     }
 
     private static float? GetAmdApuPower()

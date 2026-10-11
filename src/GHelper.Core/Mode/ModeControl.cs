@@ -56,12 +56,6 @@ namespace GHelper.Mode
         public static bool IsPawnAvailable() => GetSmu() != null;
         public static bool IsPawnInstalled() => PlatformServices.Current.CpuTuning.IsSupported;
 
-        /// <summary>Test hook: forget the cached CPU tuning service.</summary>
-        internal static void ResetSmuCache()
-        {
-            lock (_smuLock) _smu = null;
-        }
-
         static System.Timers.Timer? reapplyTimer;
         static System.Timers.Timer modeToggleTimer = default!;
         static CancellationTokenSource _modeCts = new();

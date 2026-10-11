@@ -359,12 +359,6 @@ namespace GHelper
             return true;
         }
 
-        /// <summary>Test hook: forget the last auto-mode timestamp so SetAutoModes runs again.</summary>
-        internal static void ResetAutoModeThrottle()
-        {
-            lock (autoLock) lastAuto = 0;
-        }
-
         #endregion
 
         #region Power source

@@ -66,14 +66,17 @@ namespace GHelper.Helpers
 
         public static void KillByProcess(Process process)
         {
+            string name;
+            try { name = process.ProcessName; } catch { name = "?"; }
+
             try
             {
                 process.Kill();
-                Logger.WriteLine($"Stopped: {process.ProcessName}");
+                Logger.WriteLine($"Stopped: {name}");
             }
             catch (Exception ex)
             {
-                Logger.WriteLine($"Failed to stop: {process.ProcessName} {ex.Message}");
+                Logger.WriteLine($"Failed to stop: {name} {ex.Message}");
             }
         }
 
