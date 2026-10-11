@@ -1,0 +1,147 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:GHelper.App.Controls">
+
+  <Styles.Resources>
+
+    <!-- Flat rounded button: chrome is painted by RButton.Render; the template only lays out icon + text. -->
+    <ControlTheme x:Key="{x:Type c:RButton}" TargetType="c:RButton">
+      <Setter Property="Background" Value="{DynamicResource ButtonMainBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderMainBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ForeMainBrush}" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Padding" Value="6,2" />
+      <Setter Property="MinHeight" Value="20" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Padding="{TemplateBinding Padding}" Background="Transparent">
+            <StackPanel Orientation="{TemplateBinding IconOrientation}"
+                        Spacing="{TemplateBinding IconSpacing}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center">
+              <c:TintedImage Source="{TemplateBinding Icon}"
+                             Foreground="{TemplateBinding Foreground}"
+                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
+                             VerticalAlignment="Center"
+                             HorizontalAlignment="Center" />
+              <ContentPresenter Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Foreground="{TemplateBinding Foreground}"
+                                TextElement.Foreground="{TemplateBinding Foreground}"
+                                FontSize="{TemplateBinding FontSize}"
+                                FontWeight="{TemplateBinding FontWeight}"
+                                TextBlock.TextAlignment="Center"
+                                TextBlock.TextWrapping="Wrap"
+                                VerticalAlignment="Center"
+                                HorizontalAlignment="Center" />
+            </StackPanel>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+
+      <Style Selector="^:secondary">
+        <Setter Property="Background" Value="{DynamicResource ButtonSecondBrush}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderSecondBrush}" />
+      </Style>
+
+      <!-- small status flags: Fn-Lock, Overlay, 100%, Energy Saver ... -->
+      <Style Selector="^.flag">
+        <Setter Property="Foreground" Value="{DynamicResource ControlDarkBrush}" />
+        <Setter Property="FontSize" Value="9.5" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="CornerRadius" Value="1" />
+        <Setter Property="Padding" Value="4,0" />
+        <Setter Property="MinHeight" Value="0" />
+      </Style>
+
+      <Style Selector="^:filled">
+        <Setter Property="Foreground" Value="#FFFFFFFF" />
+      </Style>
+
+      <Style Selector="^:disabled">
+        <Setter Property="Foreground" Value="Gray" />
+      </Style>
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type c:RColorButton}" TargetType="c:RColorButton" BasedOn="{StaticResource {x:Type c:RButton}}" />
+    <ControlTheme x:Key="{x:Type c:RBadgeButton}" TargetType="c:RBadgeButton" BasedOn="{StaticResource {x:Type c:RButton}}" />
+
+    <ControlTheme x:Key="{x:Type c:RComboBox}" TargetType="c:RComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
+      <Setter Property="Height" Value="24" />
+      <Setter Property="MinHeight" Value="0" />
+      <Setter Property="Padding" Value="8,0,4,0" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Background" Value="{DynamicResource ButtonMainBrush}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderMainBrush}" />
+      <Setter Property="Foreground" Value="{DynamicResource ForeMainBrush}" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type c:RTextBox}" TargetType="c:RTextBox" BasedOn="{StaticResource {x:Type TextBox}}">
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type c:RNumericUpDown}" TargetType="c:RNumericUpDown" BasedOn="{StaticResource {x:Type NumericUpDown}}">
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="CornerRadius" Value="3" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type c:NumericUpDownWithUnit}" TargetType="c:NumericUpDownWithUnit" BasedOn="{StaticResource {x:Type NumericUpDown}}">
+      <Setter Property="MinHeight" Value="24" />
+      <Setter Property="CornerRadius" Value="3" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type c:RCheckBox}" TargetType="c:RCheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderSecondBrush}" />
+      <Setter Property="CornerRadius" Value="3" />
+    </ControlTheme>
+
+    <ControlTheme x:Key="{x:Type c:RTrackBar}" TargetType="c:RTrackBar" BasedOn="{StaticResource {x:Type Slider}}" />
+
+  </Styles.Resources>
+
+  <!-- ===== window / text ===== -->
+  <Style Selector="Window">
+    <Setter Property="Background" Value="{DynamicResource FormBackBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ForeMainBrush}" />
+    <Setter Property="FontSize" Value="12" />
+  </Style>
+
+  <Style Selector="TextBlock.title">
+    <Setter Property="FontWeight" Value="Bold" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="TextBlock.sensor">
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="TextAlignment" Value="Right" />
+    <Setter Property="Cursor" Value="Hand" />
+  </Style>
+
+  <Style Selector="TextBlock.tip">
+    <Setter Property="Foreground" Value="{DynamicResource GrayTextBrush}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <!-- ===== inputs: Fluent controls re-skinned with the palette (palette aliases live in App.axaml) ===== -->
+  <Style Selector="c|RSlider">
+    <Setter Property="AccentBrush" Value="{DynamicResource StandardBrush}" />
+    <Setter Property="TrackBrush" Value="{DynamicResource ChartGridBrush}" />
+    <Setter Property="ThumbBrush" Value="{DynamicResource ButtonMainBrush}" />
+    <Setter Property="TickBrush" Value="{DynamicResource ForeMainBrush}" />
+  </Style>
+
+  <Style Selector="c|FanCurveChart">
+    <Setter Property="ChartBackground" Value="{DynamicResource ChartMainBrush}" />
+    <Setter Property="GridBrush" Value="{DynamicResource ChartGridBrush}" />
+    <Setter Property="Foreground" Value="{DynamicResource ForeMainBrush}" />
+    <Setter Property="LineBrush" Value="{DynamicResource GrayBrush}" />
+  </Style>
+
+</Styles>

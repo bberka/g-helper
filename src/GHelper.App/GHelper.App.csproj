@@ -18,6 +18,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <InternalsVisibleTo Include="GHelper.App.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\GHelper.Core\GHelper.Core.csproj" />
     <ProjectReference Include="..\GHelper.Platform.Windows\GHelper.Platform.Windows.csproj" />
     <ProjectReference Include="..\GHelper.Platform.Linux\GHelper.Platform.Linux.csproj" />
