@@ -96,7 +96,7 @@ verified on ASUS hardware. `[~]` = partly done or not verifiable from the author
         `.tar.gz` / `.deb` / `.rpm` assets are not consumed by the updater; (c) `docs/README.*.md` translations still link to
         upstream releases; (d) trimming needs source generated JSON in `AppConfig` and trim safe HidSharp / WMI use before it
         can be enabled (win-x64 probe: 51 MB -> 22 MB, 15 trim warnings)
-- [ ] P6.3 delete `app/`, final review (also removes the `legacy-winforms` job from `build.yml`)
+- [ ] P6.3 final review. `app/` is KEPT as the upstream mirror (merge upstream into it, port into `src/`); keep the `legacy-winforms` job in `build.yml` only if upstream changes should still be compile-checked
 
 ## Checkpoints
 - After W1: Core builds with all areas; platform projects implement all contracts; app shell launches.
