@@ -1,48 +1,27 @@
-# G-Helper - Lightweight control tool for Asus laptops
+# G-Helper - feature and usage reference
 
-Small and lightweight Armoury Crate alternative for Asus laptops offering almost same functionality with a much smaller footprint. Works with all popular models, such as ROG Zephyrus G14, G15, G16, M16, X13, X16, Z13, DUO, TUF Series, Strix or Scar Series, ProArt, Vivobook, Zenbook, Expertbook, ROG Ally or Ally X and many more!
+This is the feature reference of the cross-platform fork of [seerge/g-helper](https://github.com/seerge/g-helper)
+(Windows and Linux, Avalonia UI). Installation, supported platforms, Linux requirements and build instructions are in
+the [main README](../README.md); the Linux kernel interfaces behind each feature are listed in
+[packaging/linux/README.md](../packaging/linux/README.md).
 
-[![GitHub release](https://g-helper.com/badge/release.svg)](https://GitHub.com/seerge/g-helper/releases/)
-[![Downloads](https://g-helper.com/badge/downloads.svg)](https://GitHub.com/seerge/g-helper/releases/)
-[![SLSA3](https://g-helper.com/badge/slsa.svg)](https://github.com/seerge/g-helper/attestations)
-[![中文](https://g-helper.com/badge/lang-zh.svg)](https://github.com/seerge/g-helper/blob/main/docs/README.zh-CN.md)
-[![日本語](https://g-helper.com/badge/lang-ja.svg)](https://github.com/seerge/g-helper/blob/main/docs/README.ja-JP.md)
-[![Čeština](https://g-helper.com/badge/lang-cs.svg)](https://github.com/seerge/g-helper/blob/main/docs/README.cs-CZ.md)
-[![Español](https://g-helper.com/badge/lang-es.svg)](https://github.com/seerge/g-helper/blob/main/docs/README.es-ES.md)
-[![한국어](https://g-helper.com/badge/lang-ko.svg)](https://github.com/seerge/g-helper/blob/main/docs/README.ko-KR.md)
-<a href="https://github.com/seerge/g-helper/releases/latest/download/GHelper.exe" alt="G-Helper - Lightweight control tool for Asus laptops"><img width="1280" alt="G-Helper - Lightweight control tool for Asus laptops" src="https://raw.githubusercontent.com/seerge/g-helper/refs/heads/main/docs/app-hero.jpg" /></a>
+> [!NOTE]
+> The feature list below describes the original Windows application, which the port follows. On Linux a feature is
+> available only when the kernel driver exposes it, and the Linux backend has not been verified on real hardware yet.
+> Windows-only implementations: NVAPI (NVIDIA overclocking) and AMD ADL (x64), PawnIO based Ryzen / Intel tuning
+> (x64; Linux uses `ryzen_smu` / `msr`) and the ETW based FPS counter of the overlay.
 
-
-<a href="https://github.com/seerge/g-helper/releases/latest/download/GHelper.exe"><img width="250" alt="Download" src="https://g-helper.com/button/download.svg?lang=en" /></a> &nbsp; <a href="https://g-helper.com/support"><img width="250" alt="Donate" src="https://g-helper.com/button/donate.svg?lang=en" /></a>
-
-**⭐ Like the app? Help spread the word.**
-
-- [FAQ](https://github.com/seerge/g-helper/wiki/FAQ)
-- [Setup and Requirements](https://github.com/seerge/g-helper/wiki/Requirements)
-- [Troubleshooting](https://github.com/seerge/g-helper/wiki/Troubleshooting)
-- [Power User Settings](https://github.com/seerge/g-helper/wiki/Power-user-settings)
-
-[![seerge/g-helper downloads](https://release-monitor.com/chart/seerge/g-helper.svg?range=month&stable=3)](https://release-monitor.com/#/seerge/g-helper)
-
-[![United24](https://github.com/user-attachments/assets/aa9444e3-9daa-4b88-a473-7a7f855e3a07)](https://u24.gov.ua/)
-
-## :loudspeaker: YouTube Reviews and Guides
-| [![Youtube review Josh Cravey](https://i.ytimg.com/vi/hqe-PjuE-K8/hqdefault.jpg)](https://www.youtube.com/watch?v=hqe-PjuE-K8) | [![Youtube review Crimson Tech](https://i.ytimg.com/vi/5XUIMUzgHU0/hqdefault.jpg)](https://www.youtube.com/watch?v=5XUIMUzgHU0) | [![Youtube review cbutters Tech](https://i.ytimg.com/vi/6aVdwJKZSSc/hqdefault.jpg)](https://www.youtube.com/watch?v=6aVdwJKZSSc) |
-| ----------------- | ---------------- | ---------------- | 
-| [Josh Cravey](https://www.youtube.com/watch?v=hqe-PjuE-K8) | [Crimson Tech](https://www.youtube.com/watch?v=5XUIMUzgHU0) | [cbutters Tech](https://www.youtube.com/watch?v=6aVdwJKZSSc) | 
-
-## 📰 Articles
-1. [Digital Trends](https://www.digitaltrends.com/computing/g-helper-armoury-crate-alternative/)
-2. [BinaryFork](https://binaryfork.com/ghelper-armoury-crate-alternative-10216/)
-3. [Ultrabookreview](https://www.ultrabookreview.com/71392-optimized-quiet-gaming-5080-5090/)
-4. [Notebookcheck](https://www.notebookcheck.net/Unbloated-G-Helper-The-best-open-source-alternative-to-Asus-Armoury-Crate-Part-2.1213486.0.html)
-5. [Les Numériques](https://www.lesnumeriques.com/appli-logiciel/marre-des-lenteurs-d-armoury-crate-sur-votre-pc-portable-asus-decouvrez-g-helper-l-alternative-ultra-legere-n240111.html)
+Download: [releases](https://github.com/bberka/g-helper/releases). Wiki pages of the original project (Windows
+behaviour): [FAQ](https://github.com/seerge/g-helper/wiki/FAQ),
+[Setup and Requirements](https://github.com/seerge/g-helper/wiki/Requirements),
+[Troubleshooting](https://github.com/seerge/g-helper/wiki/Troubleshooting),
+[Power User Settings](https://github.com/seerge/g-helper/wiki/Power-user-settings).
 
 ## :gift: Advantages 
 
 1. Seamless and automatic GPU switching
 2. All performance modes can be fully customized with power limits and fan curves
-3. Lightweight. Just a single exe to run. Doesn't install anything in your system. 
+3. Lightweight: a single self-contained file per platform, no installer on Windows. 
 4. Simple and clean native UI with easy access to all settings
 5. FN-Lock and custom hotkeys
 
@@ -270,13 +249,19 @@ Battery level, lighting, equalizer presets, sidetone, microphone and AI noise ca
 - [UXTU](https://github.com/JamesCJ60/Universal-x86-Tuning-Utility) for undervolting endpoints using Ryzen SMU
 - [PawnIO](https://github.com/namazso/PawnIO) for access to RyzenSMU
 - [AsusCtl](https://gitlab.com/asus-linux/asusctl) for inspiration and some reverse engineering
+- [Avalonia](https://avaloniaui.net/) and [SkiaSharp](https://github.com/mono/SkiaSharp) for the cross-platform UI
+- [HidSharp](https://github.com/IntergatedCircuits/HidSharpCore) for HID access (hidraw on Linux)
 - [OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB) for some RGB protocol details for external keyboards support
 
 ### Code Signing Policy
-Free code signing provided by [SignPath.io](https://about.signpath.io/), certificate by [SignPath Foundation](https://signpath.org/)
+Releases of this fork are not code signed. Releases of the original project were signed with a certificate provided by
+[SignPath Foundation](https://signpath.org/).
 
 ### Privacy Policy
 This program will not transfer any information to other networked systems
+
+### License
+GPL-3.0, see [LICENSE](../LICENSE). Original work by [Serge (seerge)](https://github.com/seerge/g-helper).
 
 ### Disclaimers
 "Asus", "ROG", "TUF", and "Armoury Crate" are trademarked by and belong to AsusTek Computer, Inc. I make no claims to these or any assets belonging to AsusTek Computer and use them purely for informational purposes only.
