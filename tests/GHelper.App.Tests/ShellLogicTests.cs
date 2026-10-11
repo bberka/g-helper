@@ -95,54 +95,63 @@ public class WindowPlacementTests
     public void Top_taskbar_moves_the_window_below_it()
     {
         var work = new PixelRect(0, 40, 1920, 1040);
-        Assert.Equal(TaskbarEdge.Top, WindowPlacement.GetTaskbarEdge(Screen, work));
         var p = WindowPlacement.NearTaskbar(Screen, work, new PixelSize(425, 700));
         Assert.Equal(40 + 10, p.Y);
         Assert.Equal(1920 - 10 - 425, p.X);
     }
 
     [Fact]
-    public void Left_taskbar_moves_the_window_to_the_left_edge()
+    public void Left_taskbar_keeps_the_window_at_the_right_edge_of_the_work_area()
     {
+        // upstream #6130: left panel -> window against the right edge, bottom aligned
         var work = new PixelRect(60, 0, 1860, 1080);
-        Assert.Equal(TaskbarEdge.Left, WindowPlacement.GetTaskbarEdge(Screen, work));
         var p = WindowPlacement.NearTaskbar(Screen, work, new PixelSize(425, 700));
-        Assert.Equal(60 + 10, p.X);
+        Assert.Equal(new PixelPoint(1920 - 10 - 425, 1080 - 10 - 700), p);
     }
 
     [Fact]
-    public void Right_taskbar_keeps_the_right_edge()
+    public void Right_taskbar_keeps_the_right_edge_of_the_work_area()
     {
         var work = new PixelRect(0, 0, 1860, 1080);
-        Assert.Equal(TaskbarEdge.Right, WindowPlacement.GetTaskbarEdge(Screen, work));
         var p = WindowPlacement.NearTaskbar(Screen, work, new PixelSize(425, 700));
         Assert.Equal(1860 - 10 - 425, p.X);
     }
 
     [Fact]
-    public void Ally_keeps_clear_of_the_bottom_when_there_is_no_taskbar_inset()
+    public void Second_monitor_with_a_negative_origin_uses_the_work_area_not_the_size()
     {
-        // auto hiding taskbar: working area == screen, legacy lifts the window by 110 px
-        var p = WindowPlacement.NearTaskbar(Screen, Screen, new PixelSize(425, 700), isAlly: true);
-        Assert.Equal(1080 - 110 - 700, p.Y);
-
-        // visible taskbar: unchanged
-        var work = new PixelRect(0, 0, 1920, 1040);
-        var q = WindowPlacement.NearTaskbar(Screen, work, new PixelSize(425, 700), isAlly: true);
-        Assert.Equal(1040 - 10 - 700, q.Y);
+        var bounds = new PixelRect(-1920, 0, 1920, 1080);
+        var work = new PixelRect(-1920, 0, 1920, 1040);
+        var p = WindowPlacement.NearTaskbar(bounds, work, new PixelSize(425, 700));
+        Assert.Equal(new PixelPoint(0 - 10 - 425, 1040 - 10 - 700), p);
     }
 
     [Fact]
-    public void Side_window_goes_left_of_main_or_right_when_there_is_no_room()
+    public void Ally_keeps_110px_clear_of_the_screen_bottom()
+    {
+        var p = WindowPlacement.NearTaskbar(Screen, Screen, new PixelSize(425, 700), isAlly: true);
+        Assert.Equal(1080 - 110 - 700, p.Y);
+
+        var work = new PixelRect(0, 0, 1920, 1040);
+        var q = WindowPlacement.NearTaskbar(Screen, work, new PixelSize(425, 700), isAlly: true);
+        Assert.Equal(1080 - 110 - 700, q.Y);
+
+        // never above the top margin
+        var tiny = WindowPlacement.NearTaskbar(Screen, Screen, new PixelSize(425, 1000), isAlly: true);
+        Assert.Equal(10, tiny.Y);
+    }
+
+    [Fact]
+    public void Side_window_goes_left_of_main_inside_the_work_area()
     {
         var work = new PixelRect(0, 0, 1920, 1040);
         var main = new PixelRect(1485, 330, 425, 700);
         Assert.Equal(1485 - 400 - 5, WindowPlacement.SideWindowLeft(work, main, 400));
 
-        // taskbar on the left, main window hugging it: no room on its left
+        // no room on the left: clamped to the work area instead of going off screen
         var work2 = new PixelRect(60, 0, 1860, 1080);
         var main2 = new PixelRect(70, 330, 425, 700);
-        Assert.Equal(70 + 425 + 5, WindowPlacement.SideWindowLeft(work2, main2, 400));
+        Assert.Equal(60, WindowPlacement.SideWindowLeft(work2, main2, 400));
     }
 }
 

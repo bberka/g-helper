@@ -97,6 +97,7 @@ namespace GHelper.USB
         public static bool HasLogo { get; private set; }
         public static bool HasLightbar { get; private set; }
         public static bool HasRearglow { get; private set; }
+        static bool hasRearStrip = false;
         public static bool IsOldStrix { get; private set; }
 
         static System.Timers.Timer timer = new System.Timers.Timer(1000);
@@ -339,6 +340,7 @@ namespace GHelper.USB
             HasLogo = (feat1 & FEAT1_LOGO) != 0 || AppConfig.IsZ13();
             HasLightbar = (feat1 & FEAT1_LIGHTBAR) != 0;
             HasRearglow = (feat1 & (FEAT1_REARGLOW | FEAT1_VCUT)) != 0;
+            hasRearStrip = (feat1 & FEAT1_REARGLOW) != 0;
 
             isStrix4Zone = BacklightType == AuraBacklightType.MultiZone;
 
@@ -490,7 +492,7 @@ namespace GHelper.USB
                 Thread.Sleep(50);
             }
 
-            var packets = AuraProtocol.DirectPackets(color, isStrix4Zone, isStrixNumpad, isStrix4ZoneFlipped);
+            var packets = AuraProtocol.DirectPackets(color, isStrix4Zone, isStrixNumpad, isStrix4ZoneFlipped, hasRearStrip);
             for (int i = 0; i < packets.Count; i++)
             {
                 AsusHid.SetFeatureAura(packets[i]);

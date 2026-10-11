@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>annotations</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Version>0.286.0</Version>
+    <Version>0.287.0</Version>
     <Company>GHelper contributors</Company>
     <Product>G-Helper</Product>
     <!-- Windows-only code is compiled everywhere and guarded at runtime with OperatingSystem.IsWindows() -->

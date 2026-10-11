@@ -477,6 +477,11 @@ public sealed class EngineFixture : IDisposable
         Program.Ui = Ui;
         Program.acpi = new AsusACPI(Platform.AsusBackend);
 
+        // the model / BIOS strings are cached once per process: re-read them from this fake platform (another suite's
+        // platform may have been the first one AppConfig saw)
+        typeof(AppConfig).GetMethod("ResetModelCache", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!
+            .Invoke(null, null);
+
         Platform.AsusBackend.Values.Clear();
         Platform.AsusBackend.Buffers.Clear();
         Platform.AsusBackend.ClearSets();

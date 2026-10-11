@@ -154,6 +154,37 @@ public class AuraProtocolTests
         Assert.Equal(new byte[] { 0x5D, 0xBC, 0x00, 0x01, 0x04, 0x00, 0x00, 0x00 }, packets[11][..8]);
     }
 
+    [Fact]
+    public void RearStripAddsThreePacketsAfterTheTail()
+    {
+        var zones = Zones();
+        var without = AuraProtocol.DirectPackets(zones, false, false, false);
+        var packets = AuraProtocol.DirectPackets(zones, false, false, false, rearStrip: true);
+
+        Assert.Equal(without.Count + 3, packets.Count);
+        for (int i = 0; i < without.Count; i++) Assert.Equal(without[i], packets[i]);
+
+        // 39 LEDs in 16 / 16 / 7 chunks, 1 based start index in byte 6, count in byte 7, report type 0x05
+        Assert.Equal(new byte[] { 0x5D, 0xBC, 0x00, 0x01, 0x05, 0x00, 0x01, 0x10 }, packets[12][..8]);
+        Assert.Equal(new byte[] { 0x5D, 0xBC, 0x00, 0x01, 0x05, 0x00, 0x11, 0x10 }, packets[13][..8]);
+        Assert.Equal(new byte[] { 0x5D, 0xBC, 0x00, 0x01, 0x05, 0x00, 0x21, 0x07 }, packets[14][..8]);
+
+        // first LED is zone 0, last LED is zone 3 (interpolated along the strip)
+        Assert.Equal(zones[0], Color.FromArgb(packets[12][9], packets[12][10], packets[12][11]));
+        int last = 9 + 6 * 3;
+        Assert.Equal(zones[3], Color.FromArgb(packets[14][last], packets[14][last + 1], packets[14][last + 2]));
+
+        // bytes after the last LED are cleared
+        Assert.All(packets[14][(9 + 7 * 3)..], b => Assert.Equal(0, b));
+    }
+
+    [Fact]
+    public void RearStripIsNotSentForFourZoneBoards()
+    {
+        var packets = AuraProtocol.DirectPackets(Zones(), strix4Zone: true, numpad: false, flipped: false, rearStrip: true);
+        Assert.Single(packets);
+    }
+
     [Theory]
     [InlineData(21, 0)]   // ESC
     [InlineData(28, 1)]   // F5

@@ -1,4 +1,5 @@
 using System.Drawing;
+using GHelper.Helpers;
 
 namespace GHelper.USB
 {
@@ -92,12 +93,13 @@ namespace GHelper.USB
         public const byte KeySet = 167;
         public const byte LedCount = 178;
         public const byte LedsPerPacket = 16;
+        public const byte RearCount = 39;
 
         /// <summary>
         /// Direct (0xBC) packets for an 8 zone colour array (0-3 keyboard, 4-7 lightbar) in send order: per key strix sends the
         /// key block in 16 LED chunks followed by the lightbar/tail block, 4 zone boards send one packet. All packets are 64 bytes.
         /// </summary>
-        public static List<byte[]> DirectPackets(Color[] color, bool strix4Zone, bool numpad, bool flipped)
+        public static List<byte[]> DirectPackets(Color[] color, bool strix4Zone, bool numpad, bool flipped, bool rearStrip = false)
         {
             var result = new List<byte[]>();
 
@@ -165,6 +167,34 @@ namespace GHelper.USB
 
             Buffer.BlockCopy(keyBuf, 3 * KeySet, buffer, 9, 3 * (LedCount - KeySet));
             result.Add((byte[])buffer.Clone());
+
+            if (!rearStrip) return result;
+
+            // rear strip (39 LEDs, upstream #6055): the four zone colours interpolated along the strip
+            buffer[4] = 0x05;
+
+            for (int i = 0; i < RearCount; i += LedsPerPacket)
+            {
+                byte leds = (byte)Math.Min(LedsPerPacket, RearCount - i);
+
+                buffer[6] = (byte)(i + 1);
+                buffer[7] = leds;
+
+                for (int n = 0; n < leds; n++)
+                {
+                    float f = (i + n) / (float)(RearCount - 1) * 3;
+                    int z = Math.Min(2, (int)f);
+                    Color c = ColorUtils.GetWeightedAverage(color[z], color[z + 1], f - z);
+
+                    buffer[9 + n * 3] = c.R;
+                    buffer[10 + n * 3] = c.G;
+                    buffer[11 + n * 3] = c.B;
+                }
+
+                Array.Clear(buffer, 9 + leds * 3, buffer.Length - 9 - leds * 3);
+                result.Add((byte[])buffer.Clone());
+            }
+
             return result;
         }
 

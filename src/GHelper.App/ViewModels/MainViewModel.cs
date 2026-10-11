@@ -114,7 +114,7 @@ public sealed class MainViewModel : ObservableObject
         _keyboardTitle = Strings.LaptopKeyboard;
         _matrixTitle = Strings.AnimeMatrix;
         _allyTitle = Strings.AllyController;
-        _rearTitle = "Rear Light";
+        _rearTitle = Strings.RearLight;
         _gammaTitle = Strings.VisualMode;
         _runOnStartupText = Strings.RunOnStartup;
 
@@ -1022,7 +1022,7 @@ public sealed class MainViewModel : ObservableObject
         vm.BatteryStatus = Strings.Discharging + ": 11.4W";
         vm.ChargeText = Strings.BatteryCharge + ": 82%";
         vm._runOnStartup = true;
-        vm.VersionText = "v.0.286.0";
+        vm.VersionText = "v.0.287.0";
 
         vm.Donate.Badge = 2;
         vm.Armoury.IsVisible = false;
