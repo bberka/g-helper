@@ -1,0 +1,239 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="GHelper.App.App"
+             RequestedThemeVariant="Default">
+
+  <Application.Resources>
+    <ResourceDictionary>
+
+      <!-- Legacy RForm.InitColors palette (a pair of theme dictionaries). Keys are used through DynamicResource so the
+           theme switches live. The aliases restyle the Fluent controls (ComboBox, TextBox, CheckBox, Slider, Button)
+           with the same palette. -->
+      <ResourceDictionary.ThemeDictionaries>
+
+        <ResourceDictionary x:Key="Dark">
+          <Color x:Key="FormBackColor">#FF1C1C1C</Color>
+          <Color x:Key="ForeMainColor">#FFF0F0F0</Color>
+          <Color x:Key="ButtonMainColor">#FF2E2E2E</Color>
+          <Color x:Key="ButtonSecondColor">#FF242424</Color>
+          <Color x:Key="BorderMainColor">#FF373737</Color>
+          <Color x:Key="BorderSecondColor">#FF2A2A2A</Color>
+          <Color x:Key="ChartMainColor">#FF232323</Color>
+          <Color x:Key="ChartGridColor">#FF464646</Color>
+          <Color x:Key="InputBackColor">#FF2E2E2E</Color>
+          <Color x:Key="InputForeColor">#FFF0F0F0</Color>
+          <Color x:Key="HoverBackColor">#FF3A3A3A</Color>
+          <Color x:Key="PressedBackColor">#FF464646</Color>
+          <SolidColorBrush x:Key="FormBackBrush" Color="{StaticResource FormBackColor}" />
+          <SolidColorBrush x:Key="ForeMainBrush" Color="{StaticResource ForeMainColor}" />
+          <SolidColorBrush x:Key="ButtonMainBrush" Color="{StaticResource ButtonMainColor}" />
+          <SolidColorBrush x:Key="ButtonSecondBrush" Color="{StaticResource ButtonSecondColor}" />
+          <SolidColorBrush x:Key="BorderMainBrush" Color="{StaticResource BorderMainColor}" />
+          <SolidColorBrush x:Key="BorderSecondBrush" Color="{StaticResource BorderSecondColor}" />
+          <SolidColorBrush x:Key="ChartMainBrush" Color="{StaticResource ChartMainColor}" />
+          <SolidColorBrush x:Key="ChartGridBrush" Color="{StaticResource ChartGridColor}" />
+          <SolidColorBrush x:Key="InputBackBrush" Color="{StaticResource InputBackColor}" />
+          <SolidColorBrush x:Key="InputForeBrush" Color="{StaticResource InputForeColor}" />
+          <SolidColorBrush x:Key="HoverBackBrush" Color="{StaticResource HoverBackColor}" />
+          <SolidColorBrush x:Key="PressedBackBrush" Color="{StaticResource PressedBackColor}" />
+          <StaticResource x:Key="ComboBoxBackground" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundPointerOver" ResourceKey="HoverBackBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="PressedBackBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundUnfocused" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundFocused" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundDisabled" ResourceKey="ButtonSecondBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrush" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrushPointerOver" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrushPressed" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrushFocused" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrushDisabled" ResourceKey="BorderSecondBrush" />
+          <StaticResource x:Key="ComboBoxForeground" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxForegroundFocused" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxForegroundFocusedPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxDropDownGlyphForeground" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackground" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundPressed" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundSelectedUnfocused" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundSelectedPointerOver" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundSelectedPressed" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForeground" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForegroundPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForegroundPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForegroundSelected" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForegroundSelectedPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForegroundSelectedPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="TextControlBackground" ResourceKey="InputBackBrush" />
+          <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="InputBackBrush" />
+          <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="InputBackBrush" />
+          <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="ButtonSecondBrush" />
+          <StaticResource x:Key="TextControlForeground" ResourceKey="InputForeBrush" />
+          <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="InputForeBrush" />
+          <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="InputForeBrush" />
+          <StaticResource x:Key="TextControlBorderBrush" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ButtonBackground" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="HoverBackBrush" />
+          <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="PressedBackBrush" />
+          <StaticResource x:Key="ButtonForeground" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ButtonBorderBrush" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundUncheckedPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundChecked" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundCheckedPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundCheckedPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundFillUnchecked" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver" ResourceKey="HoverBackBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPressed" ResourceKey="PressedBackBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUnchecked" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="SliderTrackFill" ResourceKey="ChartGridBrush" />
+          <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="ChartGridBrush" />
+          <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="ChartGridBrush" />
+          <StaticResource x:Key="SliderThumbBackground" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="ForeMainBrush" />
+          <SolidColorBrush x:Key="SliderContainerBackground" Color="Transparent" />
+          <SolidColorBrush x:Key="SliderContainerBackgroundPointerOver" Color="Transparent" />
+          <SolidColorBrush x:Key="SliderContainerBackgroundPressed" Color="Transparent" />
+        </ResourceDictionary>
+
+        <ResourceDictionary x:Key="Light">
+          <Color x:Key="FormBackColor">#FFF0F0F0</Color>
+          <Color x:Key="ForeMainColor">#FF000000</Color>
+          <Color x:Key="ButtonMainColor">#FFFFFFFF</Color>
+          <Color x:Key="ButtonSecondColor">#FFE3E3E3</Color>
+          <Color x:Key="BorderMainColor">#FFDCDCDC</Color>
+          <Color x:Key="BorderSecondColor">#FFD7D7D7</Color>
+          <Color x:Key="ChartMainColor">#FFFFFFFF</Color>
+          <Color x:Key="ChartGridColor">#FFD3D3D3</Color>
+          <Color x:Key="InputBackColor">#FFFFFFFF</Color>
+          <Color x:Key="InputForeColor">#FF000000</Color>
+          <Color x:Key="HoverBackColor">#FFEDEDED</Color>
+          <Color x:Key="PressedBackColor">#FFDEDEDE</Color>
+          <SolidColorBrush x:Key="FormBackBrush" Color="{StaticResource FormBackColor}" />
+          <SolidColorBrush x:Key="ForeMainBrush" Color="{StaticResource ForeMainColor}" />
+          <SolidColorBrush x:Key="ButtonMainBrush" Color="{StaticResource ButtonMainColor}" />
+          <SolidColorBrush x:Key="ButtonSecondBrush" Color="{StaticResource ButtonSecondColor}" />
+          <SolidColorBrush x:Key="BorderMainBrush" Color="{StaticResource BorderMainColor}" />
+          <SolidColorBrush x:Key="BorderSecondBrush" Color="{StaticResource BorderSecondColor}" />
+          <SolidColorBrush x:Key="ChartMainBrush" Color="{StaticResource ChartMainColor}" />
+          <SolidColorBrush x:Key="ChartGridBrush" Color="{StaticResource ChartGridColor}" />
+          <SolidColorBrush x:Key="InputBackBrush" Color="{StaticResource InputBackColor}" />
+          <SolidColorBrush x:Key="InputForeBrush" Color="{StaticResource InputForeColor}" />
+          <SolidColorBrush x:Key="HoverBackBrush" Color="{StaticResource HoverBackColor}" />
+          <SolidColorBrush x:Key="PressedBackBrush" Color="{StaticResource PressedBackColor}" />
+          <StaticResource x:Key="ComboBoxBackground" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundPointerOver" ResourceKey="HoverBackBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundPressed" ResourceKey="PressedBackBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundUnfocused" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundFocused" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ComboBoxBackgroundDisabled" ResourceKey="ButtonSecondBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrush" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrushPointerOver" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrushPressed" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrushFocused" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxBorderBrushDisabled" ResourceKey="BorderSecondBrush" />
+          <StaticResource x:Key="ComboBoxForeground" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxForegroundFocused" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxForegroundFocusedPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxDropDownGlyphForeground" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxDropDownBackground" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ComboBoxDropDownBorderBrush" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackground" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundPointerOver" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundPressed" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundSelected" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundSelectedUnfocused" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundSelectedPointerOver" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemBackgroundSelectedPressed" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForeground" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForegroundPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForegroundPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForegroundSelected" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForegroundSelectedPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ComboBoxItemForegroundSelectedPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="TextControlBackground" ResourceKey="InputBackBrush" />
+          <StaticResource x:Key="TextControlBackgroundPointerOver" ResourceKey="InputBackBrush" />
+          <StaticResource x:Key="TextControlBackgroundFocused" ResourceKey="InputBackBrush" />
+          <StaticResource x:Key="TextControlBackgroundDisabled" ResourceKey="ButtonSecondBrush" />
+          <StaticResource x:Key="TextControlForeground" ResourceKey="InputForeBrush" />
+          <StaticResource x:Key="TextControlForegroundPointerOver" ResourceKey="InputForeBrush" />
+          <StaticResource x:Key="TextControlForegroundFocused" ResourceKey="InputForeBrush" />
+          <StaticResource x:Key="TextControlBorderBrush" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="TextControlBorderBrushPointerOver" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="TextControlBorderBrushFocused" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ButtonBackground" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="ButtonBackgroundPointerOver" ResourceKey="HoverBackBrush" />
+          <StaticResource x:Key="ButtonBackgroundPressed" ResourceKey="PressedBackBrush" />
+          <StaticResource x:Key="ButtonForeground" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ButtonForegroundPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ButtonForegroundPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="ButtonBorderBrush" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ButtonBorderBrushPointerOver" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="ButtonBorderBrushPressed" ResourceKey="BorderMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundUnchecked" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundUncheckedPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundUncheckedPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundChecked" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundCheckedPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxForegroundCheckedPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundFillUnchecked" ResourceKey="ButtonMainBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPointerOver" ResourceKey="HoverBackBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundFillUncheckedPressed" ResourceKey="PressedBackBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUnchecked" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="CheckBoxCheckBackgroundStrokeUncheckedPressed" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="SliderTrackFill" ResourceKey="ChartGridBrush" />
+          <StaticResource x:Key="SliderTrackFillPointerOver" ResourceKey="ChartGridBrush" />
+          <StaticResource x:Key="SliderTrackFillPressed" ResourceKey="ChartGridBrush" />
+          <StaticResource x:Key="SliderThumbBackground" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="SliderThumbBackgroundPointerOver" ResourceKey="ForeMainBrush" />
+          <StaticResource x:Key="SliderThumbBackgroundPressed" ResourceKey="ForeMainBrush" />
+          <SolidColorBrush x:Key="SliderContainerBackground" Color="Transparent" />
+          <SolidColorBrush x:Key="SliderContainerBackgroundPointerOver" Color="Transparent" />
+          <SolidColorBrush x:Key="SliderContainerBackgroundPressed" Color="Transparent" />
+        </ResourceDictionary>
+
+      </ResourceDictionary.ThemeDictionaries>
+
+      <!-- Theme independent colours -->
+      <Color x:Key="EcoColor">#FF06B48A</Color>
+      <Color x:Key="StandardColor">#FF3AAEEF</Color>
+      <Color x:Key="TurboColor">#FFFF2020</Color>
+      <Color x:Key="CustomColor">#FFFF8000</Color>
+      <Color x:Key="GrayColor">#FFA8A8A8</Color>
+      <Color x:Key="ControlDarkColor">#FFA0A0A0</Color>
+      <Color x:Key="GrayTextColor">#FF6D6D6D</Color>
+
+      <SolidColorBrush x:Key="EcoBrush" Color="{StaticResource EcoColor}" />
+      <SolidColorBrush x:Key="StandardBrush" Color="{StaticResource StandardColor}" />
+      <SolidColorBrush x:Key="TurboBrush" Color="{StaticResource TurboColor}" />
+      <SolidColorBrush x:Key="CustomBrush" Color="{StaticResource CustomColor}" />
+      <SolidColorBrush x:Key="GrayBrush" Color="{StaticResource GrayColor}" />
+      <SolidColorBrush x:Key="ControlDarkBrush" Color="{StaticResource ControlDarkColor}" />
+      <SolidColorBrush x:Key="GrayTextBrush" Color="{StaticResource GrayTextColor}" />
+
+      <!-- Legacy design size is 9pt Segoe UI = 12px -->
+      <x:Double x:Key="ControlContentThemeFontSize">12</x:Double>
+      <x:Double x:Key="ContentControlThemeFontSize">12</x:Double>
+
+    </ResourceDictionary>
+  </Application.Resources>
+
+  <Application.Styles>
+    <FluentTheme />
+    <StyleInclude Source="avares://GHelper/Theme/Controls.axaml" />
+  </Application.Styles>
+
+</Application>
