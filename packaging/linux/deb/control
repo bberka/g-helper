@@ -1,0 +1,19 @@
+Package: ghelper
+Version: @VERSION@
+Architecture: @ARCH@
+Maintainer: G-Helper contributors <ghelper@users.noreply.github.com>
+Installed-Size: @SIZE@
+Section: utils
+Priority: optional
+Homepage: https://github.com/bberka/g-helper
+Depends: libc6, libgcc-s1, libstdc++6, zlib1g, libfontconfig1, libx11-6, libice6, libsm6
+Recommends: pkexec | policykit-1, xdg-utils, power-profiles-daemon
+Description: Control tool for ASUS laptops (performance modes, fans, GPU mode, battery limit, lighting)
+ Cross-platform fork of G-Helper: performance modes, fan curves, power limits,
+ GPU mode, battery charge limit, keyboard lighting and ASUS peripherals through
+ the asus-wmi kernel driver. Self-contained: ships its own .NET runtime.
+ .
+ Installs udev rules and a polkit action; members of the "ghelper" group (and
+ the user logged in at the seat) can access the hardware without root.
+ Needs ICU (libicuNN) for localisation; without it start with
+ DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=1.

@@ -1,0 +1,28 @@
+#!/bin/sh
+# Debian maintainer script: creates the "ghelper" group and reloads udev so the rules apply without a reboot.
+set -e
+
+case "$1" in
+    configure)
+        if command -v systemd-sysusers >/dev/null 2>&1; then
+            systemd-sysusers /usr/lib/sysusers.d/ghelper.conf || true
+        elif ! getent group ghelper >/dev/null 2>&1; then
+            addgroup --system ghelper >/dev/null 2>&1 || groupadd -r ghelper || true
+        fi
+        if command -v udevadm >/dev/null 2>&1; then
+            udevadm control --reload-rules || true
+            udevadm trigger || true
+        fi
+        if command -v systemctl >/dev/null 2>&1; then
+            systemctl daemon-reload || true
+        fi
+        if command -v gtk-update-icon-cache >/dev/null 2>&1; then
+            gtk-update-icon-cache -q -t -f /usr/share/icons/hicolor || true
+        fi
+        if command -v update-desktop-database >/dev/null 2>&1; then
+            update-desktop-database -q /usr/share/applications || true
+        fi
+        ;;
+esac
+
+exit 0
