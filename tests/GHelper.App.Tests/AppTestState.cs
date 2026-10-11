@@ -1,6 +1,7 @@
 using System.Reflection;
 using GHelper.AnimeMatrix;
 using GHelper.Gpu;
+using GHelper.Platform;
 using GHelper.Tests.Engine;
 using Xunit;
 using Xunit.v3;
@@ -23,6 +24,10 @@ internal static class AppTestState
 
     public static void Reset()
     {
+        // Core's statics read the platform services in their type initializers: touching them before any test has
+        // registered a platform would poison the type for the rest of the run, and there is nothing to reset yet
+        if (!PlatformServices.IsRegistered) return;
+
         // model / BIOS are read from the platform once; tests swap platforms
         AppConfig.ResetModelCache();
 

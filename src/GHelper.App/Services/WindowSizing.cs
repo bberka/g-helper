@@ -393,7 +393,7 @@ public static class WindowSizing
         Dispatcher.UIThread.Post(() =>
         {
             s.RefitQueued = false;
-            if (!s.Window.IsVisible && !s.Locked) return;
+            if (!s.Window.IsVisible) return; // closed / hidden in the meantime
             if (s.Applying) return;
 
             // safety net against a layout that never settles: at most 20 re-fits per second per window
@@ -401,7 +401,8 @@ public static class WindowSizing
             if (now - s.BurstStart > 1000) { s.BurstStart = now; s.BurstCount = 0; }
             if (++s.BurstCount > 20) return;
 
-            Refit(s);
+            try { Refit(s); }
+            catch (Exception ex) { AppLog.Write("WindowSizing: " + ex.Message); }
         }, DispatcherPriority.Loaded);
     }
 }
