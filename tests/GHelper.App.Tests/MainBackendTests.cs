@@ -58,6 +58,8 @@ public class MainBackendTests : EngineTestBase, IDisposable
 
     public MainBackendTests(EngineFixture fixture) : base(fixture)
     {
+        // the base class put the fake platform back; the process wide Core singletons are reset on top of it
+        AppTestState.Reset();
         CleanConfig(Keys);
         BatteryControl.chargeFull = false;
 
