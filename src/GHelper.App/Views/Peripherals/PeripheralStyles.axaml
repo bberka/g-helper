@@ -1,0 +1,51 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:c="using:GHelper.App.Controls"
+        xmlns:p="using:GHelper.App.Views.Peripherals">
+
+  <!-- layout vocabulary shared by the mouse / keyboard / headset windows (legacy panels of 40 px = 20 dip rows) -->
+
+  <Style Selector="TextBlock.row">
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+  </Style>
+
+  <Style Selector="Grid.row">
+    <Setter Property="MinHeight" Value="30" />
+    <Setter Property="Margin" Value="0,2" />
+  </Style>
+
+  <Style Selector="Grid.row > c|RComboBox, Grid.row > p|BindingComboBox">
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Stretch" />
+  </Style>
+
+  <Style Selector="Grid.row > c|RSlider">
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="Grid.header">
+    <Setter Property="Height" Value="28" />
+    <Setter Property="Margin" Value="0,10,0,4" />
+  </Style>
+
+  <Style Selector="c|TintedImage.headerIcon">
+    <Setter Property="Width" Value="16" />
+    <Setter Property="Height" Value="16" />
+    <Setter Property="Margin" Value="4,0,8,0" />
+    <Setter Property="VerticalAlignment" Value="Center" />
+  </Style>
+
+  <Style Selector="TextBlock.value">
+    <Setter Property="VerticalAlignment" Value="Center" />
+    <Setter Property="HorizontalAlignment" Value="Right" />
+    <Setter Property="TextAlignment" Value="Right" />
+  </Style>
+
+  <Style Selector="c|RButton.small">
+    <Setter Property="MinHeight" Value="26" />
+    <Setter Property="Height" Value="28" />
+    <Setter Property="Margin" Value="2" />
+  </Style>
+
+</Styles>
