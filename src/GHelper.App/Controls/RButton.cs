@@ -73,7 +73,6 @@ public class RButton : Button
         ActualThemeVariantChanged += (_, _) => InvalidateVisual();
         HorizontalContentAlignment = HorizontalAlignment.Center;
         VerticalContentAlignment = VerticalAlignment.Center;
-        AppTheme.Changed += OnThemeChanged;
     }
 
     private void OnThemeChanged() => InvalidateVisual();
@@ -160,7 +159,11 @@ public class RButton : Button
         else if (change.Property == SecondaryProperty)
             PseudoClasses.Set(":secondary", Secondary);
         else if (change.Property == ActivatedProperty)
+        {
             PseudoClasses.Set(":activated", Activated);
+            // legacy: AccessibleDescription = activated ? "Active" : null
+            AutomationProperties.SetHelpText(this, Activated ? "Active" : null);
+        }
         else if (change.Property == IsPointerOverProperty || change.Property == IsPressedProperty)
             InvalidateVisual();
     }

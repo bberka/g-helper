@@ -1,3 +1,5 @@
+using Avalonia.Automation;
+using Avalonia.Automation.Peers;
 using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
@@ -62,5 +64,48 @@ public class InputControlTests
         w.KeyPressQwerty(PhysicalKey.ArrowLeft, RawInputModifiers.None);
         Assert.Equal(70, s.Value);
         w.Close();
+    }
+
+    [AvaloniaFact]
+    public void Slider_exposes_accessible_name_and_slider_role()
+    {
+        var s = new RSlider { Minimum = 40, Maximum = 100, Value = 80 };
+        AutomationProperties.SetName(s, "Battery Charge Limit: 80%");
+        var w = new Window { Content = s };
+        w.Show();
+
+        var peer = ControlAutomationPeer.CreatePeerForElement(s);
+        Assert.Equal("Battery Charge Limit: 80%", peer.GetName());
+        Assert.Equal(AutomationControlType.Slider, peer.GetAutomationControlType());
+        w.Close();
+    }
+
+    [AvaloniaFact]
+    public void Activated_button_is_announced_as_active()
+    {
+        var b = new RButton { Content = "Turbo" };
+        b.Activated = true;
+        Assert.Equal("Active", AutomationProperties.GetHelpText(b));
+        b.Activated = false;
+        Assert.Null(AutomationProperties.GetHelpText(b));
+    }
+
+    [AvaloniaFact]
+    public void Button_state_drives_the_control()
+    {
+        var state = new GHelper.App.ViewModels.ButtonState("Eco") { BorderColor = Avalonia.Media.Colors.Green };
+        var b = new RButton { State = state };
+        Assert.Equal("Eco", b.Content);
+        Assert.False(b.Activated);
+
+        state.Activated = true;
+        state.Text = "Eco on";
+        state.IsEnabled = false;
+        state.FillColor = Avalonia.Media.Colors.Red;
+        Assert.True(b.Activated);
+        Assert.Equal("Eco on", b.Content);
+        Assert.False(b.IsEnabled);
+        Assert.Equal(Avalonia.Media.Colors.Red, b.FillColor);
+        Assert.Equal(Avalonia.Media.Colors.Green, b.BorderColor);
     }
 }

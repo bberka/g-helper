@@ -93,11 +93,43 @@ public sealed class WindowCoordinator
         if (screen is null) return;
 
         double scale = screen.Scaling;
+
+        // never taller than the screen: the content scrolls instead (legacy hid the tips on small screens)
+        _main.MaxHeight = Math.Max(300, screen.WorkingArea.Height / scale - 2.0 * WindowPlacement.Margin / scale);
         _main.Measure(new Size(_main.Width, double.PositiveInfinity));
         double h = _main.IsVisible && _main.Bounds.Height > 0 ? _main.Bounds.Height : _main.DesiredSize.Height;
         var size = new PixelSize((int)Math.Ceiling(_main.Width * scale), (int)Math.Ceiling(h * scale));
 
         _main.Position = WindowPlacement.NearTaskbar(screen.Bounds, screen.WorkingArea, size, UiSettings.IsAlly);
+    }
+
+    /// <summary>
+    /// Port of the FormPosition() of the legacy side forms: line the window up with the main window (same top when it
+    /// is smaller, bottom aligned when taller) and put it left of it (right of it when the taskbar is on the left).
+    /// </summary>
+    public void PositionSideWindow(Window side)
+    {
+        var screen = _main.Screens.ScreenFromWindow(_main) ?? _main.Screens.Primary;
+        if (screen is null) return;
+
+        double scale = screen.Scaling;
+        int mainTop = _main.Position.Y;
+        int mainHeight = (int)(_main.Bounds.Height * scale);
+        int width = (int)Math.Ceiling(side.Bounds.Width * scale);
+        int height = (int)Math.Ceiling(side.Bounds.Height * scale);
+
+        int top;
+        if (height > mainHeight)
+        {
+            top = Math.Max(screen.WorkingArea.Y, mainTop + mainHeight - height);
+        }
+        else
+        {
+            side.MinHeight = mainHeight / scale;
+            top = mainTop;
+        }
+
+        side.Position = new PixelPoint(GetSideWindowLeft(width), top);
     }
 
     /// <summary>Left edge (pixels) for a side window of the given pixel width (legacy GetSideWindowLeft).</summary>

@@ -17,7 +17,7 @@
         d:DesignWidth="425" d:DesignHeight="760">
 
   <Design.DataContext>
-    <vm:MainViewModel />
+    <x:Static Member="vm:DesignData.Main" />
   </Design.DataContext>
 
   <Window.Styles>

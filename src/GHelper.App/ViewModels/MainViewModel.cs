@@ -997,3 +997,11 @@ public sealed class MainViewModel : ObservableObject
         return vm;
     }
 }
+
+/// <summary>Sample view models for the XAML previewer.</summary>
+public static class DesignData
+{
+    public static MainViewModel Main { get; } = MainViewModel.CreateSample();
+
+    public static MainViewModel Ally { get; } = MainViewModel.CreateSample(ally: true);
+}
