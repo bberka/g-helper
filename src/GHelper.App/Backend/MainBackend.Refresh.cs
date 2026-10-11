@@ -321,6 +321,13 @@ public sealed partial class MainBackend
 
     private void VisualiseBattery()
     {
+        // the slider is being dragged: do not move it back to the value that was written a moment ago
+        if (Volatile.Read(ref _pendingBatteryLimit) >= 0)
+        {
+            _vm.VisualiseBatteryFull(BatteryControl.chargeFull);
+            return;
+        }
+
         int limit = AppConfig.Get("charge_limit");
         if (limit < 40 || limit > 100) limit = 100;
         _vm.VisualiseBattery(limit, BatteryControl.chargeFull);

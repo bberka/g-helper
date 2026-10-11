@@ -330,7 +330,9 @@ public sealed partial class MainBackend : IMainBackend, IUiActionHandler, IDispo
                 break;
 
             case MainValue.Gamma:
-                Run("Brightness", () => VisualControl.SetBrightness(v));
+                // inline: only stores the value and restarts Core's own debounce timer; running it on the queue would
+                // let the "brightness" refresh move the slider back while it is being dragged
+                VisualControl.SetBrightness(v);
                 break;
 
             case MainValue.AuraMode:

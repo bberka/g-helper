@@ -6,7 +6,8 @@
     <AssemblyName>GHelper</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
-    <BuiltInComInteropSupport>false</BuiltInComInteropSupport>
+    <!-- must stay true: System.Management (WMI) and the task scheduler wrapper are COM based -->
+    <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <RuntimeIdentifiers>win-x64;win-x86;win-arm64;linux-x64;linux-arm64;linux-arm;linux-musl-x64;linux-musl-arm64</RuntimeIdentifiers>
   </PropertyGroup>
