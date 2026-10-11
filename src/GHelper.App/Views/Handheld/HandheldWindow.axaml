@@ -1,0 +1,139 @@
+<v:SideWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:c="using:GHelper.App.Controls"
+                xmlns:v="using:GHelper.App.Views"
+                x:Class="GHelper.App.Views.HandheldWindow"
+                x:CompileBindings="False"
+                Title="Controller"
+                Width="710"
+                SizeToContent="Height"
+                Icon="avares://GHelper/Assets/Tray/standard.png">
+
+  <v:SideWindow.Styles>
+    <Style Selector="c|TintedImage.icon">
+      <Setter Property="Width" Value="16" />
+      <Setter Property="Height" Value="16" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Canvas > c|RButton">
+      <Setter Property="Width" Value="74" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="CornerRadius" Value="5" />
+      <Setter Property="Padding" Value="4,0" />
+      <Setter Property="Secondary" Value="True" />
+    </Style>
+    <Style Selector="Grid.zone TextBlock.value">
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="HorizontalAlignment" Value="Right" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+  </v:SideWindow.Styles>
+
+  <StackPanel Margin="10" Spacing="0">
+
+    <!-- ================= controller map + binding editor ================= -->
+    <Canvas Width="690" Height="258">
+      <Image Name="ImageAlly" Canvas.Left="87" Canvas.Top="42" Width="514" Height="212" Stretch="Uniform"
+             Source="avares://GHelper/Assets/Icons/ally.png" />
+
+      <c:RButton Name="ButtonLB" Canvas.Left="10" Canvas.Top="12" Content="LBumper" />
+      <c:RButton Name="ButtonLT" Canvas.Left="10" Canvas.Top="44" Content="LTrigger" />
+      <c:RButton Name="ButtonDPU" Canvas.Left="10" Canvas.Top="76" Content="DpadUp" />
+      <c:RButton Name="ButtonDPD" Canvas.Left="10" Canvas.Top="107" Content="DpadDown" />
+      <c:RButton Name="ButtonDPL" Canvas.Left="10" Canvas.Top="139" Content="DpadLeft" />
+      <c:RButton Name="ButtonDPR" Canvas.Left="10" Canvas.Top="170" Content="DpadRight" />
+      <c:RButton Name="ButtonLS" Canvas.Left="10" Canvas.Top="202" Content="LStick" />
+
+      <c:RButton Name="ButtonView" Canvas.Left="88" Canvas.Top="13" Content="View" />
+      <c:RButton Name="ButtonM2" Canvas.Left="165" Canvas.Top="13" Content="M2" />
+      <c:RButton Name="ButtonM1" Canvas.Left="449" Canvas.Top="13" Content="M1" />
+      <c:RButton Name="ButtonMenu" Canvas.Left="526" Canvas.Top="13" Content="Menu" />
+
+      <c:RButton Name="ButtonRB" Canvas.Left="605" Canvas.Top="12" Content="RBumper" />
+      <c:RButton Name="ButtonRT" Canvas.Left="605" Canvas.Top="44" Content="RTrigger" />
+      <c:RButton Name="ButtonX" Canvas.Left="605" Canvas.Top="76" Content="X" />
+      <c:RButton Name="ButtonY" Canvas.Left="605" Canvas.Top="107" Content="Y" />
+      <c:RButton Name="ButtonA" Canvas.Left="605" Canvas.Top="139" Content="A" />
+      <c:RButton Name="ButtonB" Canvas.Left="605" Canvas.Top="170" Content="B" />
+      <c:RButton Name="ButtonRS" Canvas.Left="605" Canvas.Top="202" Content="RStick" />
+
+      <Border Name="PanelBinding" Canvas.Left="198" Canvas.Top="96" Width="292" Height="102" IsVisible="False"
+              Background="{DynamicResource FormBackBrush}" BorderBrush="{DynamicResource BorderMainBrush}"
+              BorderThickness="1" CornerRadius="3">
+        <Canvas>
+          <TextBlock Name="LabelBinding" Canvas.Left="8" Canvas.Top="8" FontWeight="Bold" />
+          <TextBlock Name="LabelPrimary" Canvas.Left="8" Canvas.Top="38" />
+          <TextBlock Name="LabelSecondary" Canvas.Left="8" Canvas.Top="68" />
+          <TextBlock Name="LabelTurbo" Canvas.Left="212" Canvas.Top="8" Text="Repeat (ms)" />
+          <c:RComboBox Name="ComboPrimary" Canvas.Left="70" Canvas.Top="32" Width="138" Height="26" />
+          <c:RComboBox Name="ComboSecondary" Canvas.Left="70" Canvas.Top="62" Width="138" Height="26" />
+          <c:RComboBox Name="ComboTurboPrimary" Canvas.Left="216" Canvas.Top="32" Width="66" Height="26" />
+          <c:RComboBox Name="ComboTurboSecondary" Canvas.Left="216" Canvas.Top="62" Width="66" Height="26" />
+        </Canvas>
+      </Border>
+    </Canvas>
+
+    <!-- ================= stick / trigger deadzones ================= -->
+    <Grid ColumnDefinitions="345,345" RowDefinitions="62,62">
+      <Grid Classes="zone" Margin="0,0,10,0" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto">
+        <c:TintedImage Classes="icon" Margin="8,6,8,0" Source="avares://GHelper/Assets/Icons/icons8-joystick-32.png" />
+        <TextBlock Name="LabelLSTitle" Grid.Column="1" Margin="0,6,0,0" VerticalAlignment="Center" />
+        <TextBlock Name="LabelLS" Classes="value" Grid.Column="2" Margin="0,6,8,0" />
+        <Grid Grid.Row="1" Grid.ColumnSpan="3" ColumnDefinitions="*,*" Margin="8,8,8,0">
+          <c:RSlider Name="TrackLSMin" Minimum="0" Maximum="50" Step="1" Margin="0,0,6,0" />
+          <c:RSlider Name="TrackLSMax" Grid.Column="1" Minimum="50" Maximum="100" Step="1" Value="100" Margin="6,0,0,0" />
+        </Grid>
+      </Grid>
+
+      <Grid Classes="zone" Grid.Column="1" Margin="10,0,0,0" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto">
+        <c:TintedImage Classes="icon" Margin="8,6,8,0" Source="avares://GHelper/Assets/Icons/icons8-joystick-32.png" />
+        <TextBlock Name="LabelRSTitle" Grid.Column="1" Margin="0,6,0,0" VerticalAlignment="Center" />
+        <TextBlock Name="LabelRS" Classes="value" Grid.Column="2" Margin="0,6,8,0" />
+        <Grid Grid.Row="1" Grid.ColumnSpan="3" ColumnDefinitions="*,*" Margin="8,8,8,0">
+          <c:RSlider Name="TrackRSMin" Minimum="0" Maximum="50" Step="1" Margin="0,0,6,0" />
+          <c:RSlider Name="TrackRSMax" Grid.Column="1" Minimum="50" Maximum="100" Step="1" Value="100" Margin="6,0,0,0" />
+        </Grid>
+      </Grid>
+
+      <Grid Classes="zone" Grid.Row="1" Margin="0,0,10,0" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto">
+        <c:TintedImage Classes="icon" Margin="8,6,8,0" Source="avares://GHelper/Assets/Icons/icons8-xbox-lt-32.png" />
+        <TextBlock Name="LabelLTTitle" Grid.Column="1" Margin="0,6,0,0" VerticalAlignment="Center" />
+        <TextBlock Name="LabelLT" Classes="value" Grid.Column="2" Margin="0,6,8,0" />
+        <Grid Grid.Row="1" Grid.ColumnSpan="3" ColumnDefinitions="*,*" Margin="8,8,8,0">
+          <c:RSlider Name="TrackLTMin" Minimum="0" Maximum="50" Step="1" Margin="0,0,6,0" />
+          <c:RSlider Name="TrackLTMax" Grid.Column="1" Minimum="50" Maximum="100" Step="1" Value="100" Margin="6,0,0,0" />
+        </Grid>
+      </Grid>
+
+      <Grid Classes="zone" Grid.Row="1" Grid.Column="1" Margin="10,0,0,0" RowDefinitions="Auto,Auto"
+            ColumnDefinitions="Auto,*,Auto">
+        <c:TintedImage Classes="icon" Margin="8,6,8,0" Source="avares://GHelper/Assets/Icons/icons8-xbox-rt-32.png" />
+        <TextBlock Name="LabelRTTitle" Grid.Column="1" Margin="0,6,0,0" VerticalAlignment="Center" />
+        <TextBlock Name="LabelRT" Classes="value" Grid.Column="2" Margin="0,6,8,0" />
+        <Grid Grid.Row="1" Grid.ColumnSpan="3" ColumnDefinitions="*,*" Margin="8,8,8,0">
+          <c:RSlider Name="TrackRTMin" Minimum="0" Maximum="50" Step="1" Margin="0,0,6,0" />
+          <c:RSlider Name="TrackRTMax" Grid.Column="1" Minimum="50" Maximum="100" Step="1" Value="100" Margin="6,0,0,0" />
+        </Grid>
+      </Grid>
+    </Grid>
+
+    <!-- ================= vibration / controller toggles ================= -->
+    <Grid ColumnDefinitions="345,*,Auto" RowDefinitions="Auto,Auto" Margin="0,6,0,0">
+      <Grid Classes="zone" Margin="0,0,10,0" RowDefinitions="Auto,Auto" ColumnDefinitions="Auto,*,Auto">
+        <c:TintedImage Classes="icon" Margin="8,6,8,0" Source="avares://GHelper/Assets/Icons/icons8-soonvibes-32.png" />
+        <TextBlock Name="LabelVibraTitle" Grid.Column="1" Margin="0,6,0,0" VerticalAlignment="Center" />
+        <TextBlock Name="LabelVibra" Classes="value" Grid.Column="2" Margin="0,6,8,0" />
+        <c:RSlider Name="TrackVibra" Grid.Row="1" Grid.ColumnSpan="3" Minimum="0" Maximum="100" Step="1" Value="100"
+                   Margin="8,8,8,0" />
+      </Grid>
+
+      <c:RCheckBox Name="CheckController" Grid.Column="1" ShowBorder="True" Padding="8,4"
+                   HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,16,10,0" />
+      <c:RButton Name="ButtonReset" Grid.Column="2" Width="84" Height="26" CornerRadius="5" Secondary="True"
+                 VerticalAlignment="Center" Margin="0,16,0,0" />
+
+      <c:RCheckBox Name="CheckVibra" Grid.Row="1" ShowBorder="True" Padding="8,4" IsVisible="False"
+                   HorizontalAlignment="Left" Margin="6,6,0,0" />
+    </Grid>
+  </StackPanel>
+</v:SideWindow>

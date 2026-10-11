@@ -53,6 +53,13 @@ namespace GHelper.AnimeMatrix
 
         public AniMatrixControl()
         {
+            // Program.matrixControl and the Instance property must be the same controller (one USB owner)
+            _instance ??= this;
+
+            // created before the device check so the timer calls below are safe on machines without a matrix
+            matrixTimer = new System.Timers.Timer(100);
+            matrixTimer.Elapsed += MatrixTimer_Elapsed;
+
             if (!AppConfig.IsSlash() && !AppConfig.IsAnimeMatrix()) return;
             
             try
@@ -65,10 +72,6 @@ namespace GHelper.AnimeMatrix
                 {
                     deviceMatrix = new AnimeMatrixDevice();
                 }
-
-                matrixTimer = new System.Timers.Timer(100);
-                matrixTimer.Elapsed += MatrixTimer_Elapsed;
-
             }
             catch (Exception ex)
             {
