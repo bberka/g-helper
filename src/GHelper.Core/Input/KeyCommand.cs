@@ -49,4 +49,26 @@ namespace GHelper.Input
             return modifiers;
         }
     }
+
+    /// <summary>Decoding of the ASUS HID input report (0x5A) the keyboard listener reads.</summary>
+    public static class AsusKeyReport
+    {
+        /// <summary>
+        /// Byte 1 is the ASUS hotkey code. 0 (key released) only matters on the Ally, 236 is a heartbeat the firmware
+        /// sends all the time.
+        /// </summary>
+        public static bool TryGetKey(byte[] data, bool ally, out int key)
+        {
+            key = 0;
+            if (data.Length <= 1 || data[0] != GHelper.USB.AsusHid.INPUT_ID) return false;
+
+            if (data[1] > 0 && data[1] != 236)
+            {
+                key = data[1];
+                return true;
+            }
+
+            return ally && data[1] == 0;
+        }
+    }
 }

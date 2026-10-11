@@ -18,24 +18,6 @@ namespace GHelper.Input
             var task = Task.Run(() => { while (Listen()) { } });
         }
 
-        /// <summary>
-        /// Input report 0x5A: byte 1 is the ASUS hotkey code. 0 (key released) only matters on the Ally, 236 is a
-        /// heartbeat the firmware sends all the time.
-        /// </summary>
-        public static bool TryGetKey(byte[] data, bool ally, out int key)
-        {
-            key = 0;
-            if (data.Length <= 1 || data[0] != AsusHid.INPUT_ID) return false;
-
-            if (data[1] > 0 && data[1] != 236)
-            {
-                key = data[1];
-                return true;
-            }
-
-            return ally && data[1] == 0;
-        }
-
         private bool Listen()
         {
 
@@ -76,7 +58,7 @@ namespace GHelper.Input
 
                     var data = input.Read();
                     if (cancellationTokenSource.Token.IsCancellationRequested) break;
-                    if (TryGetKey(data, isAlly, out int key))
+                    if (AsusKeyReport.TryGetKey(data, isAlly, out int key))
                     {
                         if (key > 0) Logger.WriteLine($"Key: {key}");
                         _handler(key);
