@@ -148,9 +148,12 @@ internal sealed class ElmbControl
         return null;
     }
 
-    private int Aux(int value)
+    /// <summary>
+    /// Read (<paramref name="value"/> &lt; 0) or write the ELMB DPCD register. The model gate (AppConfig.IsELMB) is applied by
+    /// Core's ScreenELMB; this only does the AUX access. -1 when there is no usable Intel / NVIDIA AUX channel.
+    /// </summary>
+    public int Access(int value)
     {
-        if (!AppConfig.IsELMB()) return -1;
         if (!Environment.Is64BitProcess || RuntimeInformation.ProcessArchitecture != Architecture.X64) return -1;
 
         lock (sync)
@@ -169,8 +172,4 @@ internal sealed class ElmbControl
             return aux == null ? -1 : aux(value);
         }
     }
-
-    public int Get() => Aux(-1);
-
-    public void Set(int status) => Logger.WriteLine($"ELMB: set {status} result {Aux(status)}");
 }

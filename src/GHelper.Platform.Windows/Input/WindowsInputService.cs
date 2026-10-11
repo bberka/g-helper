@@ -1,15 +1,19 @@
-using System.Runtime.Versioning;
+using System.Runtime.InteropServices;
 using GHelper.Input;
 using GHelper.Platform.Windows.Interop;
+using GHelper.Platform.Windows.Vendor;
+using Microsoft.Win32;
 
 namespace GHelper.Platform.Windows.Input;
 
 /// <summary>
 /// Windows implementation of <see cref="IInputService"/>: key injection via keybd_event/mouse_event, global hotkeys via
 /// RegisterHotKey on a hidden message-only window, passive key observation via a low level keyboard hook and the touch
-/// keyboard. Lifted from legacy KeyboardHook / OnScreenKeyboard / NativeMethods.
+/// keyboard. Also implements <see cref="IInputExtras"/> (idle time, modifier state, screen off, touchpad / slate mode
+/// registry values, ASUS software folder) and <see cref="INumberPadDriver"/> (\\.\AsusTPPC IOCTL).
+/// Lifted from legacy KeyboardHook / OnScreenKeyboard / NativeMethods / InputDispatcher / NumberPad.
 /// </summary>
-public sealed class WindowsInputService : IInputService
+public sealed class WindowsInputService : IInputService, IInputExtras, INumberPadDriver
 {
     private readonly object sync = new();
     private MessageWindow? window;
@@ -101,19 +105,94 @@ public sealed class WindowsInputService : IInputService
         Win32.mouse_event(Win32.MOUSEEVENTF_WHEEL, 0, 0, unchecked((uint)delta), UIntPtr.Zero);
     }
 
-    public bool IsKeyDown(Keys key)
+    // --- IInputExtras -------------------------------------------------------------------------
+
+    private static bool IsKeyDown(Keys key) =>
+        (Win32.GetAsyncKeyState(KeyMapper.ToVirtualKey(key)) & 0x8000) != 0;
+
+    /// <summary>Legacy Control.ModifierKeys: Keys.Shift / Keys.Control / Keys.Alt flags of the keys physically held down.</summary>
+    public Keys GetModifierKeys()
     {
-        if (!OperatingSystem.IsWindows()) return false;
-        return (Win32.GetAsyncKeyState(KeyMapper.ToVirtualKey(key)) & 0x8000) != 0;
+        if (!OperatingSystem.IsWindows()) return Keys.None;
+
+        Keys modifiers = Keys.None;
+        if (IsKeyDown(Keys.ShiftKey)) modifiers |= Keys.Shift;
+        if (IsKeyDown(Keys.ControlKey)) modifiers |= Keys.Control;
+        if (IsKeyDown(Keys.Menu)) modifiers |= Keys.Alt;
+        return modifiers;
     }
 
     public TimeSpan GetIdleTime()
     {
         if (!OperatingSystem.IsWindows()) return TimeSpan.Zero;
 
-        var info = new Win32.LASTINPUTINFO { cbSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf<Win32.LASTINPUTINFO>() };
+        var info = new Win32.LASTINPUTINFO { cbSize = (uint)Marshal.SizeOf<Win32.LASTINPUTINFO>() };
         if (!Win32.GetLastInputInfo(ref info)) return TimeSpan.Zero;
         return TimeSpan.FromMilliseconds((uint)Environment.TickCount - info.dwTime);
+    }
+
+    /// <summary>Legacy NativeMethods.TurnOffScreen: SC_MONITORPOWER has to be sent to a window of this process.</summary>
+    public void TurnOffScreen()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        IntPtr target = GetWindow()?.Handle ?? IntPtr.Zero;
+        if (target == IntPtr.Zero) target = Win32.GetDesktopWindow();
+
+        Win32.SendMessage(target, Win32.WM_SYSCOMMAND, (IntPtr)Win32.SC_MONITORPOWER, (IntPtr)Win32.MONITOR_OFF);
+        int error = Marshal.GetLastWin32Error();
+        if (error != 0) Logger.WriteLine($"Turn off screen: error code {error}");
+    }
+
+    public bool? GetTouchpadEnabled()
+    {
+        if (!OperatingSystem.IsWindows()) return null;
+
+        try
+        {
+            using var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\PrecisionTouchPad\Status", false);
+            string? value = key?.GetValue("Enabled")?.ToString();
+            return value is null ? null : value == "1";
+        }
+        catch (Exception ex)
+        {
+            Logger.WriteLine("Touchpad status: " + ex.Message);
+            return null;
+        }
+    }
+
+    public void SetSlateMode(int status)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        // Core logs success / failure around this call
+        Registry.SetValue(@"HKEY_LOCAL_MACHINE\System\CurrentControlSet\Control\PriorityControl", "ConvertibleSlateMode", status, RegistryValueKind.DWord);
+    }
+
+    public string? GetAsusSoftwarePath() => AsusDriverPath.Find();
+
+    // --- INumberPadDriver ---------------------------------------------------------------------
+
+    private const string NumberPadDevice = @"\\.\AsusTPPC";
+
+    /// <summary>Legacy NumberPad.Ioctl: the 0x800 byte request is built by Core, the reply is written back into the buffer.</summary>
+    public bool NumberPadIoctl(uint code, byte[] buffer)
+    {
+        if (!OperatingSystem.IsWindows()) return false;
+
+        IntPtr device = Win32.CreateFile(NumberPadDevice, Win32.GENERIC_READ | Win32.GENERIC_WRITE, 3, IntPtr.Zero,
+            Win32.OPEN_EXISTING, 0, IntPtr.Zero);
+        if (device == IntPtr.Zero || device == Win32.INVALID_HANDLE_VALUE) return false;
+
+        try
+        {
+            uint returned = 0;
+            return Win32.DeviceIoControl(device, code, buffer, (uint)buffer.Length, buffer, (uint)buffer.Length, ref returned, IntPtr.Zero);
+        }
+        finally
+        {
+            Win32.CloseHandle(device);
+        }
     }
 
     // --- hotkeys / key tap --------------------------------------------------------------------

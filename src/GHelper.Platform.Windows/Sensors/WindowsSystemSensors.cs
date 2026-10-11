@@ -10,7 +10,7 @@ namespace GHelper.Platform.Windows.Sensors;
 /// (battery class IOCTLs + CallNtPowerInformation + WMI static data) and the "Energy Meter" CPU power counters.
 /// ASUS ACPI temperatures / fans are read by Core through <c>Program.acpi</c>.
 /// </summary>
-public sealed class WindowsSystemSensors : ISystemSensors
+public sealed class WindowsSystemSensors : ISystemSensors, IApuEnergySensors
 {
     private static readonly string[] PowerCounterInstances =
         ["Apu Power", "RAPL_Package0_PKG", "CPU Power", "Socket Power", "Current Socket Power"];
@@ -374,18 +374,26 @@ public sealed class WindowsSystemSensors : ISystemSensors
         }
     }
 
-    public float? GetApuPower()
+    // IApuEnergySensors: the legacy HardwareControl "Energy Meter" channels, combined by Core
+
+    /// <summary>Whole APU package power ("Apu Power" channel).</summary>
+    public float? SampleApuPower()
     {
         InitCpuPowerAsync();
         return apuChannel?.Sample();
     }
 
-    public float? GetCpuCoresPower()
+    /// <summary>The "CPU Power" channel (cores only on APUs that expose it).</summary>
+    public float? SampleCpuPower()
     {
         InitCpuPowerAsync();
+        return cpuChannel?.Sample();
+    }
 
-        float? channel = cpuChannel?.Sample();
-        if (channel is not null) return channel;
+    /// <summary>Sum of the per-core RAPL counters, the fallback for APUs without a "CPU Power" channel.</summary>
+    public float? SampleCoresPower()
+    {
+        InitCpuPowerAsync();
 
         var counters = coreCounters;
         if (counters is null) return null;

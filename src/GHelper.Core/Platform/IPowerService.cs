@@ -45,12 +45,4 @@ public interface IPowerService
     /// <summary>Hotkey actions.</summary>
     void Sleep();
     void LockWorkstation();
-
-    // --- additive (platform-windows) ---------------------------------------------------------
-
-    /// <summary>Turn the display off (legacy NativeMethods.TurnOffScreen, "screen" hotkey).</summary>
-    void TurnOffDisplay() { }
-
-    /// <summary>User logoff / system shutdown is in progress (legacy SystemEvents.SessionEnding). No-op default.</summary>
-    event Action? SessionEnding { add { } remove { } }
 }

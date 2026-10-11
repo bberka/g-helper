@@ -1,7 +1,11 @@
 using System.ComponentModel;
+using System.Drawing;
 using System.Management;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using GHelper.AnimeMatrix;
+using GHelper.Platform.Windows.Vendor;
+using GHelper.USB;
 using Microsoft.Win32;
 using static GHelper.Platform.Windows.Display.DisplayNative;
 
@@ -9,10 +13,12 @@ namespace GHelper.Platform.Windows.Display;
 
 /// <summary>
 /// Windows implementation of <see cref="IDisplayService"/>: CCD queries for the internal panel / external displays / HDR,
-/// GDI refresh rate switching, WMI backlight, gamma ramp, ICC profile install, PnP touchscreen toggle, ELMB.
+/// GDI refresh rate switching, WMI backlight, gamma ramp, ICC profile install, PnP touchscreen toggle, ELMB, the ASUS
+/// Splendid / GameVisual / RefreshFlag bits, plus the optional <see cref="IDisplaySettingsEvents"/> (monitor changes)
+/// and <see cref="IScreenCapture"/> (Aura ambient mode) capabilities.
 /// Lifted from legacy ScreenNative / ScreenCCD / ScreenBrightness / ScreenELMB / TouchscreenHelper.
 /// </summary>
-public sealed class WindowsDisplayService : IDisplayService
+public sealed class WindowsDisplayService : IDisplayService, IDisplaySettingsEvents, IScreenCapture
 {
     public const string DefaultDevice = @"\\.\DISPLAY1";
 
@@ -442,17 +448,60 @@ public sealed class WindowsDisplayService : IDisplayService
 
     // --- ELMB -------------------------------------------------------------------------------
 
-    public int GetElmbStatus()
+    /// <summary>DPCD 0x44C read / write (Core's ScreenELMB applies the model gate and the logging).</summary>
+    public int ElmbAccess(int writeValue)
     {
         if (!OperatingSystem.IsWindows()) return -1;
-        try { return elmb.Value.Get(); }
+        try { return elmb.Value.Access(writeValue); }
         catch (Exception ex) { Logger.WriteLine("ELMB: " + ex.Message); return -1; }
     }
 
-    public void SetElmbStatus(int status)
+    // --- ASUS Armoury / Splendid / GameVisual -------------------------------------------------
+
+    private const string RefreshFlagKey = @"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\{8714A8D1-0F08-4681-9DF6-A8C4607A58B4}";
+    private const string GameVisualKey = @"HKEY_CURRENT_USER\Software\ASUS\ARMOURY CRATE Service\GameVisual";
+    private const string GameVisualValue = "ActiveGVStatus";
+
+    /// <summary>Legacy ScreenControl.SetAsusRefreshFlag (Core calls it only when elevated).</summary>
+    public void SetAsusRefreshFlag(int value)
     {
         if (!OperatingSystem.IsWindows()) return;
-        try { elmb.Value.Set(status); }
-        catch (Exception ex) { Logger.WriteLine("ELMB: " + ex.Message); }
+        WriteRefreshFlag(value);
     }
+
+    [SupportedOSPlatform("windows")]
+    private static void WriteRefreshFlag(int value)
+    {
+        using var key = Registry.LocalMachine.OpenSubKey(RefreshFlagKey, writable: true);
+        key?.SetValue("RefreshFlag", value, RegistryValueKind.DWord);
+    }
+
+    /// <summary>Folder of the ATKWMIACPIIO driver, where AsusSplendid.exe lives (legacy VisualControl.GetSplendidPath).</summary>
+    public string? SplendidDirectory => AsusDriverPath.Find();
+
+    public int GetGameVisualStatus()
+    {
+        if (!OperatingSystem.IsWindows()) return 1;
+
+        try { return Registry.GetValue(GameVisualKey, GameVisualValue, 1) is int status ? status : 1; }
+        catch { return 1; }
+    }
+
+    public void SetGameVisualStatus(int status)
+    {
+        if (!OperatingSystem.IsWindows()) return;
+
+        try { Registry.SetValue(GameVisualKey, GameVisualValue, status, RegistryValueKind.DWord); }
+        catch (Exception ex) { Logger.WriteLine("GameVisual status: " + ex.Message); }
+    }
+
+    // --- IScreenCapture (Aura ambient mode) ---------------------------------------------------
+
+    bool IScreenCapture.IsSupported => OperatingSystem.IsWindows();
+
+    Rectangle IScreenCapture.GetPrimaryScreenBounds() => ScreenGrab.GetPrimaryScreenBounds();
+
+    PixelBuffer? IScreenCapture.Capture(Rectangle area, int outWidth, int outHeight) => ScreenGrab.Capture(area, outWidth, outHeight);
+
+    bool IScreenCapture.IsWindowMoveSize() => ScreenGrab.IsWindowMoveSize();
 }

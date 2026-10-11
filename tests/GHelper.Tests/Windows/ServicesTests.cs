@@ -260,25 +260,25 @@ public class PawnLogicTests
     public void CpuVendorStringIsDecodedFromCpuidRegisters()
     {
         // "AuthenticAMD" = EBX "Auth", EDX "enti", ECX "cAMD"
-        Assert.Equal(CpuVendorKind.Amd, CpuVendor.FromRegisters(0x68747541, 0x69746E65, 0x444D4163));
+        Assert.True(PawnIO.CpuInfo.VendorMatches(0x68747541, 0x69746E65, 0x444D4163, "AuthenticAMD"u8));
+        Assert.False(PawnIO.CpuInfo.VendorMatches(0x68747541, 0x69746E65, 0x444D4163, "GenuineIntel"u8));
         // "GenuineIntel" = EBX "Genu", EDX "ineI", ECX "ntel"
-        Assert.Equal(CpuVendorKind.Intel, CpuVendor.FromRegisters(0x756E6547, 0x49656E69, 0x6C65746E));
-        Assert.Equal(CpuVendorKind.Unknown, CpuVendor.FromRegisters(0, 0, 0));
+        Assert.True(PawnIO.CpuInfo.VendorMatches(0x756E6547, 0x49656E69, 0x6C65746E, "GenuineIntel"u8));
+        Assert.False(PawnIO.CpuInfo.VendorMatches(0, 0, 0, "GenuineIntel"u8));
     }
 
-    [Theory]
-    [InlineData(CpuCodeName.Renoir, CpuFamily.Renoir)]
-    [InlineData(CpuCodeName.Cezanne, CpuFamily.Renoir)]
-    [InlineData(CpuCodeName.Phoenix, CpuFamily.Mobile)]
-    [InlineData(CpuCodeName.HawkPoint, CpuFamily.Mobile)]
-    [InlineData(CpuCodeName.Raphael, CpuFamily.Raphael)]
-    [InlineData(CpuCodeName.DragonRange, CpuFamily.Raphael)]
-    [InlineData(CpuCodeName.StrixPoint, CpuFamily.StrixPoint)]
-    [InlineData(CpuCodeName.StrixHalo, CpuFamily.StrixHalo)]
-    [InlineData(CpuCodeName.Undefined, CpuFamily.Unknown)]
-    public void CodeNameToFamily(CpuCodeName name, CpuFamily family)
+    [Fact]
+    public void WindowsCpuTuningIsCoresPawnImplementationOnThePawnIoDriver()
     {
-        Assert.Equal(family, RyzenSmuService.GetFamily(name));
+        using var tuning = new WindowsCpuTuning();
+
+        // one code path: Core's RyzenSmuService / IntelMsr, the platform only supplies the driver
+        Assert.IsAssignableFrom<PawnIO.PawnCpuTuning>(tuning);
+        Assert.IsAssignableFrom<ICpuFamilyInfo>(tuning);
+
+        using var driver = ((ICpuTuning)tuning).CreatePawnIo();
+        if (tuning.IsSupported) Assert.NotNull(driver);
+        else Assert.Null(driver);
     }
 
     [Fact]
@@ -295,6 +295,7 @@ public class PawnLogicTests
 
         // never throws, whatever the host
         Assert.False(tuning.IsAmd && tuning.IsIntel);
+        Assert.Null(((ICpuFamilyInfo)tuning).CpuFamily); // not initialised yet
     }
 
     [Fact]
@@ -310,7 +311,6 @@ public class PawnLogicTests
     {
         var provider = new WindowsGpuProvider();
 
-        Assert.False(provider.IntelVramSupported);
         Assert.Empty(provider.IntelVramSizes);
         Assert.Equal(0, provider.IntelVramIndex);
 
