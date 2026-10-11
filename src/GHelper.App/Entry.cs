@@ -84,7 +84,13 @@ public static class Entry
     public static AppBuilder BuildAvaloniaApp() =>
         AppBuilder.Configure<App>()
             .UsePlatformDetect()
+            // WM_CLASS (instance and class) of every window on X11 / XWayland: tiling window manager rules match it
+            // (packaging/linux/README.md: for_window [class="ghelper"] floating enable)
+            .With(new X11PlatformOptions { WmClass = WindowClass })
             .LogToTrace();
+
+    /// <summary>X11 WM_CLASS / app id of all G-Helper windows.</summary>
+    public const string WindowClass = "ghelper";
 
     /// <summary>WindowsPlatform on Windows, LinuxPlatform on everything else (macOS is out of scope but gets the generic Linux code paths).</summary>
     public static void RegisterPlatform()

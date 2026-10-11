@@ -36,6 +36,9 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // every window of the app (colour picker, toast, dialogs ...) gets the fixed size policy when it is shown
+        WindowSizing.Install();
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             StartShell(desktop);
 

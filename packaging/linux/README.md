@@ -70,6 +70,28 @@ Not packaged, on purpose:
   `linux-musl-x64` and `linux-musl-arm64`.
 * **Trimming / NativeAOT**: not enabled, see `src/GHelper.App/GHelper.App.csproj`.
 
+## Tiling window managers
+
+Every G-Helper window has a fixed size (`WM_NORMAL_HINTS` min == max, not resizable / maximizable) and sets
+`WM_CLASS` = `ghelper` (instance and class; XWayland included). Side windows are transient for the main window, so
+most tilers float them on their own. If yours tiles them anyway, match the class:
+
+```
+# i3
+for_window [class="ghelper"] floating enable
+# sway (XWayland client)
+for_window [class="ghelper"] floating enable
+# Hyprland
+windowrulev2 = float, class:^(ghelper)$
+# bspwm
+bspc rule -a ghelper state=floating
+# awesome (rc.lua, awful.rules)
+{ rule = { class = "ghelper" }, properties = { floating = true } },
+```
+
+The settings window positions itself next to the taskbar / panel; on a tiling WM the compositor decides instead, use
+a rule such as `move` / `anchor` of your WM if you want a fixed place.
+
 ## What G-Helper reads and writes
 
 Everything goes through mainline kernel interfaces. Nothing is verified on hardware yet, the kernel versions below come

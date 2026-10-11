@@ -63,13 +63,34 @@ public sealed class AvaloniaUiHost : IUiHost, IUiActionHandler
 
     public void Alert(string title, string text) => RunDialog(title, text, confirm: false);
 
+    /// <summary>
+    /// Confirm / Alert stay synchronous for Core: on the UI thread a nested dispatcher frame runs until the answer, from
+    /// any other thread the call is marshalled to the UI thread and blocks (like MessageBox.Show did). The dialog is a
+    /// modal overlay inside the active app window; only when no window is visible (tray only) it is a separate window.
+    /// </summary>
     private bool RunDialog(string title, string text, bool confirm)
     {
         if (Dispatcher.UIThread.CheckAccess())
-            return MessageDialog.Run(_windows()?.Main, title, text, confirm);
+            return ShowDialog(title, text, confirm);
 
-        return Dispatcher.UIThread.InvokeAsync(() => MessageDialog.Run(_windows()?.Main, title, text, confirm))
-            .GetAwaiter().GetResult();
+        return Dispatcher.UIThread.InvokeAsync(() => ShowDialog(title, text, confirm)).GetAwaiter().GetResult();
+    }
+
+    private bool ShowDialog(string title, string text, bool confirm)
+    {
+        var windows = _windows();
+
+        try
+        {
+            if (windows?.DialogOwner() is { } owner && InAppDialog.TryRun(owner, title, text, confirm, out bool answer))
+                return answer;
+        }
+        catch (Exception ex)
+        {
+            AppLog.Write("Dialog overlay: " + ex.Message);
+        }
+
+        return MessageDialog.Run(windows?.Main, title, text, confirm);
     }
 
     public void ToggleSettings(bool checkForFocus = true, bool trayClick = false) =>

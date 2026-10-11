@@ -39,8 +39,32 @@ public static class WindowRegistry
         var window = factory(arg);
         Instances[name] = window;
         window.Closed += (_, _) => { if (Instances.TryGetValue(name, out var w) && ReferenceEquals(w, window)) Instances.Remove(name); };
-        window.Show();
+        ShowOwned(window);
         return window;
+    }
+
+    /// <summary>
+    /// Side windows are owned by the main window while it is visible: the platform then marks them as transient for it
+    /// (X11 WM_TRANSIENT_FOR, Wayland parent, Win32 owner), which tiling window managers float by default and which keeps
+    /// them above it without a taskbar button.
+    /// </summary>
+    private static void ShowOwned(Window window)
+    {
+        var main = App.Instance?.Windows?.Main;
+        if (main is { IsVisible: true } && !ReferenceEquals(main, window))
+        {
+            try
+            {
+                window.Show(main);
+                return;
+            }
+            catch (InvalidOperationException ex)
+            {
+                AppLog.Write("Owned window: " + ex.Message);
+            }
+        }
+
+        window.Show();
     }
 
     /// <summary>The open instance of a window or null.</summary>

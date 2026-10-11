@@ -122,11 +122,21 @@ public static class AppConfig
 
     // Model Detection Routine
 
-    private static readonly Lazy<string> _model =
+    private static Lazy<string> _model =
         new Lazy<string>(LoadModel, LazyThreadSafetyMode.ExecutionAndPublication);
 
-    private static readonly Lazy<(string Bios, string ModelShort)> _biosData =
+    private static Lazy<(string Bios, string ModelShort)> _biosData =
         new Lazy<(string, string)>(LoadBios, LazyThreadSafetyMode.ExecutionAndPublication);
+
+    /// <summary>
+    /// Forget the cached model / BIOS so the next read asks the (possibly replaced) platform again. The model is
+    /// process wide and read once; unit tests that swap fake platforms need this to be independent of test order.
+    /// </summary>
+    internal static void ResetModelCache()
+    {
+        _model = new Lazy<string>(LoadModel, LazyThreadSafetyMode.ExecutionAndPublication);
+        _biosData = new Lazy<(string, string)>(LoadBios, LazyThreadSafetyMode.ExecutionAndPublication);
+    }
 
     private static string LoadModel()
     {
