@@ -1,17 +1,19 @@
 <Styles xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:c="using:GHelper.App.Controls">
+        xmlns:c="using:GHelper.App.Controls"
+        xmlns:t="using:GHelper.App.Theme">
 
   <Styles.Resources>
 
-    <!-- Flat rounded button: chrome is painted by RButton.Render; the template only lays out icon + text. -->
+    <!-- Flat rounded button: chrome is painted by RButton.Render; the template only lays out icon + text.
+         Height: MinHeight = UiMetrics.ControlHeight, the same as combo / text / numeric boxes (see UiMetrics). -->
     <ControlTheme x:Key="{x:Type c:RButton}" TargetType="c:RButton">
       <Setter Property="Background" Value="{DynamicResource ButtonMainBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource BorderMainBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource ForeMainBrush}" />
-      <Setter Property="CornerRadius" Value="3" />
-      <Setter Property="Padding" Value="6,2" />
-      <Setter Property="MinHeight" Value="20" />
+      <Setter Property="CornerRadius" Value="{x:Static t:UiMetrics.CornerRadiusAll}" />
+      <Setter Property="Padding" Value="{x:Static t:UiMetrics.ButtonPadding}" />
+      <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.ControlHeight}" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
       <Setter Property="Cursor" Value="Hand" />
       <Setter Property="Template">
@@ -41,6 +43,11 @@
         </ControlTemplate>
       </Setter>
 
+      <!-- dense grids: every control type shrinks to the same compact height -->
+      <Style Selector="^.compact">
+        <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.CompactControlHeight}" />
+      </Style>
+
       <Style Selector="^:secondary">
         <Setter Property="Background" Value="{DynamicResource ButtonSecondBrush}" />
         <Setter Property="BorderBrush" Value="{DynamicResource BorderSecondBrush}" />
@@ -54,6 +61,8 @@
         <Setter Property="CornerRadius" Value="1" />
         <Setter Property="Padding" Value="4,0" />
         <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Height" Value="{x:Static t:UiMetrics.FlagHeight}" />
+        <Setter Property="VerticalAlignment" Value="Center" />
       </Style>
 
       <Style Selector="^:filled">
@@ -68,37 +77,132 @@
     <ControlTheme x:Key="{x:Type c:RColorButton}" TargetType="c:RColorButton" BasedOn="{StaticResource {x:Type c:RButton}}" />
     <ControlTheme x:Key="{x:Type c:RBadgeButton}" TargetType="c:RBadgeButton" BasedOn="{StaticResource {x:Type c:RButton}}" />
 
+    <!-- ===== input fields: ControlHeight for combo / text / numeric, same as RButton ===== -->
     <ControlTheme x:Key="{x:Type c:RComboBox}" TargetType="c:RComboBox" BasedOn="{StaticResource {x:Type ComboBox}}">
-      <Setter Property="Height" Value="24" />
-      <Setter Property="MinHeight" Value="0" />
-      <Setter Property="Padding" Value="8,0,4,0" />
-      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.ControlHeight}" />
+      <Setter Property="Padding" Value="{x:Static t:UiMetrics.ComboPadding}" />
+      <Setter Property="CornerRadius" Value="{x:Static t:UiMetrics.CornerRadiusAll}" />
       <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="VerticalAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
       <Setter Property="Background" Value="{DynamicResource ButtonMainBrush}" />
       <Setter Property="BorderBrush" Value="{DynamicResource BorderMainBrush}" />
       <Setter Property="Foreground" Value="{DynamicResource ForeMainBrush}" />
+      <Style Selector="^.compact">
+        <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.CompactControlHeight}" />
+      </Style>
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type c:RTextBox}" TargetType="c:RTextBox" BasedOn="{StaticResource {x:Type TextBox}}">
-      <Setter Property="MinHeight" Value="24" />
-      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.ControlHeight}" />
+      <Setter Property="Padding" Value="{x:Static t:UiMetrics.FieldPadding}" />
+      <Setter Property="CornerRadius" Value="{x:Static t:UiMetrics.CornerRadiusAll}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
       <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Style Selector="^.compact">
+        <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.CompactControlHeight}" />
+      </Style>
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type c:RNumericUpDown}" TargetType="c:RNumericUpDown" BasedOn="{StaticResource {x:Type NumericUpDown}}">
-      <Setter Property="MinHeight" Value="24" />
-      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.ControlHeight}" />
+      <Setter Property="CornerRadius" Value="{x:Static t:UiMetrics.CornerRadiusAll}" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Padding" Value="{x:Static t:UiMetrics.FieldPadding}" />
+      <!-- the Fluent template pins ButtonSpinner and the inner TextBox to 32: let the control height decide -->
+      <Style Selector="^ /template/ ButtonSpinner#PART_Spinner">
+        <Setter Property="MinHeight" Value="0" />
+      </Style>
+      <Style Selector="^ /template/ TextBox#PART_TextBox">
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+      </Style>
+      <Style Selector="^.compact">
+        <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.CompactControlHeight}" />
+      </Style>
     </ControlTheme>
 
-    <ControlTheme x:Key="{x:Type c:NumericUpDownWithUnit}" TargetType="c:NumericUpDownWithUnit" BasedOn="{StaticResource {x:Type NumericUpDown}}">
-      <Setter Property="MinHeight" Value="24" />
-      <Setter Property="CornerRadius" Value="3" />
-    </ControlTheme>
+    <ControlTheme x:Key="{x:Type c:NumericUpDownWithUnit}" TargetType="c:NumericUpDownWithUnit"
+                  BasedOn="{StaticResource {x:Type c:RNumericUpDown}}" />
 
-    <ControlTheme x:Key="{x:Type c:RCheckBox}" TargetType="c:RCheckBox" BasedOn="{StaticResource {x:Type CheckBox}}">
+    <!-- ===== check box: own template, so the square + tick are never clipped by the Fluent 32 px grid ===== -->
+    <ControlTheme x:Key="{x:Type c:RCheckBox}" TargetType="c:RCheckBox">
+      <Setter Property="Padding" Value="{x:Static t:UiMetrics.CheckBoxContentPadding}" />
+      <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.CheckRowHeight}" />
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Left" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Background" Value="Transparent" />
       <Setter Property="BorderBrush" Value="{DynamicResource BorderSecondBrush}" />
-      <Setter Property="CornerRadius" Value="3" />
+      <Setter Property="Foreground" Value="{DynamicResource ForeMainBrush}" />
+      <Setter Property="CornerRadius" Value="{x:Static t:UiMetrics.CornerRadiusAll}" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="Template">
+        <ControlTemplate>
+          <Border Name="PART_Root" Background="{TemplateBinding Background}"
+                  CornerRadius="{TemplateBinding CornerRadius}" Padding="2,1">
+            <Grid ColumnDefinitions="Auto,*" VerticalAlignment="Center">
+              <Border Name="NormalRectangle"
+                      Width="{x:Static t:UiMetrics.CheckBoxSize}" Height="{x:Static t:UiMetrics.CheckBoxSize}"
+                      VerticalAlignment="Center" BorderThickness="1"
+                      CornerRadius="{TemplateBinding CornerRadius}"
+                      Background="{DynamicResource CheckBoxCheckBackgroundFillUnchecked}"
+                      BorderBrush="{DynamicResource CheckBoxCheckBackgroundStrokeUnchecked}">
+                <Panel>
+                  <Path Name="CheckGlyph" IsVisible="False" Width="10" Height="8" Stretch="Fill"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        Data="M0,4 L3.5,7.5 L10,0.5" StrokeThickness="2" StrokeLineCap="Round" StrokeJoin="Round"
+                        Stroke="{DynamicResource CheckBoxCheckGlyphForegroundChecked}" />
+                  <Border Name="IndeterminateGlyph" IsVisible="False" Width="8" Height="2" CornerRadius="1"
+                          HorizontalAlignment="Center" VerticalAlignment="Center"
+                          Background="{DynamicResource CheckBoxCheckGlyphForegroundIndeterminate}" />
+                </Panel>
+              </Border>
+              <ContentPresenter Name="PART_ContentPresenter" Grid.Column="1"
+                                Content="{TemplateBinding Content}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Padding="{TemplateBinding Padding}"
+                                Foreground="{TemplateBinding Foreground}"
+                                RecognizesAccessKey="True"
+                                TextBlock.TextWrapping="Wrap"
+                                HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalContentAlignment="Center"
+                                VerticalAlignment="Center" />
+            </Grid>
+          </Border>
+        </ControlTemplate>
+      </Setter>
+
+      <Style Selector="^:pointerover /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillUncheckedPointerOver}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeUncheckedPointerOver}" />
+      </Style>
+      <Style Selector="^:checked /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillChecked}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeChecked}" />
+      </Style>
+      <Style Selector="^:indeterminate /template/ Border#NormalRectangle">
+        <Setter Property="Background" Value="{DynamicResource CheckBoxCheckBackgroundFillIndeterminate}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource CheckBoxCheckBackgroundStrokeIndeterminate}" />
+      </Style>
+      <Style Selector="^:checked /template/ Path#CheckGlyph">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+      <Style Selector="^:indeterminate /template/ Border#IndeterminateGlyph">
+        <Setter Property="IsVisible" Value="True" />
+      </Style>
+      <Style Selector="^:disabled">
+        <Setter Property="Opacity" Value="0.5" />
+      </Style>
+      <!-- outlined variant (ShowBorder): the outline is drawn around the control, keep the square off it -->
+      <Style Selector="^:bordered">
+        <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.ControlHeight}" />
+      </Style>
+      <Style Selector="^:bordered /template/ Border#PART_Root">
+        <Setter Property="Padding" Value="8,2,10,2" />
+      </Style>
     </ControlTheme>
 
     <ControlTheme x:Key="{x:Type c:RTrackBar}" TargetType="c:RTrackBar" BasedOn="{StaticResource {x:Type Slider}}" />
@@ -110,6 +214,14 @@
     <Setter Property="Background" Value="{DynamicResource FormBackBrush}" />
     <Setter Property="Foreground" Value="{DynamicResource ForeMainBrush}" />
     <Setter Property="FontSize" Value="12" />
+  </Style>
+
+  <!-- shared layout vocabulary: 16 px section icon in front of a bold section title -->
+  <Style Selector="c|TintedImage.sectionIcon">
+    <Setter Property="Width" Value="{x:Static t:UiMetrics.IconSize}" />
+    <Setter Property="Height" Value="{x:Static t:UiMetrics.IconSize}" />
+    <Setter Property="Margin" Value="{x:Static t:UiMetrics.SectionIconMargin}" />
+    <Setter Property="VerticalAlignment" Value="Center" />
   </Style>
 
   <Style Selector="TextBlock.title">

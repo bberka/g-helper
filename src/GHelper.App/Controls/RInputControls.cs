@@ -128,6 +128,13 @@ public class RCheckBox : CheckBox
 
     public bool ShowBorder { get => GetValue(ShowBorderProperty); set => SetValue(ShowBorderProperty, value); }
 
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        // ":bordered" gives the outlined variant its own padding / height in the template (Theme/Controls.axaml)
+        if (change.Property == ShowBorderProperty) PseudoClasses.Set(":bordered", ShowBorder);
+    }
+
     public override void Render(DrawingContext context)
     {
         base.Render(context);
