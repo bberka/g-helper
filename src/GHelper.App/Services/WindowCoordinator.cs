@@ -41,6 +41,21 @@ public sealed class WindowCoordinator
         window.Closed += (_, _) => _side.Remove(window);
     }
 
+    /// <summary>
+    /// The window that hosts in-app dialogs: the focused app window (a side window that has focus, else the main window),
+    /// otherwise the most recently opened visible side window, otherwise the main window if it is visible. Null when no
+    /// window is visible (tray only).
+    /// </summary>
+    public Window? DialogOwner()
+    {
+        if (_main.IsVisible && _main.IsActive) return _main;
+
+        var visible = _side.Where(w => w.IsVisible).ToList();
+        if (visible.FirstOrDefault(w => w.IsActive) is { } active) return active;
+        if (_main.IsVisible) return _main;
+        return visible.LastOrDefault();
+    }
+
     /// <summary>Port of HasAnyFocus: the main window, a side window, or (tray click) a focus loss within 300 ms.</summary>
     public bool HasAnyFocus(bool lostFocusCheck = false)
     {

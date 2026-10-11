@@ -9,8 +9,9 @@ using GHelper.App.Controls;
 namespace GHelper.App.Services;
 
 /// <summary>
-/// Themed replacement for MessageBox (Yes/No confirmation or OK alert). <see cref="Run"/> blocks the calling code
-/// like the legacy MessageBox.Show did: it spins a nested dispatcher frame until the dialog is closed.
+/// Fallback for <see cref="AvaloniaUiHost.Confirm"/> / Alert when no app window is visible (tray only): there is no
+/// window to host the in-app overlay (<see cref="InAppDialog"/>), so the question is a small separate window. Blocks
+/// the calling code like the legacy MessageBox.Show did: it spins a nested dispatcher frame until it is closed.
 /// </summary>
 public sealed class MessageDialog : Window
 {
@@ -43,16 +44,17 @@ public sealed class MessageDialog : Window
 
         if (confirm)
         {
-            var yes = new RButton { Content = "Yes", Width = 84, Height = 28 };
+            var (yesText, noText) = DialogTexts.YesNo();
+            var yes = new RButton { Content = yesText, Width = 84, Height = 28 };
             yes.Click += (_, _) => Finish(true);
-            var no = new RButton { Content = "No", Width = 84, Height = 28 };
+            var no = new RButton { Content = noText, Width = 84, Height = 28 };
             no.Click += (_, _) => Finish(false);
             buttons.Children.Add(yes);
             buttons.Children.Add(no);
         }
         else
         {
-            var ok = new RButton { Content = "OK", Width = 84, Height = 28 };
+            var ok = new RButton { Content = DialogTexts.Ok(), Width = 84, Height = 28 };
             ok.Click += (_, _) => Finish(true);
             buttons.Children.Add(ok);
         }
