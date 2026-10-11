@@ -94,18 +94,51 @@ public sealed class WindowCoordinator
 
         double scale = screen.Scaling;
 
-        // never taller than the screen: the content scrolls instead (legacy hid the tips on small screens)
-        _main.MaxHeight = Math.Max(300, screen.WorkingArea.Height / scale - 2.0 * WindowPlacement.Margin / scale);
-        _main.Measure(new Size(_main.Width, double.PositiveInfinity));
-        double h = _main.IsVisible && _main.Bounds.Height > 0 ? _main.Bounds.Height : _main.DesiredSize.Height;
-        var size = new PixelSize((int)Math.Ceiling(_main.Width * scale), (int)Math.Ceiling(h * scale));
+        // the fixed size is computed here, once, from the content and clamped to the work area (the content scrolls
+        // instead of the window growing past the screen; legacy hid the tips on small screens)
+        var client = WindowSizing.Fit(_main);
+
+        // outer size when the platform knows it (title bar + borders), otherwise the client size
+        var frame = _main.FrameSize is { } f && f.Height >= client.Height ? f : client;
+        var size = new PixelSize((int)Math.Ceiling(frame.Width * scale), (int)Math.Ceiling(frame.Height * scale));
 
         _main.Position = WindowPlacement.NearTaskbar(screen.Bounds, screen.WorkingArea, size, UiSettings.IsAlly);
     }
 
     /// <summary>
+    /// The main window got a new fixed size while visible (a section appeared / disappeared): keep it inside the work
+    /// area (it grows downwards, like the legacy auto sized form, but never past the taskbar) and re-fit and re-align
+    /// the side windows, which are as tall as the main window.
+    /// </summary>
+    internal void OnMainSizeApplied()
+    {
+        if (!_main.IsVisible) return;
+
+        var screen = _main.Screens.ScreenFromWindow(_main) ?? _main.Screens.Primary;
+        if (screen is not null)
+        {
+            double scale = screen.Scaling;
+            var frame = _main.FrameSize ?? new Size(_main.Width, _main.Height);
+            int heightPx = (int)Math.Ceiling(frame.Height * scale);
+
+            var area = screen.WorkingArea;
+            int maxTop = area.Bottom - WindowPlacement.Margin - heightPx;
+            int top = Math.Max(area.Y, Math.Min(_main.Position.Y, maxTop));
+            if (top != _main.Position.Y) _main.Position = new PixelPoint(_main.Position.X, top);
+        }
+
+        foreach (var side in _side.ToList())
+        {
+            if (!side.IsVisible) continue;
+            WindowSizing.Fit(side);
+            PositionSideWindow(side);
+        }
+    }
+
+    /// <summary>
     /// Port of the FormPosition() of the legacy side forms: line the window up with the main window (same top when it
     /// is smaller, bottom aligned when taller) and put it left of it (right of it when the taskbar is on the left).
+    /// Works on the fixed sizes, so it can run before the window is shown.
     /// </summary>
     public void PositionSideWindow(Window side)
     {
@@ -114,20 +147,16 @@ public sealed class WindowCoordinator
 
         double scale = screen.Scaling;
         int mainTop = _main.Position.Y;
-        int mainHeight = (int)(_main.Bounds.Height * scale);
-        int width = (int)Math.Ceiling(side.Bounds.Width * scale);
-        int height = (int)Math.Ceiling(side.Bounds.Height * scale);
+        int mainHeight = (int)(ClientSize(_main).Height * scale);
+        var sideSize = ClientSize(side);
+        int width = (int)Math.Ceiling(sideSize.Width * scale);
+        int height = (int)Math.Ceiling(sideSize.Height * scale);
 
-        int top;
-        if (height > mainHeight)
-        {
-            top = Math.Max(screen.WorkingArea.Y, mainTop + mainHeight - height);
-        }
-        else
-        {
-            side.MinHeight = mainHeight / scale;
-            top = mainTop;
-        }
+        // side windows are fitted to at least the main window's height (WindowSizingOptions.MinHeight), so the
+        // "smaller" case of the legacy code is the same top and the same height
+        int top = height > mainHeight
+            ? Math.Max(screen.WorkingArea.Y, mainTop + mainHeight - height)
+            : mainTop;
 
         side.Position = new PixelPoint(GetSideWindowLeft(width), top);
     }
@@ -139,7 +168,12 @@ public sealed class WindowCoordinator
         if (screen is null) return _main.Position.X;
 
         double scale = screen.Scaling;
-        var frame = new PixelRect(_main.Position, new PixelSize((int)(_main.Bounds.Width * scale), (int)(_main.Bounds.Height * scale)));
+        var main = ClientSize(_main);
+        var frame = new PixelRect(_main.Position, new PixelSize((int)(main.Width * scale), (int)(main.Height * scale)));
         return WindowPlacement.SideWindowLeft(screen.WorkingArea, frame, widthPx);
     }
+
+    /// <summary>The fixed client size of a window (its layout bounds when it has none yet).</summary>
+    private static Size ClientSize(Window w) =>
+        new(double.IsNaN(w.Width) ? w.Bounds.Width : w.Width, double.IsNaN(w.Height) ? w.Bounds.Height : w.Height);
 }

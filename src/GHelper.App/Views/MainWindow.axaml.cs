@@ -18,6 +18,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
 
+        // fixed, non resizable / maximizable / minimizable size computed once from the content: tiling window managers
+        // and Windows snap must not resize it (the size is re-fitted only when the content legitimately changes)
+        WindowSizing.Attach(this, new WindowSizingOptions
+        {
+            Applied = _ => App.Instance?.Windows?.OnMainSizeApplied(),
+        });
+
         // legacy SettingsForm_FormClosing: the X button hides the window instead of exiting the app
         Closing += OnClosing;
 
