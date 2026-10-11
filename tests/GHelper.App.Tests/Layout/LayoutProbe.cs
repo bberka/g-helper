@@ -156,6 +156,45 @@ internal static class LayoutProbe
         return problems;
     }
 
+    // ------------------------------------------------------------------ 2b: rows breathe
+
+    /// <summary>Minimum vertical gap between two interactive rows (buttons, fields, check boxes, sliders).</summary>
+    public const double MinRowGap = 3.5;
+
+    public static List<string> TouchingRows(Window window)
+    {
+        var problems = new List<string>();
+        var items = Shown<Control>(window)
+            .Where(v => (IsField(v) || v is RCheckBox || v is RSlider) && !InTemplate(v))
+            .Select(v => (Control: v, Rect: WindowRect(v, window)))
+            .Where(x => x.Rect is not null)
+            .Select(x => (x.Control, Rect: x.Rect!.Value))
+            .ToList();
+
+        for (int i = 0; i < items.Count; i++)
+        for (int j = 0; j < items.Count; j++)
+        {
+            if (i == j) continue;
+            var a = items[i];
+            var b = items[j];
+            double gap = b.Rect.Top - a.Rect.Bottom;
+            if (gap < -0.01 || gap >= MinRowGap) continue;
+
+            double overlap = Math.Min(a.Rect.Right, b.Rect.Right) - Math.Max(a.Rect.Left, b.Rect.Left);
+            if (overlap <= 8) continue;
+
+            problems.Add($"rows touch (gap {gap:0.#}): {Describe(a.Control)}  /  {Describe(b.Control)}");
+        }
+
+        return problems;
+    }
+
+    private static Rect? WindowRect(Control c, Visual window)
+    {
+        var topLeft = c.TranslatePoint(new Point(0, 0), window);
+        return topLeft is null ? null : new Rect(topLeft.Value, c.Bounds.Size);
+    }
+
     // ------------------------------------------------------------------ 3: check boxes
 
     public static List<string> CheckBoxes(Window window)

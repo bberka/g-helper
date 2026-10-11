@@ -77,6 +77,17 @@ public class LayoutTests
 
     [AvaloniaTheory]
     [MemberData(nameof(Names))]
+    public async Task Interactive_rows_do_not_touch(string name)
+    {
+        foreach (double scaling in new[] { 1.0, 2.0 })
+        {
+            var problems = await Run(name, scaling, LayoutProbe.TouchingRows);
+            Assert.True(problems.Count == 0, $"scale {scaling}: " + Report(name, problems));
+        }
+    }
+
+    [AvaloniaTheory]
+    [MemberData(nameof(Names))]
     public async Task Check_boxes_are_fully_visible(string name)
     {
         foreach (double scaling in new[] { 1.0, 2.0 })
