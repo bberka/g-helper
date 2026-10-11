@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Threading;
 using GHelper.App.ViewModels;
+using GHelper.Input;
 using GHelper.Platform;
 
 namespace GHelper.App.Services;
@@ -11,7 +12,7 @@ namespace GHelper.App.Services;
 /// <see cref="IUiHost"/> on top of Avalonia: what GHelper.Core calls instead of Program.settingsForm / toast /
 /// MessageBox / Invoke. Thread safe: every member may be called from any thread.
 /// </summary>
-public sealed class AvaloniaUiHost : IUiHost
+public sealed class AvaloniaUiHost : IUiHost, IUiActionHandler
 {
     private readonly MainViewModel _viewModel;
     private readonly Func<WindowCoordinator?> _windows;
@@ -24,6 +25,12 @@ public sealed class AvaloniaUiHost : IUiHost
         _viewModel = viewModel;
         _windows = windows;
     }
+
+    /// <summary>Receives the hotkey driven widget actions (cycle aura / visual / matrix mode, overlay). Set by the backend.</summary>
+    public IUiActionHandler? ActionHandler { get; set; }
+
+    /// <summary>IUiActionHandler: Core probes Program.Ui for it (UiActions.Run). Always called on the UI thread.</summary>
+    public void RunAction(string action, int arg) => ActionHandler?.RunAction(action, arg);
 
     /// <summary>Raised on the UI thread for every (coalesced) refresh request, before the backend is asked.</summary>
     public event Action<string>? AreaRefreshed;

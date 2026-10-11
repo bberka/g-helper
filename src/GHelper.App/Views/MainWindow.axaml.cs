@@ -42,9 +42,19 @@ public partial class MainWindow : Window
         Tap(GpuErrorIcon, MainAction.GpuErrorClick);
         Tap(VisualHintLabel, MainAction.DismissVisualHint);
         Tap(BacklightHintLabel, MainAction.BacklightHintClick);
-        Tap(BatteryStatusLabel, MainAction.BatteryReport);
-        Tap(ChargeLabel, MainAction.ChargeLabelClick);
+        Tap(BatteryStatusLabel, MainAction.BatteryStatusClick);
+        Tap(ChargeLabel, MainAction.BatteryReport);
         Tap(VersionLabel, MainAction.VersionClick);
+
+        // hover texts of the battery row and the peripheral buttons
+        HoverAction(ChargeLabel, MainAction.ChargeHoverEnter, MainAction.ChargeHoverLeave);
+        HoverAction(ButtonBatteryFull, MainAction.BatteryFullHoverEnter, MainAction.BatteryFullHoverLeave);
+        HoverAction(ButtonPeripheral1, MainAction.PeripheralHover1, null);
+        HoverAction(ButtonPeripheral2, MainAction.PeripheralHover2, null);
+        HoverAction(ButtonPeripheral3, MainAction.PeripheralHover3, null);
+
+        // the second keyboard colour has its own swatch
+        ButtonKeyboardColor.Swatch2Click += (_, _) => Vm?.Backend.Execute(MainAction.KeyboardColor2);
 
         DataContextChanged += (_, _) => AttachViewModel();
     }
@@ -61,17 +71,25 @@ public partial class MainWindow : Window
     {
         if (_allowClose) return;
         e.Cancel = true;
-        Hide();
+
+        // legacy HideAll: the side windows close with the settings window
+        if (App.Instance?.Windows is { } windows) windows.HideAll();
+        else Hide();
     }
 
     private MainViewModel? _attached;
 
     private void AttachViewModel()
     {
-        if (_attached is not null) _attached.PropertyChanged -= OnVmPropertyChanged;
+        if (_attached is not null)
+        {
+            _attached.PropertyChanged -= OnVmPropertyChanged;
+            _attached.DonateMenuRequested -= ShowDonateMenu;
+        }
         _attached = Vm;
         if (_attached is null) return;
         _attached.PropertyChanged += OnVmPropertyChanged;
+        _attached.DonateMenuRequested += ShowDonateMenu;
         SyncSliderValues();
         SyncVersionStyle();
     }
@@ -97,6 +115,34 @@ public partial class MainWindow : Window
     }
 
     private void SyncVersionStyle() => VersionLabel.Classes.Set("update", Vm?.VersionIsUpdate == true);
+
+    private ContextMenu? _donateMenu;
+
+    /// <summary>Legacy DonateControl context menu (right click on the donate button).</summary>
+    private void ShowDonateMenu()
+    {
+        if (_donateMenu is null)
+        {
+            var already = new MenuItem { Header = "❤ Already donated" };
+            already.Click += (_, _) => Vm?.Backend.Execute(MainAction.DonateAlreadyDonated);
+
+            var notInterested = new MenuItem { Header = "Not interested" };
+            notInterested.Click += (_, _) => Vm?.Backend.Execute(MainAction.DonateNotInterested);
+
+            _donateMenu = new ContextMenu
+            {
+                ItemsSource = new Control[] { already, notInterested, new Separator(), new MenuItem { Header = "Cancel" } },
+            };
+        }
+
+        _donateMenu.Open(ButtonDonate);
+    }
+
+    private void HoverAction(Control c, MainAction enter, MainAction? leave)
+    {
+        c.PointerEntered += (_, _) => Vm?.Backend.Execute(enter);
+        if (leave is { } l) c.PointerExited += (_, _) => Vm?.Backend.Execute(l);
+    }
 
     private static void Hover(Control c, Action<string> set, string text) => Hover(c, set, () => text);
 

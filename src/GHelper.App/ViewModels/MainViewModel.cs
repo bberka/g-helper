@@ -84,7 +84,7 @@ public sealed class MainViewModel : ObservableObject
 
         // footer
         Donate = Btn(Strings.Donate, MainAction.Donate, AppColors.Turbo);
-        Donate.SecondaryCommand = new RelayCommand(() => _backend.Execute(MainAction.DonateAlreadyDonated));
+        Donate.SecondaryCommand = new RelayCommand(() => DonateMenuRequested?.Invoke());
         Updates = Btn(Strings.Updates, MainAction.Updates, AppColors.Gray);
         Updates.AccessibleName = Strings.BiosAndDriverUpdates;
         Quit = Btn(Strings.Quit, MainAction.Quit, AppColors.Gray);
@@ -139,6 +139,9 @@ public sealed class MainViewModel : ObservableObject
         Command = new RelayCommand(() => _backend.Execute(action)),
     };
 
+    /// <summary>Right click on the donate button: the view shows its "Already donated / Not interested" menu.</summary>
+    public event Action? DonateMenuRequested;
+
     /// <summary>Attach the logic. Pass null to detach (back to a no-op backend).</summary>
     public IMainBackend Backend
     {
@@ -150,6 +153,53 @@ public sealed class MainViewModel : ObservableObject
     {
         if (!_loading) _backend.SetValue(value, v);
     }
+
+    /// <summary>
+    /// Run <paramref name="change"/> without the view model reporting the changed selections / slider values back to the
+    /// backend (legacy sliderGammaIgnore and "SelectedValueChanged not attached yet"). For programmatic updates.
+    /// </summary>
+    public void WithoutPush(Action change)
+    {
+        bool old = _loading;
+        _loading = true;
+        try { change(); }
+        finally { _loading = old; }
+    }
+
+    private static void Fill(ObservableCollection<ChoiceItem> target, IEnumerable<ChoiceItem> items)
+    {
+        target.Clear();
+        foreach (var item in items) target.Add(item);
+    }
+
+    /// <summary>Replace the visual mode list and select <paramref name="selectedKey"/> (no backend call).</summary>
+    public void SetVisualModes(IEnumerable<ChoiceItem> items, int selectedKey) => WithoutPush(() =>
+    {
+        Fill(VisualModes, items);
+        SelectedVisualMode = VisualModes.FirstOrDefault(i => i.Key == selectedKey) ?? VisualModes.FirstOrDefault();
+    });
+
+    public void SetColorTemps(IEnumerable<ChoiceItem> items, int selectedKey) => WithoutPush(() =>
+    {
+        Fill(ColorTemps, items);
+        SelectedColorTemp = ColorTemps.FirstOrDefault(i => i.Key == selectedKey) ?? ColorTemps.FirstOrDefault();
+    });
+
+    public void SetGamuts(IEnumerable<ChoiceItem> items, int selectedKey) => WithoutPush(() =>
+    {
+        Fill(Gamuts, items);
+        SelectedGamut = Gamuts.FirstOrDefault(i => i.Key == selectedKey) ?? Gamuts.FirstOrDefault();
+    });
+
+    /// <summary>Select a gamut without applying it (legacy VisualiseGamut).</summary>
+    public void SelectGamut(int key) => WithoutPush(() =>
+        SelectedGamut = Gamuts.FirstOrDefault(i => i.Key == key) ?? SelectedGamut);
+
+    public void SelectAuraMode(int key) => WithoutPush(() =>
+        SelectedAuraMode = AuraModes.FirstOrDefault(i => i.Key == key) ?? SelectedAuraMode);
+
+    public void SelectMatrixBrightness(int index) => WithoutPush(() =>
+        SelectedMatrixBrightness = MatrixBrightnessItems[Math.Clamp(index, 0, MatrixBrightnessItems.Count - 1)]);
 
     // ============================== Window / header ===========================================================
 
