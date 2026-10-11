@@ -1,0 +1,70 @@
+<v:SideWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:c="using:GHelper.App.Controls"
+                xmlns:v="using:GHelper.App.Views"
+                x:Class="GHelper.App.Views.SlashWindow"
+                x:CompileBindings="False"
+                Title="Slash Lighting"
+                Width="400"
+                SizeToContent="Height"
+                Icon="avares://GHelper/Assets/Tray/standard.png">
+
+  <v:SideWindow.Styles>
+    <Style Selector="Border.header">
+      <Setter Property="Background" Value="{DynamicResource ButtonSecondBrush}" />
+      <Setter Property="Padding" Value="10,4" />
+    </Style>
+    <Style Selector="Border.header > TextBlock">
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="StackPanel.items">
+      <Setter Property="Margin" Value="10,2,5,2" />
+    </Style>
+    <Style Selector="StackPanel.items CheckBox">
+      <Setter Property="MinHeight" Value="30" />
+      <Setter Property="Padding" Value="8,0,0,0" />
+    </Style>
+  </v:SideWindow.Styles>
+
+  <StackPanel Margin="8" Spacing="0">
+
+    <!-- ================= power ================= -->
+    <Border Classes="header">
+      <TextBlock Name="LabelPower" />
+    </Border>
+    <StackPanel Classes="items">
+      <c:RCheckBox Name="CheckAutoOff" />
+      <c:RCheckBox Name="CheckLidOff" />
+    </StackPanel>
+
+    <!-- ================= interval ================= -->
+    <Border Classes="header" Height="36">
+      <Grid ColumnDefinitions="*,200">
+        <TextBlock Name="LabelInterval" />
+        <c:RSlider Name="SliderInterval" Grid.Column="1" Minimum="0" Maximum="5" Step="1" Value="0"
+                   VerticalAlignment="Center" />
+      </Grid>
+    </Border>
+
+    <Border Height="8" />
+
+    <!-- ================= animations ================= -->
+    <Border Classes="header">
+      <TextBlock Name="LabelAnimations" />
+    </Border>
+    <StackPanel Classes="items">
+      <c:RCheckBox Name="CheckBoot" />
+      <Grid ColumnDefinitions="*,170">
+        <c:RCheckBox Name="CheckSleepAnimation" />
+        <c:RComboBox Name="ComboSleepPattern" Grid.Column="1" VerticalAlignment="Center" Height="28" />
+      </Grid>
+      <c:RCheckBox Name="CheckLowBattery" />
+      <c:RCheckBox Name="CheckBatteryLevel" />
+      <Grid ColumnDefinitions="*,170">
+        <c:RCheckBox Name="CheckPowerSaving" />
+        <c:RComboBox Name="ComboDim" Grid.Column="1" VerticalAlignment="Center" Height="28" />
+      </Grid>
+    </StackPanel>
+  </StackPanel>
+</v:SideWindow>

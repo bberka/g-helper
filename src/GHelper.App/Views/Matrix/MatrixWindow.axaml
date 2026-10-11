@@ -1,0 +1,138 @@
+<v:SideWindow xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:c="using:GHelper.App.Controls"
+                xmlns:v="using:GHelper.App.Views"
+                x:Class="GHelper.App.Views.MatrixWindow"
+                x:CompileBindings="False"
+                Title="AniMe Matrix"
+                Width="450"
+                SizeToContent="Height"
+                Icon="avares://GHelper/Assets/Tray/standard.png">
+
+  <v:SideWindow.Styles>
+    <Style Selector="c|RButton.tab">
+      <Setter Property="Margin" Value="2,0" />
+      <Setter Property="CornerRadius" Value="2" />
+    </Style>
+    <Style Selector="Grid.row">
+      <Setter Property="Height" Value="38" />
+    </Style>
+    <Style Selector="Grid.row > TextBlock">
+      <Setter Property="FontWeight" Value="Bold" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="Margin" Value="8,0,0,0" />
+    </Style>
+    <Style Selector="Grid.row > :is(Control):not(TextBlock)">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="StackPanel.sliderTitle > TextBlock.value">
+      <Setter Property="HorizontalAlignment" Value="Right" />
+    </Style>
+  </v:SideWindow.Styles>
+
+  <StackPanel Margin="10" Spacing="0">
+
+    <!-- ================= mode tabs ================= -->
+    <UniformGrid Columns="4" Height="38" Margin="0,0,0,6">
+      <c:RButton Name="ButtonPictureMode" Classes="tab" Secondary="True" />
+      <c:RButton Name="ButtonClockMode" Classes="tab" Secondary="True" />
+      <c:RButton Name="ButtonAudioMode" Classes="tab" Secondary="True" />
+      <c:RButton Name="ButtonTextMode" Classes="tab" Secondary="True" />
+    </UniformGrid>
+
+    <!-- ================= LED preview ================= -->
+    <Border Background="Black">
+      <v:MatrixPreview Name="Preview" Cursor="SizeAll" AutomationProperties.Name="AniMe Matrix preview" />
+    </Border>
+
+    <!-- ================= picture settings ================= -->
+    <StackPanel Name="PanelPictureSettings" Spacing="0">
+      <Grid Margin="8,10,8,0" ColumnDefinitions="*,Auto">
+        <TextBlock Name="LabelZoomTitle" Classes="title" />
+        <TextBlock Name="LabelZoom" Grid.Column="1" />
+      </Grid>
+      <c:RSlider Name="TrackZoom" Margin="8,6,8,0" Minimum="10" Maximum="200" Step="5" Value="100" />
+
+      <Grid Classes="row" Margin="0,6,0,0" ColumnDefinitions="140,*">
+        <TextBlock Name="LabelScaling" />
+        <c:RComboBox Name="ComboScaling" Grid.Column="1" Height="28" />
+      </Grid>
+      <Grid Classes="row" ColumnDefinitions="140,*">
+        <TextBlock Name="LabelRotation" />
+        <c:RComboBox Name="ComboRotation" Grid.Column="1" Height="28" />
+      </Grid>
+
+      <Grid Margin="0,4,0,0" ColumnDefinitions="*,*">
+        <StackPanel Margin="8,0,12,0">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Name="LabelContrastTitle" Classes="title" />
+            <TextBlock Name="LabelContrast" Grid.Column="1" />
+          </Grid>
+          <c:RSlider Name="TrackContrast" Margin="0,6,0,0" Minimum="10" Maximum="200" Step="5" Value="100" />
+        </StackPanel>
+        <StackPanel Grid.Column="1" Margin="12,0,8,0">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Name="LabelGammaTitle" Classes="title" />
+            <TextBlock Name="LabelGamma" Grid.Column="1" />
+          </Grid>
+          <c:RSlider Name="TrackGamma" Margin="0,6,0,0" Minimum="-100" Maximum="100" Step="5" Value="0" />
+        </StackPanel>
+      </Grid>
+    </StackPanel>
+
+    <!-- ================= text settings ================= -->
+    <StackPanel Name="PanelTextSettings" Spacing="0" Margin="0,6,0,0">
+      <Grid Height="38" ColumnDefinitions="*,100,125" Margin="0,0,0,6">
+        <c:RTextBox Name="TextMatrix" MaxLength="100" Margin="8,0,6,0" VerticalAlignment="Center" />
+        <c:RComboBox Name="ComboTextFont" Grid.Column="1" Height="28" Margin="0,0,6,0" VerticalAlignment="Center" />
+        <c:RNumericUpDown Name="NumTextSize" Grid.Column="2" Minimum="8" Maximum="30" Value="15" FormatString="0"
+                          Margin="0,0,8,0" VerticalAlignment="Center" />
+      </Grid>
+      <Grid Height="38" ColumnDefinitions="*,100,125" Margin="0,0,0,6">
+        <c:RTextBox Name="TextMatrix2" MaxLength="100" Margin="8,0,6,0" VerticalAlignment="Center" />
+        <c:RComboBox Name="ComboTextFont2" Grid.Column="1" Height="28" Margin="0,0,6,0" VerticalAlignment="Center" />
+        <c:RNumericUpDown Name="NumTextSize2" Grid.Column="2" Minimum="8" Maximum="30" Value="15" FormatString="0"
+                          Margin="0,0,8,0" VerticalAlignment="Center" />
+      </Grid>
+      <c:RCheckBox Name="CheckTextRunning" Margin="8,0" />
+    </StackPanel>
+
+    <!-- ================= clock settings ================= -->
+    <StackPanel Name="PanelClockSettings" Spacing="0" Margin="0,6,0,0">
+      <Grid Classes="row" ColumnDefinitions="140,*">
+        <TextBlock Name="LabelClockTime" />
+        <c:RTextBox Name="TextClockTime" Grid.Column="1" MaxLength="30" Margin="0,0,8,0" />
+      </Grid>
+      <Grid Classes="row" ColumnDefinitions="140,*">
+        <TextBlock Name="LabelClockDate" />
+        <c:RTextBox Name="TextClockDate" Grid.Column="1" MaxLength="30" Margin="0,0,8,0" />
+      </Grid>
+      <StackPanel Orientation="Horizontal" Spacing="40" Height="34" Margin="8,0,0,0">
+        <c:RCheckBox Name="CheckClockBattery" VerticalAlignment="Center" />
+        <c:RCheckBox Name="CheckFlip" VerticalAlignment="Center" />
+      </StackPanel>
+    </StackPanel>
+
+    <!-- ================= audio settings ================= -->
+    <StackPanel Name="PanelAudioSettings" Spacing="0" Margin="0,6,0,0">
+      <Grid Classes="row" ColumnDefinitions="140,*">
+        <TextBlock Name="LabelAudioMode" />
+        <c:RComboBox Name="ComboAudioMode" Grid.Column="1" Height="28" />
+      </Grid>
+    </StackPanel>
+
+    <!-- ================= picture / reset ================= -->
+    <StackPanel Name="PanelButtons" Orientation="Horizontal" Height="48" Margin="0,10,0,0" Spacing="8">
+      <c:RButton Name="ButtonPicture" Width="130" Height="34" Secondary="True" CornerRadius="5"
+                 Margin="8,0,0,0" IconSpacing="6" Icon="avares://GHelper/Assets/Icons/icons8-matrix-32.png" />
+      <c:RButton Name="ButtonReset" Width="130" Height="34" Secondary="True" CornerRadius="5"
+                 IconSpacing="6" Icon="avares://GHelper/Assets/Icons/icons8-refresh-32.png" />
+    </StackPanel>
+
+    <!-- ================= power ================= -->
+    <StackPanel Orientation="Horizontal" Spacing="8" Margin="8,4,0,0">
+      <c:RCheckBox Name="CheckAutoOff" ShowBorder="True" Padding="8,3" />
+      <c:RCheckBox Name="CheckLidOff" ShowBorder="True" Padding="8,3" />
+    </StackPanel>
+  </StackPanel>
+</v:SideWindow>
