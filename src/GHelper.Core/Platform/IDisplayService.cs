@@ -49,4 +49,15 @@ public interface IDisplayService
     /// Core only calls this when elevated.
     /// </summary>
     void SetAsusRefreshFlag(int value) { }
+
+    // --- additive (platform-windows) ---------------------------------------------------------
+
+    /// <summary>ELMB (extreme low motion blur) state of the internal panel: 0/1, or -1 when unsupported. Legacy ScreenELMB.Get.</summary>
+    int GetElmbStatus() => -1;
+
+    /// <summary>Legacy ScreenELMB.Set. No-op when unsupported.</summary>
+    void SetElmbStatus(int status) { }
+
+    /// <summary>Monitors added / removed or resolution, refresh rate, layout changed (legacy SystemEvents.DisplaySettingsChanged).</summary>
+    event Action? DisplaySettingsChanged { add { } remove { } }
 }

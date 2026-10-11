@@ -80,6 +80,28 @@ public interface IVendorServices
 
     /// <summary>Human readable GPU device problem (Windows CM_Get_DevNode_Status), null if healthy/unknown.</summary>
     string? GetGpuError();
+
+    // --- additive (platform-windows) -----------------------------------------------------------
+
+    /// <summary>One time probe that makes Windows create its Dynamic Lighting device keys (legacy DynamicLightingHelper.Init).</summary>
+    void InitDynamicLighting() { }
+
+    /// <summary>
+    /// Drive Windows Dynamic Lighting for all devices (legacy DynamicLightingHelper.SetEffect).
+    /// effect: 0 solid, 1 breathing, 2 rainbow, 4 wave, 5 wheel, 6 gradient.
+    /// </summary>
+    void SetDynamicLightingEffect(int effect, System.Drawing.Color? color = null, System.Drawing.Color? color2 = null, int? brightness = null, int? speed = null) { }
+
+    /// <summary>
+    /// Directory of the ASUS Splendid command line tool (Windows: folder of the ATKWMIACPIIO driver, contains
+    /// AsusSplendid.exe), null when unknown. Legacy VisualControl.GetSplendidPath.
+    /// </summary>
+    string? GetSplendidPath() => null;
+
+    /// <summary>GameVisual service flag (HKCU\Software\ASUS\ARMOURY CRATE Service\GameVisual ActiveGVStatus). True when unset.</summary>
+    bool IsGameVisualEnabled() => true;
+
+    void SetGameVisualStatus(int status) { }
 }
 
 /// <summary>Ryzen SMU / Intel MSR access (legacy Pawn folder: PawnIO driver on Windows, ryzen_smu + msr module on Linux).</summary>
@@ -106,6 +128,18 @@ public interface ICpuTuning : IDisposable
     /// this platform. Each call returns a new, unconnected instance owned by the caller.
     /// </summary>
     PawnIO.IPawnIo? CreatePawnIo() => null;
+
+    /// The kernel driver that backs this service is present (Windows: PawnIO installed even when access is denied;
+    /// Linux: ryzen_smu / msr module loaded). Legacy ModeControl.IsPawnInstalled. Defaults to <see cref="IsSupported"/>.
+    /// </summary>
+    bool IsDriverInstalled => IsSupported;
+
+    /// <summary>
+    /// AMD SMU family after <see cref="Initialize"/> ("Raven", "Renoir", "Mobile", "Matisse", "Raphael", "StrixPoint",
+    /// "StrixHalo", ...) or null. Legacy ModeControl decides the periodic re-apply from it (Renoir/Mobile temp limit,
+    /// Raphael PPT).
+    /// </summary>
+    string? SmuFamily => null;
 }
 
 /// <summary>GPU telemetry backends (NVAPI/NVML/ADL/amdgpu hwmon). IGpuControl is the Core interface from the legacy app.</summary>
@@ -136,6 +170,9 @@ public interface IGpuProvider
     /// Null when the platform has none.
     /// </summary>
     IAmdGpuDriver? CreateAmdDriver() => null;
+
+    // additive (platform-windows)
+    bool IntelVramSupported => false;
 }
 
 public readonly record struct BatteryState(
@@ -153,6 +190,14 @@ public interface ISystemSensors
     BatteryState? GetBatteryState();
     /// <summary>Fan RPM exposed by the OS (hwmon). Null when only the ASUS interface can provide it.</summary>
     int? GetFanRpm(int fanIndex);
+
+    // --- additive (platform-windows): legacy HardwareControl "Energy Meter" channels ---------------
+
+    /// <summary>Whole APU package power in watts from the OS energy meter ("Apu Power" channel), null when unavailable.</summary>
+    float? GetApuPower() => null;
+
+    /// <summary>CPU cores power in watts ("CPU Power" channel, else the sum of the per-core RAPL counters), null when unavailable.</summary>
+    float? GetCpuCoresPower() => null;
 }
 
 public interface IFpsMonitor : IDisposable
