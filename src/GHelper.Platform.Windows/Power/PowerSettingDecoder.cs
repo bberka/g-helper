@@ -1,6 +1,6 @@
 namespace GHelper.Platform.Windows.Power;
 
-internal enum PowerSettingKind
+public enum PowerSettingKind
 {
     Unknown,
     Lid,
@@ -10,10 +10,10 @@ internal enum PowerSettingKind
 }
 
 /// <summary>Decoded PBT_POWERSETTINGCHANGE notification. <see cref="Flag"/> meaning depends on the kind (see decoder).</summary>
-internal readonly record struct PowerSettingEvent(PowerSettingKind Kind, bool Flag);
+public readonly record struct PowerSettingEvent(PowerSettingKind Kind, bool Flag);
 
 /// <summary>Pure mapping of power setting GUID + payload to the IPowerService events (legacy Settings.WndProc).</summary>
-internal static class PowerSettingDecoder
+public static class PowerSettingDecoder
 {
     // 0 = closed, 1 = open
     public static readonly Guid LidSwitchStateChange = new("ba3e0f4d-b817-4094-a2d1-d56379e6a0f3");

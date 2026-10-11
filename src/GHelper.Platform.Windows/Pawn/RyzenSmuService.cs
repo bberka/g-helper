@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace GHelper.Platform.Windows.Pawn
 {
-    internal enum SmuStatus : uint
+    public enum SmuStatus : uint
     {
         OK                = 0x01,
         Failed            = 0xFF,
@@ -15,7 +15,7 @@ namespace GHelper.Platform.Windows.Pawn
         CmdRejectedBusy   = 0xFC,
     }
 
-    internal enum CpuCodeName : uint
+    public enum CpuCodeName : uint
     {
         Undefined     = 0xFFFFFFFF,
 
@@ -72,7 +72,7 @@ namespace GHelper.Platform.Windows.Pawn
     }
 
     // Groups CpuCodeName values into the families used by SMU command routing.
-    internal enum CpuFamily
+    public enum CpuFamily
     {
         Unknown,
         Zen1Desktop,  // Colfax, SummitRidge, PinnacleRidge, Threadripper, CastlePeak
@@ -87,7 +87,7 @@ namespace GHelper.Platform.Windows.Pawn
     }
 
     // Current power limits read from the PM table, in watts.
-    internal sealed record PowerLimits(
+    public sealed record PowerLimits(
         float Stapm,       // offset 0x00 — stable across all table versions
         float Fast,        // offset 0x08 — stable across all table versions
         float Slow,        // offset 0x10 — stable across all table versions
@@ -96,7 +96,7 @@ namespace GHelper.Platform.Windows.Pawn
                                // absent on Raven (0x1Exxxx) and Raphael (0x54xxxx)
     );
 
-    internal sealed class RyzenSmuService : IDisposable
+    public sealed class RyzenSmuService : IDisposable
     {
         private const int MAILBOX_TIMEOUT_MS = 200;
 
