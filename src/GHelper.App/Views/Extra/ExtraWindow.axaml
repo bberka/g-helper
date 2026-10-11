@@ -5,6 +5,7 @@
                  xmlns:c="using:GHelper.App.Controls"
                  xmlns:views="using:GHelper.App.Views"
                  xmlns:e="using:GHelper.App.Views.Extra"
+                 xmlns:t="using:GHelper.App.Theme"
                  mc:Ignorable="d"
                  x:Class="GHelper.App.Views.Extra.ExtraWindow"
                  x:DataType="e:ExtraViewModel"
@@ -16,19 +17,15 @@
                  d:DesignWidth="506" d:DesignHeight="700">
 
   <views:SideWindow.Styles>
-    <Style Selector="c|TintedImage.sectionIcon">
-      <Setter Property="Width" Value="16" />
-      <Setter Property="Height" Value="16" />
-      <Setter Property="Margin" Value="4,0,6,0" />
-      <Setter Property="VerticalAlignment" Value="Center" />
-    </Style>
+    <!-- section header: icon + bold title (+ small actions); the next section starts SectionGap below the last row -->
     <Style Selector="Grid.sectionHeader">
-      <Setter Property="Height" Value="26" />
-      <Setter Property="Margin" Value="5,4,5,2" />
+      <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.ControlHeight}" />
+      <Setter Property="Margin" Value="5,12,5,4" />
     </Style>
+    <!-- caption on the left, field(s) on the right: always one control height, 4 px between rows -->
     <Style Selector="Grid.sectionRow">
-      <Setter Property="Height" Value="26" />
-      <Setter Property="Margin" Value="5,3,5,3" />
+      <Setter Property="MinHeight" Value="{x:Static t:UiMetrics.ControlHeight}" />
+      <Setter Property="Margin" Value="5,2" />
     </Style>
     <Style Selector="c|TintedImage.action">
       <Setter Property="Width" Value="16" />
@@ -38,10 +35,7 @@
       <Setter Property="VerticalAlignment" Value="Center" />
     </Style>
     <Style Selector="c|RCheckBox">
-      <Setter Property="Padding" Value="6,0,0,0" />
-      <Setter Property="MinHeight" Value="0" />
-      <Setter Property="Height" Value="24" />
-      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="Margin" Value="0,2" />
     </Style>
   </views:SideWindow.Styles>
 
@@ -49,10 +43,10 @@
     <StackPanel Margin="8,6,8,8">
 
       <!-- key bindings -->
-      <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*,Auto,Auto">
+      <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*,Auto,Auto" Margin="5,0,5,4">
         <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-keyboard-32.png" />
         <TextBlock Grid.Column="1" Classes="title" Text="{Binding KeyBindingsCaption}" />
-        <c:RButton Name="ButtonResetBindings" Grid.Column="2" Width="75" Height="22" Secondary="True"
+        <c:RButton Name="ButtonResetBindings" Grid.Column="2" Width="75" Secondary="True"
                    Content="{Binding ResetCaption}" Command="{Binding ResetBindingsCommand}" />
         <c:TintedImage Name="PictureHelp" Grid.Column="3" Classes="action"
                        Source="avares://GHelper/Assets/Icons/icons8-help-32.png"
@@ -60,16 +54,22 @@
       </Grid>
 
       <ItemsControl Name="TableBindings" ItemsSource="{Binding KeyRows}" Margin="5,0,5,4"
+                    Grid.IsSharedSizeScope="True"
                     AutomationProperties.Name="{Binding KeyBindingsCaption}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="e:KeyBindingRow">
-            <Grid ColumnDefinitions="0.2*,0.4*,0.4*" IsVisible="{Binding IsVisible}" Margin="0,2">
-              <TextBlock Text="{Binding Label}" VerticalAlignment="Center" Margin="5,0,0,0" />
-              <c:RComboBox Grid.Column="1" Margin="3,0" ItemsSource="{Binding Actions}"
+            <!-- the caption column is as wide as the longest caption; combo box 55 % / custom action 45 % of the rest -->
+            <Grid IsVisible="{Binding IsVisible}" MinHeight="{x:Static t:UiMetrics.ControlHeight}" Margin="0,2">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="KeyCaption" MinWidth="64" />
+                <ColumnDefinition Width="0.55*" />
+                <ColumnDefinition Width="0.45*" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Text="{Binding Label}" VerticalAlignment="Center" Margin="5,0,6,0" />
+              <c:RComboBox Grid.Column="1" Margin="0,0,6,0" ItemsSource="{Binding Actions}"
                            SelectedItem="{Binding SelectedAction, Mode=TwoWay}"
                            AutomationProperties.Name="{Binding AccessibleName}" />
-              <c:RTextBox Grid.Column="2" Margin="3,0" PlaceholderText="action" MinHeight="0" Height="24"
-                          Padding="6,0" VerticalContentAlignment="Center"
+              <c:RTextBox Grid.Column="2" PlaceholderText="action"
                           Text="{Binding CustomText, Mode=TwoWay}" />
             </Grid>
           </DataTemplate>
@@ -77,7 +77,7 @@
       </ItemsControl>
 
       <!-- laptop backlight -->
-      <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*,250" Margin="5,10,5,2">
+      <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*,250">
         <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/backlight.png" />
         <TextBlock Grid.Column="1" Classes="title" Text="{Binding BacklightCaption}" />
         <c:RSlider Name="SliderBrightness" Grid.Column="2" Minimum="0" Maximum="3" Step="1"
@@ -85,12 +85,20 @@
                    AutomationProperties.Name="{Binding BrightnessAccessibleName}" />
       </Grid>
 
-      <ItemsControl Name="TableBacklight" ItemsSource="{Binding Zones}" Margin="5,0,5,0">
+      <ItemsControl Name="TableBacklight" ItemsSource="{Binding Zones}" Margin="5,0,5,0" Grid.IsSharedSizeScope="True">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="e:BacklightZone">
-            <Grid ColumnDefinitions="72,84,84,150,*" Height="26" IsVisible="{Binding IsVisible}">
-              <TextBlock Classes="title" Text="{Binding Label}" Margin="6,0,0,0"
-                         IsVisible="{Binding LabelVisible}" />
+            <!-- columns are as wide as the widest cell of any row, so long translations never wrap or clip -->
+            <Grid MinHeight="{x:Static t:UiMetrics.CheckRowHeight}" Margin="0,2" IsVisible="{Binding IsVisible}">
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" SharedSizeGroup="ZoneLabel" MinWidth="72" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="ZoneAwake" MinWidth="78" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="ZoneSleep" MinWidth="78" />
+                <ColumnDefinition Width="Auto" SharedSizeGroup="ZoneBoot" MinWidth="120" />
+                <ColumnDefinition Width="*" />
+              </Grid.ColumnDefinitions>
+              <TextBlock Classes="title" Text="{Binding Label}" Margin="6,0,10,0"
+                         IsVisible="{Binding LabelVisible}" VerticalAlignment="Center" />
               <c:RCheckBox Grid.Column="1" Content="{Binding Awake.Text}" IsChecked="{Binding Awake.IsChecked, Mode=TwoWay}"
                            AutomationProperties.Name="{Binding Awake.AccessibleName}" />
               <c:RCheckBox Grid.Column="2" Content="{Binding Sleep.Text}" IsChecked="{Binding Sleep.IsChecked, Mode=TwoWay}"
@@ -105,19 +113,19 @@
         </ItemsControl.ItemTemplate>
       </ItemsControl>
 
-      <c:RCheckBox Name="CheckXgm" Margin="5,4,0,0" IsVisible="{Binding XgmVisible}"
+      <c:RCheckBox Name="CheckXgm" Margin="10,4,0,2" IsVisible="{Binding XgmVisible}"
                    Content="{Binding Xgm.Text}" IsChecked="{Binding Xgm.IsChecked, Mode=TwoWay}" />
 
-      <Grid Classes="sectionRow" ColumnDefinitions="*,150" Margin="10,6,5,3">
+      <Grid Classes="sectionRow" ColumnDefinitions="*,170" Margin="10,6,5,2">
         <TextBlock Text="{Binding SpeedCaption}" VerticalAlignment="Center" />
         <c:RComboBox Name="ComboKeyboardSpeed" Grid.Column="1" ItemsSource="{Binding Speeds}"
                      SelectedItem="{Binding SelectedSpeed, Mode=TwoWay}"
                      AutomationProperties.Name="{Binding SpeedAccessibleName}" />
       </Grid>
 
-      <Grid Classes="sectionRow" ColumnDefinitions="*,Auto,Auto" Margin="10,3,5,3">
+      <Grid Classes="sectionRow" ColumnDefinitions="*,Auto,Auto" Margin="10,2,5,2">
         <TextBlock Text="{Binding TimeoutCaption}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
-        <c:NumericUpDownWithUnit Name="NumericBacklightPluggedTime" Grid.Column="1" Width="100" ShowButtonSpinner="False" Margin="4,0"
+        <c:NumericUpDownWithUnit Name="NumericBacklightPluggedTime" Grid.Column="1" Width="100" ShowButtonSpinner="False" Margin="6,0"
                                  Minimum="0" Maximum="3600" Increment="1" Unit="sec"
                                  OffText="{Binding OffText}" FormatString="0"
                                  Value="{Binding BacklightPluggedTime, Mode=TwoWay}"
@@ -130,7 +138,7 @@
       </Grid>
 
       <!-- other settings -->
-      <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*,Auto,Auto" Margin="5,10,5,2">
+      <Grid Classes="sectionHeader" ColumnDefinitions="Auto,*,Auto,Auto">
         <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-settings-32.png" />
         <TextBlock Grid.Column="1" Classes="title" Text="{Binding OtherCaption}" />
         <c:TintedImage Name="PictureScan" Grid.Column="2" Classes="action"
@@ -141,28 +149,26 @@
                        AutomationProperties.Name="Log" />
       </Grid>
 
-      <Grid Name="PanelAcpi" Classes="sectionRow" ColumnDefinitions="Auto,*,110,70,60" IsVisible="{Binding AcpiVisible}">
+      <Grid Name="PanelAcpi" Classes="sectionRow" ColumnDefinitions="Auto,*,110,76,64" IsVisible="{Binding AcpiVisible}">
         <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-heartbeat-32.png" />
         <TextBlock Grid.Column="1" Classes="title" Text="{Binding AcpiTitle}" />
-        <c:RTextBox Grid.Column="2" PlaceholderText="Address" MinHeight="0" Height="24" Padding="6,0"
-                    VerticalContentAlignment="Center" Text="{Binding AcpiCommand, Mode=TwoWay}" />
-        <c:RTextBox Grid.Column="3" Margin="4,0" PlaceholderText="Value" MinHeight="0" Height="24" Padding="6,0"
-                    VerticalContentAlignment="Center" Text="{Binding AcpiParam, Mode=TwoWay}" />
-        <c:RButton Grid.Column="4" Content="Send" Command="{Binding AcpiSendCommand}" Secondary="True" Height="24" />
+        <c:RTextBox Grid.Column="2" PlaceholderText="Address" Text="{Binding AcpiCommand, Mode=TwoWay}" />
+        <c:RTextBox Grid.Column="3" Margin="6,0" PlaceholderText="Value" Text="{Binding AcpiParam, Mode=TwoWay}" />
+        <c:RButton Grid.Column="4" Content="Send" Command="{Binding AcpiSendCommand}" Secondary="True" />
       </Grid>
 
-      <Grid Name="PanelCores" Classes="sectionRow" ColumnDefinitions="Auto,*,100,100,60" IsVisible="{Binding CoresVisible}">
+      <Grid Name="PanelCores" Classes="sectionRow" ColumnDefinitions="Auto,*,100,100,64" IsVisible="{Binding CoresVisible}">
         <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-processor-32.png" />
         <TextBlock Grid.Column="1" Classes="title" Text="{Binding CoresCaption}" TextTrimming="CharacterEllipsis" />
-        <c:RComboBox Name="ComboCoresP" Grid.Column="2" Margin="2,0" ItemsSource="{Binding CoresPItems}"
+        <c:RComboBox Name="ComboCoresP" Grid.Column="2" Margin="0,0,6,0" ItemsSource="{Binding CoresPItems}"
                      SelectedIndex="{Binding CoresPIndex, Mode=TwoWay}" />
-        <c:RComboBox Name="ComboCoresE" Grid.Column="3" Margin="2,0" ItemsSource="{Binding CoresEItems}"
+        <c:RComboBox Name="ComboCoresE" Grid.Column="3" Margin="0,0,6,0" ItemsSource="{Binding CoresEItems}"
                      SelectedIndex="{Binding CoresEIndex, Mode=TwoWay}" />
-        <c:RButton Name="ButtonCores" Grid.Column="4" Margin="2,0,0,0" Content="{Binding ApplyCaption}"
-                   Command="{Binding ApplyCoresCommand}" Secondary="True" Height="24" />
+        <c:RButton Name="ButtonCores" Grid.Column="4" Content="{Binding ApplyCaption}"
+                   Command="{Binding ApplyCoresCommand}" Secondary="True" />
       </Grid>
 
-      <Grid Name="PanelApu" Classes="sectionRow" ColumnDefinitions="Auto,*,150" IsVisible="{Binding ApuVisible}">
+      <Grid Name="PanelApu" Classes="sectionRow" ColumnDefinitions="Auto,*,170" IsVisible="{Binding ApuVisible}">
         <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-video-48.png" />
         <TextBlock Grid.Column="1" Classes="title" Text="{Binding ApuCaption}" TextTrimming="CharacterEllipsis" />
         <c:RComboBox Name="ComboApu" Grid.Column="2" ItemsSource="{Binding ApuItems}"
@@ -170,7 +176,7 @@
                      AutomationProperties.Name="{Binding ApuCaption}" />
       </Grid>
 
-      <Grid Name="PanelOptimalBrightness" Classes="sectionRow" ColumnDefinitions="Auto,*,150"
+      <Grid Name="PanelOptimalBrightness" Classes="sectionRow" ColumnDefinitions="Auto,*,170"
             IsVisible="{Binding OptimalVisible}">
         <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-brightness-32.png" />
         <TextBlock Grid.Column="1" Classes="title" Text="{Binding OptimalCaption}" TextTrimming="CharacterEllipsis" />
@@ -179,7 +185,7 @@
                      AutomationProperties.Name="{Binding OptimalCaption}" />
       </Grid>
 
-      <ItemsControl Name="PanelSettings" ItemsSource="{Binding SettingChecks}" Margin="10,4,5,4"
+      <ItemsControl Name="PanelSettings" ItemsSource="{Binding SettingChecks}" Margin="10,6,5,4"
                     AutomationProperties.Name="{Binding WindowTitle}">
         <ItemsControl.ItemTemplate>
           <DataTemplate x:DataType="e:CheckItem">
@@ -201,12 +207,12 @@
       </Grid>
 
       <!-- Asus services -->
-      <Grid Name="PanelServices" Classes="sectionRow" ColumnDefinitions="Auto,*,128" Margin="5,8,5,0"
+      <Grid Name="PanelServices" Classes="sectionRow" ColumnDefinitions="Auto,*,128" Margin="5,10,5,0"
             AutomationProperties.Name="{Binding ServicesText}">
         <c:TintedImage Classes="sectionIcon" Source="avares://GHelper/Assets/Icons/icons8-automation-32.png" />
         <TextBlock Name="LabelServices" Grid.Column="1" Classes="title" Text="{Binding ServicesText}"
                    Foreground="{Binding ServicesBrush}" />
-        <c:RButton Name="ButtonServices" Grid.Column="2" Height="26" Secondary="True"
+        <c:RButton Name="ButtonServices" Grid.Column="2" Secondary="True"
                    Content="{Binding ServicesButtonText}" IsEnabled="{Binding ServicesButtonEnabled}"
                    Command="{Binding ServicesCommand}" />
       </Grid>

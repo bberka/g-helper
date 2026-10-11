@@ -13,6 +13,7 @@
     <Style Selector="Border.header">
       <Setter Property="Background" Value="{DynamicResource ButtonSecondBrush}" />
       <Setter Property="Padding" Value="10,4" />
+      <Setter Property="MinHeight" Value="32" />
     </Style>
     <Style Selector="Border.header > TextBlock">
       <Setter Property="FontWeight" Value="Bold" />
@@ -21,9 +22,11 @@
     <Style Selector="StackPanel.items">
       <Setter Property="Margin" Value="10,2,5,2" />
     </Style>
-    <Style Selector="StackPanel.items CheckBox">
-      <Setter Property="MinHeight" Value="30" />
-      <Setter Property="Padding" Value="8,0,0,0" />
+    <Style Selector="StackPanel.items c|RCheckBox">
+      <Setter Property="Margin" Value="0,2" />
+    </Style>
+    <Style Selector="StackPanel.items > Grid">
+      <Setter Property="MinHeight" Value="32" />
     </Style>
   </v:SideWindow.Styles>
 
@@ -39,9 +42,9 @@
     </StackPanel>
 
     <!-- ================= interval ================= -->
-    <Border Classes="header" Height="36">
+    <Border Classes="header" MinHeight="36">
       <Grid ColumnDefinitions="*,200">
-        <TextBlock Name="LabelInterval" />
+        <TextBlock Name="LabelInterval" VerticalAlignment="Center" />
         <c:RSlider Name="SliderInterval" Grid.Column="1" Minimum="0" Maximum="5" Step="1" Value="0"
                    VerticalAlignment="Center" />
       </Grid>
@@ -57,13 +60,13 @@
       <c:RCheckBox Name="CheckBoot" />
       <Grid ColumnDefinitions="*,170">
         <c:RCheckBox Name="CheckSleepAnimation" />
-        <c:RComboBox Name="ComboSleepPattern" Grid.Column="1" VerticalAlignment="Center" Height="28" />
+        <c:RComboBox Name="ComboSleepPattern" Grid.Column="1" />
       </Grid>
       <c:RCheckBox Name="CheckLowBattery" />
       <c:RCheckBox Name="CheckBatteryLevel" />
       <Grid ColumnDefinitions="*,170">
         <c:RCheckBox Name="CheckPowerSaving" />
-        <c:RComboBox Name="ComboDim" Grid.Column="1" VerticalAlignment="Center" Height="28" />
+        <c:RComboBox Name="ComboDim" Grid.Column="1" />
       </Grid>
     </StackPanel>
   </StackPanel>

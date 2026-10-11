@@ -109,7 +109,7 @@ public sealed class OverlayConfigWindow : SideWindow
         var modes = new UniformGrid { Columns = 4, Margin = new Thickness(0, 2) };
         void AddMode(OverlayMode mode, string text, Color border)
         {
-            var button = new RButton { Content = text, Height = 36, Margin = new Thickness(0, 0, 6, 0), BorderColor = border };
+            var button = new RButton { Content = text, Height = UiMetrics.LargeButtonHeight, Margin = new Thickness(0, 0, 6, 0), BorderColor = border };
             button.Click += (_, _) => SelectMode((int)mode);
             _modeButtons[(int)mode] = button;
             modes.Children.Add(button);
@@ -139,11 +139,10 @@ public sealed class OverlayConfigWindow : SideWindow
 
         _cpuColor.Content = "CPU " + Strings.Color;
         _gpuColor.Content = "GPU " + Strings.Color;
-        var reset = new RButton { Content = Strings.Reset, Height = 36 };
+        var reset = new RButton { Content = Strings.Reset };
         reset.Click += (_, _) => Reset();
         foreach (var b in new RButton[] { _cpuColor, _gpuColor })
         {
-            b.Height = 36;
             b.Margin = new Thickness(0, 0, 6, 0);
         }
         var colors = new UniformGrid { Columns = 3, Margin = new Thickness(0, 4) };
