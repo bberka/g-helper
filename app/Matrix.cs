@@ -672,7 +672,7 @@ namespace GHelper
                 Top = Program.settingsForm.Top;
             }
 
-            Left = Program.settingsForm.GetSideWindowLeft(Width);
+            Left = Program.settingsForm.Left - Width - 5;
         }
 
     }

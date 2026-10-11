@@ -186,7 +186,7 @@ namespace GHelper
                 Top = Program.settingsForm.Top;
             }
 
-            Left = Program.settingsForm.GetSideWindowLeft(Width);
+            Left = Program.settingsForm.Left - Width - 5;
 
             headset.Disconnect += Headset_Disconnect;
             headset.BatteryUpdated += Headset_BatteryUpdated;
