@@ -15,6 +15,8 @@ namespace PawnIO
     {
         private readonly Func<IPawnIo?> _driverFactory;
         private readonly bool _platformSupported;
+        private readonly bool? _isAmd;
+        private readonly bool? _isIntel;
         private readonly object _gate = new();
 
         private RyzenSmuService? _smu;
@@ -24,15 +26,19 @@ namespace PawnIO
 
         /// <param name="driverFactory">New, unconnected driver instance per call (the caller owns and disposes it); null = none.</param>
         /// <param name="platformSupported">OS / architecture gate (e.g. PawnIO is Windows x64 only).</param>
-        public PawnCpuTuning(Func<IPawnIo?> driverFactory, bool platformSupported = true)
+        /// <param name="isAmd">Override of the CPUID vendor detection (tests); null = the host CPU.</param>
+        /// <param name="isIntel">Override of the CPUID vendor detection (tests); null = the host CPU.</param>
+        public PawnCpuTuning(Func<IPawnIo?> driverFactory, bool platformSupported = true, bool? isAmd = null, bool? isIntel = null)
         {
             _driverFactory = driverFactory;
             _platformSupported = platformSupported;
+            _isAmd = isAmd;
+            _isIntel = isIntel;
         }
 
-        public bool IsAmd => CpuInfo.IsAMD;
+        public bool IsAmd => _isAmd ?? CpuInfo.IsAMD;
 
-        public bool IsIntel => CpuInfo.IsIntel;
+        public bool IsIntel => _isIntel ?? CpuInfo.IsIntel;
 
         public bool IsSupported => _platformSupported && (IsAmd || IsIntel);
 

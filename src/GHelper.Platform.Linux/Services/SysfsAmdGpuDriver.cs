@@ -19,11 +19,17 @@ internal sealed class SysfsAmdGpuDriver : IAmdGpuDriver
     private readonly PciGpu? integrated;
 
     public SysfsAmdGpuDriver(LinuxContext ctx)
+        : this(ctx, PciGpu.Enumerate(ctx.Root).Where(g => g.Vendor == GpuVendor.Amd && g.Driver == "amdgpu"))
+    {
+    }
+
+    /// <summary>The adapters are given (tests: a fake tree has no driver symlink to enumerate).</summary>
+    internal SysfsAmdGpuDriver(LinuxContext ctx, IEnumerable<PciGpu> amdGpus)
     {
         this.ctx = ctx;
         root = ctx.Root;
 
-        List<PciGpu> amd = PciGpu.Enumerate(root).Where(g => g.Vendor == GpuVendor.Amd && g.Driver == "amdgpu").ToList();
+        List<PciGpu> amd = amdGpus.ToList();
         discrete = amd.FirstOrDefault(g => IsDiscrete(root, g));
         integrated = amd.FirstOrDefault(g => !IsDiscrete(root, g));
     }

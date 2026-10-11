@@ -28,11 +28,9 @@ public sealed partial class LinuxDisplayService : IDisplaySettingsEvents, IScree
             lock (displayEventGate)
             {
                 displaySettingsChanged += value;
+                displaySignature ??= Signature();
                 if (displayTimer is null && DisplayPollMs > 0)
-                {
-                    displaySignature = Signature();
                     displayTimer = new Timer(_ => PollDisplays(), null, DisplayPollMs, DisplayPollMs);
-                }
             }
         }
         remove
