@@ -82,7 +82,7 @@ verified on ASUS hardware. `[~]` = partly done or not verifiable from the author
 - [x] W2-A main window wiring (Settings.cs logic <-> Core): `MainBackend`, Core bootstrap, exit cleanup, headless `charge`
 - [x] W2-B Fans + Extra windows (fans and power window, extra settings window)
 - [x] W2-C Matrix, Slash, Handheld (Ally), Updates, OverlayConfig + HardwareOverlay window
-- [ ] W2-D AsusMouse/Keyboard/Headset settings windows (Core `Peripherals/` is ported, the three windows are not)
+- [x] W2-D AsusMouse/Keyboard/Headset settings windows (`Views/Mouse|Keyboard|Headset`, `PeripheralIcons`)
 - [x] W2-E packaging, CI, docs (owner: packaging-ci-docs)
   - [x] self-contained single-file publish for win-x64, win-x86, win-arm64, linux-x64, linux-arm64, linux-arm,
         linux-musl-x64, linux-musl-arm64 (verified with `dotnet publish -r <rid>` from a Windows host; only win-x64 was executed)
@@ -91,11 +91,15 @@ verified on ASUS hardware. `[~]` = partly done or not verifiable from the author
   - [x] README.md, docs/README.md, crowdin.yml
   - [~] not verified: the workflows have not run on GitHub; the rpm build (no `rpmbuild` on the authoring host); the deb and
         tar.gz were produced and inspected on Windows only (file modes and the symlink need a Linux run, which `build.yml` does)
-  - [ ] follow-ups for other owners: (a) `AutoUpdateControl.ParseRelease` picks the last `.zip` asset of a release; with one
-        zip per Windows architecture it must select the `win-<arch>` asset; (b) Linux self-update is notify-only, the
+  - [ ] follow-ups for other owners: (a) DONE: `AutoUpdateControl.ParseRelease` now prefers the zip for the process architecture; (b) Linux self-update is notify-only, the
         `.tar.gz` / `.deb` / `.rpm` assets are not consumed by the updater; (c) `docs/README.*.md` translations still link to
         upstream releases; (d) trimming needs source generated JSON in `AppConfig` and trim safe HidSharp / WMI use before it
         can be enabled (win-x64 probe: 51 MB -> 22 MB, 15 trim warnings)
+- [x] I1-seams: Core call sites wired to Windows/Linux seam implementations, `tasks/seams.md`, seam coverage test
+- [x] UX-1 fixed-size windows (min == max, WM class `ghelper`, transient side windows) + in-app backdrop dialogs (Confirm/Alert)
+- [x] UX-2 control-size tokens (`Theme/UiMetrics.cs`), check box template, layout pass + layout tests for every window
+- [ ] Manual verification still open (nothing below could be tested on the authoring host): real ASUS hardware on Linux,
+      tiling WM behaviour (i3/sway/Hyprland), Wayland tray/hotkeys/overlay, Windows ARM64/x86 start-up, release workflow on GitHub
 - [ ] P6.3 final review. `app/` is KEPT as the upstream mirror (merge upstream into it, port into `src/`); keep the `legacy-winforms` job in `build.yml` only if upstream changes should still be compile-checked
 
 ## Checkpoints
