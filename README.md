@@ -23,7 +23,7 @@ limit ...). The port keeps all of that logic and only swaps the **transport**:
 
 | | Windows | Linux |
 |---|---|---|
-| ASUS device ids | `\.\ATKACPI` `DeviceIoControl` (+ WMI) | the kernel's `asus-wmi` driver: sysfs attributes (`throttle_thermal_policy` / `platform_profile`, `ppt_*`, `nv_*`, `dgpu_disable`, `gpu_mux_mode`, `panel_od`, `charge_control_end_threshold`, hwmon fan curves, `asus-armoury`), debugfs `dev_id/ctrl_param/devs/dsts` as raw fallback |
+| ASUS device ids | `\\.\ATKACPI` `DeviceIoControl` (+ WMI) | the kernel's `asus-wmi` driver: sysfs attributes (`throttle_thermal_policy` / `platform_profile`, `ppt_*`, `nv_*`, `dgpu_disable`, `gpu_mux_mode`, `panel_od`, `charge_control_end_threshold`, hwmon fan curves, `asus-armoury`), debugfs `dev_id/ctrl_param/devs/dsts` as raw fallback |
 | Hotkeys (Fn / M / ROG keys) | `AsusAtkWmiEvent` + keyboard hook | evdev nodes of "Asus WMI hotkeys" / "Asus Keyboard", `uinput` for key injection |
 | Power profile, lid, suspend, AC/DC | power plans + `SystemEvents` | `platform_profile` / power-profiles-daemon, logind, UPower |
 | Screen | CCD / GDI / WMI backlight | DRM + `/sys/class/backlight`, refresh rate via `xrandr`, `wlr-randr`, `kscreen-doctor`, Mutter |
