@@ -106,6 +106,19 @@ public sealed class AvaloniaUiHost : IUiHost
         }, DispatcherPriority.Background);
     }
 
+    public void ShowWindow(string name, int arg = 0) =>
+        Post(() =>
+        {
+            try
+            {
+                if (WindowRegistry.Show(name, arg) is null) AppLog.Write($"ShowWindow: unknown window '{name}'");
+            }
+            catch (Exception ex)
+            {
+                AppLog.Write($"ShowWindow({name}): {ex.Message}");
+            }
+        });
+
     public void Quit()
     {
         Post(() =>
