@@ -30,4 +30,12 @@ public interface IDisplayService
     /// <summary>null when there is no touchscreen / not supported.</summary>
     bool? GetTouchscreenStatus();
     void SetTouchscreenStatus(bool enabled);
+
+    // --- additive (platform-windows) ---------------------------------------------------------
+
+    /// <summary>ELMB (extreme low motion blur) state of the internal panel: 0/1, or -1 when unsupported. Legacy ScreenELMB.Get.</summary>
+    int GetElmbStatus() => -1;
+
+    /// <summary>Legacy ScreenELMB.Set. No-op when unsupported.</summary>
+    void SetElmbStatus(int status) { }
 }
