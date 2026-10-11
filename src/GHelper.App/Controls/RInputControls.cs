@@ -66,7 +66,6 @@ public class NumericUpDownWithUnit : RNumericUpDown
 
     public NumericUpDownWithUnit()
     {
-        FormatString = "0";
         TextConverter = new UnitConverter(this);
     }
 
@@ -79,30 +78,33 @@ public class NumericUpDownWithUnit : RNumericUpDown
         base.OnPropertyChanged(change);
         if (change.Property == UnitProperty || change.Property == UnitFirstProperty || change.Property == OffTextProperty)
         {
-            // re-run the converter by nudging the text representation
-            var v = Value;
-            SetCurrentValue(ValueProperty, null);
-            SetCurrentValue(ValueProperty, v);
+            // a new converter instance makes the control regenerate its text
+            TextConverter = new UnitConverter(this);
         }
     }
 
+    /// <summary>
+    /// NumericUpDown semantics: <c>ConvertBack</c> renders a value as text, <c>Convert</c> parses the typed text.
+    /// </summary>
     private sealed class UnitConverter : IValueConverter
     {
         private readonly NumericUpDownWithUnit _owner;
         public UnitConverter(NumericUpDownWithUnit owner) => _owner = owner;
 
-        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
-            if (value is not decimal d) return value?.ToString();
+            if (value is not decimal d) return string.Empty;
             if (d == 0 && !string.IsNullOrEmpty(_owner.OffText)) return _owner.OffText;
             string number = d.ToString("0.##", culture);
             if (string.IsNullOrEmpty(_owner.Unit)) return number;
             return _owner.UnitFirst ? $"({_owner.Unit}) {number}" : $"{number} ({_owner.Unit})";
         }
 
-        public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)
+        public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
         {
             string text = value?.ToString() ?? "";
+            if (!string.IsNullOrEmpty(_owner.OffText) && text == _owner.OffText) return 0m;
+
             // keep digits, sign and decimal separator only: everything else belongs to the unit
             var sb = new System.Text.StringBuilder();
             foreach (char c in text)

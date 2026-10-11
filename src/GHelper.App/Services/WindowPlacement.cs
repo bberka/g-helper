@@ -18,7 +18,9 @@ public static class WindowPlacement
 
     /// <summary>
     /// The working area excludes the taskbar/panel, so its largest inset identifies the taskbar edge. Without any inset
-    /// (auto hide taskbar, Wayland) the bottom edge is assumed.
+    /// (auto hide taskbar, Wayland) the bottom edge is assumed. Faithful to the legacy method: a taskbar at the bottom
+    /// falls through to <see cref="TaskbarEdge.Right"/>, which positions exactly like Bottom; only the handheld rule
+    /// below distinguishes them (it applies when there is no inset at all).
     /// </summary>
     public static TaskbarEdge GetTaskbarEdge(PixelRect bounds, PixelRect workingArea)
     {
