@@ -15,14 +15,20 @@ permissions:
 
 jobs:
   codeql:
-    runs-on: windows-2022
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v7
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v5
+      with:
+        dotnet-version: '10.0.x'
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v4
       with:
-        languages: c#
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v4
+        languages: csharp
+        build-mode: manual
+    # the cross-platform solution; the legacy app/ tree (Windows only) is intentionally not analysed
+    - name: Build
+      run: dotnet build GHelper.sln --configuration Release
     - name: Analyze
       uses: github/codeql-action/analyze@v4
