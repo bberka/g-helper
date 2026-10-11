@@ -30,4 +30,23 @@ public interface IDisplayService
     /// <summary>null when there is no touchscreen / not supported.</summary>
     bool? GetTouchscreenStatus();
     void SetTouchscreenStatus(bool enabled);
+
+    // --- ASUS Splendid / GameVisual (Windows only, defaults mean "not available") --------------------
+    /// <summary>Directory of AsusSplendid.exe (legacy: folder of the ATKWMIACPIIO driver). Null when not installed.</summary>
+    string? SplendidDirectory => null;
+    /// <summary>HKCU\Software\ASUS\ARMOURY CRATE Service\GameVisual ActiveGVStatus (legacy default 1).</summary>
+    int GetGameVisualStatus() => 1;
+    void SetGameVisualStatus(int status) { }
+
+    /// <summary>
+    /// Panel ELMB / DPCD state access (legacy ScreenELMB.Aux: Intel ControlLib / NVAPI AUX channel).
+    /// writeValue &lt; 0 reads. Returns the value, or -1 when unsupported.
+    /// </summary>
+    int ElmbAccess(int writeValue) => -1;
+
+    /// <summary>
+    /// ASUS Armoury "RefreshFlag" (Windows: HKLM WOW6432Node Uninstall {8714A8D1-0F08-4681-9DF6-A8C4607A58B4} RefreshFlag).
+    /// Core only calls this when elevated.
+    /// </summary>
+    void SetAsusRefreshFlag(int value) { }
 }
