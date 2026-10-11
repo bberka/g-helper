@@ -776,6 +776,9 @@ Do you still want to continue?</value>
   <data name="Quit" xml:space="preserve">
     <value>Quit</value>
   </data>
+  <data name="QuitConfirm" xml:space="preserve">
+    <value>Are you sure you want to quit G-Helper?</value>
+  </data>
   <data name="ReadLimits" xml:space="preserve">
     <value>Read Limits</value>
   </data>

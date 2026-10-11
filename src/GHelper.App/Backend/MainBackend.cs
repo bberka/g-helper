@@ -547,7 +547,10 @@ public sealed partial class MainBackend : IMainBackend, IUiActionHandler, IDispo
 
     private void Quit()
     {
-        // legacy ButtonQuit_Click; the rest of the cleanup runs from the application exit handler (Shutdown)
+        // legacy ButtonQuit_Click (no prompt there; the fork asks first, as an in-app dialog); the rest of the cleanup
+        // runs from the application exit handler (Shutdown)
+        if (!Program.Ui.Confirm(Properties.Strings.Quit, Properties.Strings.QuitConfirm)) return;
+
         Program.Ui.Quit();
     }
 

@@ -377,10 +377,25 @@ public class MainBackendTests : EngineTestBase, IDisposable
     }
 
     [Fact]
-    public void QuitAsksTheUiToExit()
+    public void QuitAsksForConfirmationThenExits()
     {
+        Ui.ConfirmAnswer = true;
+        int confirms = Ui.Confirms;
+
         _vm.Quit.Command!.Execute(null);
+
+        Assert.Equal(confirms + 1, Ui.Confirms);
         Assert.Equal(1, Ui.Quits);
+    }
+
+    [Fact]
+    public void QuitStaysWhenConfirmationIsDeclined()
+    {
+        Ui.ConfirmAnswer = false;
+
+        _vm.Quit.Command!.Execute(null);
+
+        Assert.Equal(0, Ui.Quits);
     }
 
     [Fact]
