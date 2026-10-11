@@ -100,6 +100,12 @@ public interface ICpuTuning : IDisposable
     int SetThm(int celsius);
     (int stapmW, int fastW, int slowW)? GetPowerLimits();
     float? GetIntelPackagePower();
+
+    /// <summary>
+    /// Driver IO for Core's RyzenSmuService / IntelMsr (module based PawnIO-style interface). Null = no such driver on
+    /// this platform. Each call returns a new, unconnected instance owned by the caller.
+    /// </summary>
+    PawnIO.IPawnIo? CreatePawnIo() => null;
 }
 
 /// <summary>GPU telemetry backends (NVAPI/NVML/ADL/amdgpu hwmon). IGpuControl is the Core interface from the legacy app.</summary>
@@ -113,6 +119,23 @@ public interface IGpuProvider
     bool InitIntelVram();
     void SetIntelVramIndex(int index);
     void UnloadNative();
+
+    /// <summary>Selectable Intel VRAM sizes in GB after <see cref="InitIntelVram"/> (legacy IntelVram.Sizes).</summary>
+    int[] IntelVramSizes => [];
+    /// <summary>Current index (0 = default, n = IntelVramSizes[n-1]) after <see cref="InitIntelVram"/> (legacy IntelVram.Index).</summary>
+    int IntelVramIndex => 0;
+
+    /// <summary>
+    /// Power state of the discrete GPU read WITHOUT waking it (Windows: NVAPI NVAPI_GPU_NOT_POWERED, Linux: PCI
+    /// runtime_status). <see cref="GpuPowerState.Unknown"/> lets Core query the driver (NVML) directly.
+    /// </summary>
+    GpuPowerState GetDiscretePowerState() => GpuPowerState.Unknown;
+
+    /// <summary>
+    /// Native AMD GPU interface (ADL on Windows, amdgpu sysfs/hwmon on Linux) for Core's AmdGpuControl.
+    /// Null when the platform has none.
+    /// </summary>
+    IAmdGpuDriver? CreateAmdDriver() => null;
 }
 
 public readonly record struct BatteryState(
@@ -137,10 +160,19 @@ public interface IFpsMonitor : IDisposable
     void Start(int targetPid = -1);
     void Stop();
     double SampleFps();
+
+    /// <summary>Process whose frames are counted (legacy EtwFpsMonitor.TargetPid). 0 = any, -1 = unspecified.</summary>
+    int TargetPid { get => -1; set { } }
 }
 
 public interface IFpsMonitorFactory
 {
     bool IsSupported { get; }
     IFpsMonitor? Create();
+
+    /// <summary>PID of the process owning the foreground window, 0 when unknown (used to pin FPS counting / game detection).</summary>
+    int GetForegroundProcessId() => 0;
+
+    /// <summary>Raised (any thread) when the foreground window changes. Optional, the overlay also polls once per second.</summary>
+    event Action? ForegroundChanged { add { } remove { } }
 }
