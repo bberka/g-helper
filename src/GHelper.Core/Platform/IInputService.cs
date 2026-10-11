@@ -28,12 +28,4 @@ public interface IInputService : IDisposable
     bool OnScreenKeyboardSupported { get; }
     void ToggleOnScreenKeyboard();
     bool IsOnScreenKeyboardOpen();
-
-    // --- additive (platform-windows) ---------------------------------------------------------
-
-    /// <summary>Time since the last user input (legacy NativeMethods.GetIdleTime, keyboard backlight timeout).</summary>
-    TimeSpan GetIdleTime() => TimeSpan.Zero;
-
-    /// <summary>Is the key (or modifier such as Keys.ShiftKey) physically held down right now (legacy Control.ModifierKeys).</summary>
-    bool IsKeyDown(Keys key) => false;
 }

@@ -66,6 +66,7 @@ public sealed class WindowsPlatform : IPlatform, IDisposable
         if (input.IsValueCreated) input.Value.Dispose();
         if (cpuTuning.IsValueCreated) cpuTuning.Value.Dispose();
         if (asus.IsValueCreated) asus.Value.Dispose();
+        if (fps.IsValueCreated) fps.Value.Dispose();
         if (process.IsValueCreated) process.Value.ReleaseSingleInstance();
     }
 }

@@ -7,15 +7,21 @@ namespace PawnIO
 {
     public static class CpuInfo
     {
-        public static readonly bool IsAMD = DetectAMD();
+        public static readonly bool IsAMD = DetectVendor("AuthenticAMD"u8);
+        public static readonly bool IsIntel = DetectVendor("GenuineIntel"u8);
 
-        private static bool DetectAMD()
+        private static bool DetectVendor(ReadOnlySpan<byte> vendor)
         {
             if (!X86Base.IsSupported) return false;
             var (_, ebx, ecx, edx) = X86Base.CpuId(0, 0);
+            return VendorMatches((uint)ebx, (uint)edx, (uint)ecx, vendor);
+        }
 
-            Span<uint> regs = stackalloc uint[] { (uint)ebx, (uint)edx, (uint)ecx };
-            return MemoryMarshal.Cast<uint, byte>(regs).SequenceEqual("AuthenticAMD"u8);
+        /// <summary>The 12 byte CPUID vendor string is EBX, EDX, ECX of leaf 0 ("AuthenticAMD" / "GenuineIntel").</summary>
+        public static bool VendorMatches(uint ebx, uint edx, uint ecx, ReadOnlySpan<byte> vendor)
+        {
+            Span<uint> regs = stackalloc uint[] { ebx, edx, ecx };
+            return MemoryMarshal.Cast<uint, byte>(regs).SequenceEqual(vendor);
         }
 
         private static readonly Lazy<(string Name, string Caption)> _data =

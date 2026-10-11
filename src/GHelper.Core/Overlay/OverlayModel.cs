@@ -224,6 +224,7 @@ namespace GHelper.Overlay
                 ApplySensorFlags();
 
                 try { PlatformServices.Current.Power.UserPreferencesChanged += OnPreferencesChanged; } catch { }
+                try { PlatformServices.Current.Fps.ForegroundChanged += OnForegroundChanged; } catch { }
                 HardwareControl.ResetCPUPowerCounter();
 
                 StopFps();
@@ -254,6 +255,7 @@ namespace GHelper.Overlay
                 HardwareControl.readPower = false;
                 HardwareControl.readBattery = false;
                 try { PlatformServices.Current.Power.UserPreferencesChanged -= OnPreferencesChanged; } catch { }
+                try { PlatformServices.Current.Fps.ForegroundChanged -= OnForegroundChanged; } catch { }
                 _timer.Stop();
 
                 StopFps();

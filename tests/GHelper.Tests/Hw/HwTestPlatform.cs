@@ -102,8 +102,29 @@ public sealed class FakeFpsFactory : IFpsMonitorFactory
     public int GetForegroundProcessId() => ForegroundPid;
 }
 
-public sealed class FakeGpuProvider : IGpuProvider
+public sealed class FakeGpuProvider : IGpuProvider, IGpuOverclock
 {
+    // IGpuOverclock (NVAPI stand-in)
+    public bool OverclockAvailable;
+    public int OverclockCore, OverclockMemory;
+    public int ClockLock = -1;
+    public readonly List<(int core, int memory)> OffsetsSet = new();
+
+    public bool GetClockOffsets(out int core, out int memory)
+    {
+        core = OverclockCore;
+        memory = OverclockMemory;
+        return OverclockAvailable;
+    }
+
+    public int SetClockOffsets(int core, int memory)
+    {
+        OffsetsSet.Add((core, memory));
+        return OverclockAvailable ? 1 : -1;
+    }
+
+    public int GetClockLock() => ClockLock;
+
     public GpuPowerState PowerState = GpuPowerState.Unknown;
     public IAmdGpuDriver? AmdDriver;
     public bool IntelVramAvailable;

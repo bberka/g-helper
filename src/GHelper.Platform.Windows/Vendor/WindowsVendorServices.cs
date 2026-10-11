@@ -11,7 +11,7 @@ namespace GHelper.Platform.Windows.Vendor;
 /// Armoury Crate / ASUS service handling (legacy AsusService), Windows Dynamic Lighting (DynamicLightingHelper), the
 /// Keystone proximity sound and device problem detection (DeviceHelper).
 /// </summary>
-public sealed class WindowsVendorServices : IVendorServices
+public sealed class WindowsVendorServices : IVendorServices, IDynamicLightingEffects, IAsusChargeLimitSync, IDriverInventory
 {
     private const string LightingKey = @"HKEY_CURRENT_USER\Software\Microsoft\Lighting";
     private const string LightingValue = "AmbientLightingEnabled";
@@ -193,23 +193,16 @@ public sealed class WindowsVendorServices : IVendorServices
         }
     }
 
-    public void InitDynamicLighting()
-    {
-        if (!AppConfig.IsDynamicLightingInit()) return;
-        if (!IsDynamicLightingSupported) return;
-        if (IsDynamicLightingEnabled()) return;
-
-        SetDynamicLighting(true);
-        Thread.Sleep(1000);
-        SetDynamicLighting(false);
-    }
-
     public void OpenDynamicLightingSettings() => process.RunCommand("explorer", "ms-settings:personalization-lighting");
 
     /// <summary>AABBGGRR: the Dynamic Lighting registry values expect R and B swapped versus ARGB.</summary>
     public static int ToDynamicLightingColor(Color c) => unchecked((c.A << 24) | (c.B << 16) | (c.G << 8) | c.R);
 
-    public void SetDynamicLightingEffect(int effect, Color? color = null, Color? color2 = null, int? brightness = null, int? speed = null)
+    /// <summary>
+    /// <see cref="IDynamicLightingEffects"/>: drive Windows Dynamic Lighting for all devices (legacy DynamicLightingHelper.SetEffect).
+    /// effect: 0 solid, 1 breathing, 2 rainbow, 4 wave, 5 wheel, 6 gradient.
+    /// </summary>
+    public void SetEffect(int effect, Color? color, Color? color2, int? brightness, int? speed)
     {
         if (!OperatingSystem.IsWindows()) return;
 
@@ -292,59 +285,31 @@ public sealed class WindowsVendorServices : IVendorServices
         }
     }
 
-    // --- GameVisual / Splendid ----------------------------------------------------------------
+    // --- ASUS System Control Interface --------------------------------------------------------
 
-    private const string GameVisualKey = @"HKEY_CURRENT_USER\Software\ASUS\ARMOURY CRATE Service\GameVisual";
-    private const string GameVisualValue = "ActiveGVStatus";
-    private string? splendidPath;
+    private const string ChargingRateKey = @"SOFTWARE\ASUS\ASUS System Control Interface\AsusOptimization\ASUS Keyboard Hotkeys";
 
-    public string? GetSplendidPath()
-    {
-        if (splendidPath is not null || !OperatingSystem.IsWindows()) return splendidPath;
-
-        try
-        {
-            splendidPath = FindSplendidPath();
-        }
-        catch (Exception ex)
-        {
-            Logger.WriteLine(ex.Message);
-        }
-
-        return splendidPath;
-    }
-
-    [SupportedOSPlatform("windows")]
-    private static string? FindSplendidPath()
-    {
-        using var searcher = new ManagementObjectSearcher("Select * from Win32_SystemDriver WHERE Name='ATKWMIACPIIO'");
-        foreach (ManagementBaseObject driver in searcher.Get())
-        {
-            using (driver)
-            {
-                string? path = driver["PathName"]?.ToString();
-                return path is null ? null : Path.GetDirectoryName(path);
-            }
-        }
-
-        return null;
-    }
-
-    public bool IsGameVisualEnabled()
-    {
-        if (!OperatingSystem.IsWindows()) return true;
-
-        try { return Registry.GetValue(GameVisualKey, GameVisualValue, 1) is not int status || status > 0; }
-        catch { return true; }
-    }
-
-    public void SetGameVisualStatus(int status)
+    /// <summary>Legacy BatteryControl.SetAsusChargeLimit: mirror the limit into ASUS software (HKLM, needs elevation).</summary>
+    public void SetChargingRate(int value)
     {
         if (!OperatingSystem.IsWindows()) return;
 
-        try { Registry.SetValue(GameVisualKey, GameVisualValue, status, RegistryValueKind.DWord); }
-        catch (Exception ex) { Logger.WriteLine("GameVisual status: " + ex.Message); }
+        using var key = Registry.LocalMachine.OpenSubKey(ChargingRateKey, writable: true);
+        key?.SetValue("ChargingRate", value, RegistryValueKind.DWord);
     }
+
+    // --- IDriverInventory (ASUS driver update list) ---------------------------------------------
+
+    public List<InstalledDriver> BuildInventory() => OperatingSystem.IsWindows() ? DriverInventory.Build() : [];
+
+    public string? GetMcuFirmwareVersion() => OperatingSystem.IsWindows() ? DriverInventory.McuFirmwareVersion() : null;
+
+    public string? GetFirmwareVersion(string title) => OperatingSystem.IsWindows() ? DriverInventory.FirmwareVersion(title) : null;
+
+    public Dictionary<string, string> BuildStagedVersions(HashSet<string> hardwareIds, CancellationToken token) =>
+        OperatingSystem.IsWindows() ? DriverInventory.StagedVersions(hardwareIds, token) : new Dictionary<string, string>();
+
+    public HashSet<string> GetInstalledStorePackages() => OperatingSystem.IsWindows() ? DriverInventory.StorePackages() : [];
 
     // --- GPU problem detection ----------------------------------------------------------------
 

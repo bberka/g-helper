@@ -54,7 +54,7 @@ namespace GHelper.Mode
         }
 
         public static bool IsPawnAvailable() => GetSmu() != null;
-        public static bool IsPawnInstalled() => PlatformServices.Current.CpuTuning.IsSupported;
+        public static bool IsPawnInstalled() => PlatformServices.Current.CpuTuning.IsDriverInstalled;
 
         static System.Timers.Timer? reapplyTimer;
         static System.Timers.Timer modeToggleTimer = default!;

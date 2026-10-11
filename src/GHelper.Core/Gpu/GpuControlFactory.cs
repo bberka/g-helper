@@ -11,6 +11,13 @@ public static class GpuControlFactory
 {
     /// <summary>A valid discrete GPU control, or null (the caller logs "dGPU not found").</summary>
     public static IGpuControl? CreateDiscrete(IAmdGpuDriver? amdDriver = null)
+        => CreateDiscrete(amdDriver is null ? null : () => amdDriver);
+
+    /// <summary>
+    /// Same, with the AMD driver opened lazily: only when no NVIDIA GPU was found. A null factory (or a null result) uses
+    /// the registered platform's CreateAmdDriver.
+    /// </summary>
+    public static IGpuControl? CreateDiscrete(Func<IAmdGpuDriver?>? amdDriverFactory)
     {
         if (AppConfig.NoGpu()) return null;
 
@@ -20,7 +27,7 @@ public static class GpuControlFactory
             if (nvidia.IsValid) return nvidia;
             nvidia.Dispose();
 
-            IGpuControl amd = new AmdGpuControl(amdDriver);
+            IGpuControl amd = new AmdGpuControl(amdDriverFactory?.Invoke());
             if (amd.IsValid)
             {
                 if (amd.FullName.Contains("6850M")) AppConfig.Set("xgm_special", 1);

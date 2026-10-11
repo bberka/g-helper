@@ -11,7 +11,7 @@ namespace GHelper.Platform.Windows.Power;
 /// registers RegisterPowerSettingNotification / RegisterSuspendResumeNotification (legacy Program + Settings.WndProc).
 /// Nothing touches the OS until a member is used (events start lazily with the first subscriber).
 /// </summary>
-public sealed class WindowsPowerService : IPowerService, IDisposable
+public sealed class WindowsPowerService : IPowerService, IPowerModeCatalog, ISessionEndingEvents, IDisposable
 {
     // power settings (sub group, setting)
     private static readonly Guid GUID_CPU = new("54533251-82be-4824-96c1-47b60b740d00");
@@ -61,6 +61,9 @@ public sealed class WindowsPowerService : IPowerService, IDisposable
     public event Action<bool>? BatterySaverChanged { add { batterySaverChanged += value; EnsureListening(); } remove { batterySaverChanged -= value; } }
     public event Action? UserPreferencesChanged { add { userPreferencesChanged += value; EnsureListening(); } remove { userPreferencesChanged -= value; } }
     public event Action? SessionEnding { add { sessionEnding += value; EnsureListening(); } remove { sessionEnding -= value; } }
+
+    // explicit: a public "PowerModes" member would shadow Microsoft.Win32.PowerModes used by the event handlers below
+    IReadOnlyDictionary<string, string> IPowerModeCatalog.PowerModes => PowerSchemes.Names;
 
     // --- power plan / profile -----------------------------------------------------------------
 
@@ -289,20 +292,6 @@ public sealed class WindowsPowerService : IPowerService, IDisposable
     {
         if (!OperatingSystem.IsWindows()) return;
         Win32.LockWorkStation();
-    }
-
-    public void TurnOffDisplay()
-    {
-        if (!OperatingSystem.IsWindows()) return;
-
-        // SC_MONITORPOWER has to be sent to a window of this process: use the message-only window
-        EnsureListening();
-        IntPtr target = window?.Handle ?? IntPtr.Zero;
-        if (target == IntPtr.Zero) target = Win32.GetDesktopWindow();
-
-        Win32.SendMessage(target, Win32.WM_SYSCOMMAND, (IntPtr)Win32.SC_MONITORPOWER, (IntPtr)Win32.MONITOR_OFF);
-        int error = Marshal.GetLastWin32Error();
-        if (error != 0) Logger.WriteLine($"Turn off screen: error code {error}");
     }
 
     // --- powrprof helpers ---------------------------------------------------------------------

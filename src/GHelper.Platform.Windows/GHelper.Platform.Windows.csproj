@@ -18,16 +18,6 @@
     <PackageReference Include="TaskScheduler" Version="2.12.2" />
   </ItemGroup>
 
-  <!-- PawnIO driver modules (loaded by name: GHelper.Platform.Windows.RyzenSMU.bin / .IntelMSR.bin) -->
-  <ItemGroup>
-    <EmbeddedResource Include="Pawn\RyzenSMU.bin">
-      <LogicalName>GHelper.Platform.Windows.RyzenSMU.bin</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Pawn\IntelMSR.bin">
-      <LogicalName>GHelper.Platform.Windows.IntelMSR.bin</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
   <ItemGroup>
     <InternalsVisibleTo Include="GHelper.Tests" />
   </ItemGroup>

@@ -113,8 +113,9 @@ internal sealed unsafe class UinputDevice : IDisposable
 /// <summary>
 /// IInputService for Linux: uinput injection, evdev based hotkeys and key observation (works on X11 and Wayland, needs
 /// read access to /dev/input/event* i.e. the "input" group or the udev rule shipped in packaging/linux).
+/// Also the <see cref="IInputExtras"/> of the platform (idle time, modifier state, screen off, touchpad state).
 /// </summary>
-public sealed class LinuxInputService : IInputService
+public sealed class LinuxInputService : IInputService, IInputExtras
 {
     private readonly LinuxContext ctx;
     private readonly object gate = new();
@@ -278,6 +279,160 @@ public sealed class LinuxInputService : IInputService
         public void Dispose() => Interlocked.Exchange(ref action, null)?.Invoke();
     }
 
+    // ------------------------------------------------------------------ IInputExtras
+
+    private EvdevMonitor? idleMonitor;
+    private long lastActivityTick = Environment.TickCount64;
+    private long desktopIdleCheckedTick;
+    private TimeSpan desktopIdle;
+    private bool desktopIdleFailed;
+
+    private static readonly System.Text.RegularExpressions.Regex Uint64Token = new(@"uint64\s+(\d+)", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    /// <summary>
+    /// Time since the last keyboard / pointer input. The desktop's own idle monitor is asked first (GNOME Mutter, xprintidle
+    /// on X11): it sees every device and needs no extra permissions. Without one the evdev devices are observed.
+    /// </summary>
+    public TimeSpan GetIdleTime()
+    {
+        if (!desktopIdleFailed)
+        {
+            long now = Environment.TickCount64;
+            if (desktopIdleCheckedTick == 0 || now - desktopIdleCheckedTick > 500)
+            {
+                TimeSpan? idle = QueryDesktopIdle();
+                if (idle is null) desktopIdleFailed = true;
+                else
+                {
+                    desktopIdle = idle.Value;
+                    desktopIdleCheckedTick = now;
+                }
+            }
+
+            if (!desktopIdleFailed)
+                return desktopIdle + TimeSpan.FromMilliseconds(Environment.TickCount64 - desktopIdleCheckedTick);
+        }
+
+        EnsureIdleMonitor();
+        return TimeSpan.FromMilliseconds(Math.Max(0, Environment.TickCount64 - Interlocked.Read(ref lastActivityTick)));
+    }
+
+    private TimeSpan? QueryDesktopIdle()
+    {
+        try
+        {
+            if (ctx.CurrentDesktop.Contains("GNOME", StringComparison.Ordinal) && ctx.Runner.CommandExists("gdbus"))
+            {
+                CommandResult r = ctx.Runner.Run("gdbus",
+                    ["call", "--session", "--dest", "org.gnome.Mutter.IdleMonitor", "--object-path", "/org/gnome/Mutter/IdleMonitor/Core",
+                     "--method", "org.gnome.Mutter.IdleMonitor.GetIdletime"], 2000);
+                var m = Uint64Token.Match(r.StdOut);
+                if (r.Success && m.Success && long.TryParse(m.Groups[1].Value, out long ms)) return TimeSpan.FromMilliseconds(ms);
+            }
+
+            if (ctx.IsX11Session && ctx.Runner.CommandExists("xprintidle"))
+            {
+                CommandResult r = ctx.Runner.Run("xprintidle", [], 2000);
+                if (r.Success && long.TryParse(r.StdOut.Trim(), out long ms)) return TimeSpan.FromMilliseconds(ms);
+            }
+        }
+        catch (Exception ex)
+        {
+            LinuxLog.Write("idle time: " + ex.Message);
+        }
+
+        return null;
+    }
+
+    private void EnsureIdleMonitor()
+    {
+        lock (gate)
+        {
+            if (idleMonitor is not null) return;
+            Interlocked.Exchange(ref lastActivityTick, Environment.TickCount64);
+            idleMonitor = new EvdevMonitor(ctx.Root,
+                info => (info.IsKeyboard || info.Handlers.Any(h => h.StartsWith("mouse", StringComparison.Ordinal)))
+                        && info.Name != UinputDevice.DeviceName,
+                (_, e) =>
+                {
+                    if (e.Type is EvCodes.EV_KEY or EvCodes.EV_REL) Interlocked.Exchange(ref lastActivityTick, Environment.TickCount64);
+                });
+            idleMonitor.Start();
+        }
+    }
+
+    /// <summary>Currently held Shift / Control / Alt as <see cref="Keys"/> flags (legacy Control.ModifierKeys).</summary>
+    public Keys GetModifierKeys()
+    {
+        EnsureMonitor();
+
+        HotkeyModifiers held;
+        lock (gate) held = heldModifiers;
+
+        Keys keys = Keys.None;
+        if (held.HasFlag(HotkeyModifiers.Shift)) keys |= Keys.Shift;
+        if (held.HasFlag(HotkeyModifiers.Control)) keys |= Keys.Control;
+        if (held.HasFlag(HotkeyModifiers.Alt)) keys |= Keys.Alt;
+        return keys;
+    }
+
+    /// <summary>
+    /// "Screen off" hotkey. X11: DPMS; KDE: kscreen-doctor; sway: swaymsg; GNOME on Wayland has no DPMS call, the
+    /// screensaver blanks the panel instead (best effort).
+    /// </summary>
+    public void TurnOffScreen()
+    {
+        bool x11Only = ctx.IsX11Session && !ctx.IsWaylandSession;
+
+        if (x11Only && ctx.Runner.CommandExists("xset"))
+            ctx.Runner.Run("xset", ["dpms", "force", "off"], 3000);
+        else if (ctx.CurrentDesktop.Contains("KDE", StringComparison.Ordinal) && ctx.Runner.CommandExists("kscreen-doctor"))
+            ctx.Runner.Run("kscreen-doctor", ["--dpms", "off"], 3000);
+        else if (ctx.CurrentDesktop.Contains("SWAY", StringComparison.Ordinal) && ctx.Runner.CommandExists("swaymsg"))
+            ctx.Runner.Run("swaymsg", ["output * dpms off"], 3000);
+        else if (ctx.Runner.CommandExists("busctl"))
+            ctx.Runner.Run("busctl", ["--user", "call", "org.gnome.ScreenSaver", "/org/gnome/ScreenSaver", "org.gnome.ScreenSaver", "SetActive", "b", "true"], 3000);
+        else if (ctx.Runner.CommandExists("xset"))
+            ctx.Runner.Run("xset", ["dpms", "force", "off"], 3000);
+    }
+
+    /// <summary>Touchpad "send events" state of the desktop (GNOME gsettings, else X11 libinput through xinput).</summary>
+    public bool? GetTouchpadEnabled()
+    {
+        if (ctx.CurrentDesktop.Contains("GNOME", StringComparison.Ordinal) && ctx.Runner.CommandExists("gsettings"))
+        {
+            CommandResult r = ctx.Runner.Run("gsettings", ["get", "org.gnome.desktop.peripherals.touchpad", "send-events"], 3000);
+            string value = r.StdOut.Trim().Trim('\'');
+            if (r.Success && value.Length > 0) return !value.Equals("disabled", StringComparison.Ordinal);
+        }
+
+        if (ctx.IsX11Session && ctx.Runner.CommandExists("xinput"))
+        {
+            CommandResult list = ctx.Runner.Run("xinput", ["list", "--short"], 3000);
+            if (!list.Success) return null;
+
+            foreach (string line in list.StdOut.Split('\n'))
+            {
+                if (!line.Contains("touchpad", StringComparison.OrdinalIgnoreCase)) continue;
+                var id = System.Text.RegularExpressions.Regex.Match(line, @"id=(\d+)");
+                if (!id.Success) continue;
+
+                CommandResult props = ctx.Runner.Run("xinput", ["list-props", id.Groups[1].Value], 3000);
+                var enabled = System.Text.RegularExpressions.Regex.Match(props.StdOut, @"Device Enabled \(\d+\):\s*(\d)");
+                if (props.Success && enabled.Success) return enabled.Groups[1].Value == "1";
+            }
+        }
+
+        return null;
+    }
+
+    // Windows ConvertibleSlateMode registry value / ASUS system control interface folder: nothing on Linux
+    public void SetSlateMode(int status)
+    {
+    }
+
+    public string? GetAsusSoftwarePath() => null;
+
     // ------------------------------------------------------------------ on screen keyboard
 
     private bool IsGnome => ctx.CurrentDesktop.Contains("GNOME", StringComparison.Ordinal)
@@ -328,6 +483,8 @@ public sealed class LinuxInputService : IInputService
         {
             monitor?.Dispose();
             monitor = null;
+            idleMonitor?.Dispose();
+            idleMonitor = null;
             subscriptions.Clear();
             uinput?.Dispose();
             uinput = null;
