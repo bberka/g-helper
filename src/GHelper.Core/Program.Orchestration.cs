@@ -28,7 +28,7 @@ namespace GHelper
         public static ClamshellModeControl clamshellControl = default!;
 
         public static InputDispatcher? inputDispatcher;
-        public static HardwareOverlay? hardwareOverlay;
+        public static GHelper.Overlay.IHardwareOverlay? hardwareOverlay;
 
         /// <summary>AniMe Matrix / Slash controller (legacy settingsForm.matrixControl).</summary>
         public static AniMatrixControl? matrixControl;
@@ -78,7 +78,6 @@ namespace GHelper
             allyControl = new AllyControl();
             clamshellControl = new ClamshellModeControl();
             matrixControl = new AniMatrixControl();
-            hardwareOverlay = new HardwareOverlay();
 
             if (!ProcessHelper.TryAcquireSingleInstance())
             {
