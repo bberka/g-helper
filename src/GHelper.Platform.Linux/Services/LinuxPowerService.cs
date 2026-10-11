@@ -11,7 +11,7 @@ namespace GHelper.Platform.Linux;
 ///   tunables : cpufreq boost, PCIe ASPM policy, logind lid action / sleep.conf (root only)
 /// Every setter silently does nothing when the kernel/daemon does not offer the knob.
 /// </summary>
-public sealed class LinuxPowerService : IPowerService, IDisposable
+public sealed class LinuxPowerService : IPowerService, IPowerModeCatalog, ISessionEndingEvents, IDisposable
 {
     public const string PowerSaver = "power-saver";
     public const string Balanced = "balanced";
@@ -40,6 +40,7 @@ public sealed class LinuxPowerService : IPowerService, IDisposable
     private Action<bool>? sessionLockChanged;
     private Action<bool>? batterySaverChanged;
     private Action? userPreferencesChanged;
+    private Action? sessionEnding;
 
     private readonly int pollIntervalMs;
 
@@ -70,6 +71,14 @@ public sealed class LinuxPowerService : IPowerService, IDisposable
         1 => Performance,
         2 => PowerSaver,
         _ => Balanced,
+    };
+
+    /// <summary>The profiles selectable per performance mode (the names <see cref="GetPowerMode"/> returns).</summary>
+    public IReadOnlyDictionary<string, string> PowerModes { get; } = new Dictionary<string, string>
+    {
+        { PowerSaver, "Power Saver" },
+        { Balanced, "Balanced" },
+        { Performance, "Performance" },
     };
 
     public string GetPowerMode()
@@ -395,6 +404,13 @@ public sealed class LinuxPowerService : IPowerService, IDisposable
         remove => userPreferencesChanged -= value;
     }
 
+    /// <summary>logind PrepareForShutdown(true): the machine is going down (reboot / poweroff).</summary>
+    public event Action? SessionEnding
+    {
+        add { sessionEnding += value; EnsureMonitoring(); }
+        remove => sessionEnding -= value;
+    }
+
     private void EnsureMonitoring()
     {
         lock (gate)
@@ -457,6 +473,9 @@ public sealed class LinuxPowerService : IPowerService, IDisposable
             case "PrepareForSleep":
                 if (s.FirstBool == true) suspending?.Invoke();
                 else if (s.FirstBool == false) resumed?.Invoke();
+                break;
+            case "PrepareForShutdown":
+                if (s.FirstBool == true) sessionEnding?.Invoke();
                 break;
             case "Lock":
                 sessionLockChanged?.Invoke(true);

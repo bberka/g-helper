@@ -1,18 +1,19 @@
-using System.Runtime.InteropServices;
-using System.Text;
 using GHelper.Gpu;
+using GHelper.Gpu.AMD;
+using GHelper.Gpu.NVidia;
 
 namespace GHelper.Platform.Linux;
 
 /// <summary>
-/// IGpuProvider for Linux: NVIDIA through NVML (libnvidia-ml.so.1, loaded with NativeLibrary so a missing driver is
-/// not an error), AMD / Intel through the DRM sysfs files (hwmon temp/power, gpu_busy_percent, mem_info_vram_*).
-/// A runtime-suspended GPU is never touched: querying it would wake the dGPU the user switched off.
+/// IGpuProvider for Linux. The control objects are Core's: <c>NvidiaGpuControl</c> over NVML (libnvidia-ml.so.1, shared
+/// with Windows) for the proprietary NVIDIA driver and <c>AmdGpuControl</c> over <see cref="SysfsAmdGpuDriver"/>
+/// (amdgpu hwmon / DRM sysfs). Only GPUs without either (nouveau / nova_core, Intel Arc) get the plain sysfs
+/// <see cref="SysfsGpuControl"/>. A runtime-suspended GPU is never touched: querying it would wake the dGPU the user
+/// switched off, so <see cref="GetDiscretePowerState"/> reports it from PCI runtime_status.
 /// </summary>
 public sealed class LinuxGpuProvider : IGpuProvider
 {
     private readonly LinuxContext ctx;
-    private NvmlLibrary? nvml;
 
     public LinuxGpuProvider(LinuxContext ctx)
     {
@@ -23,22 +24,28 @@ public sealed class LinuxGpuProvider : IGpuProvider
     {
         try
         {
+            if (AppConfig.NoGpu()) return null;
+
             List<PciGpu> gpus = PciGpu.Enumerate(ctx.Root);
 
-            PciGpu? nvidia = gpus.FirstOrDefault(g => g.Vendor == GpuVendor.Nvidia && g.Driver is "nvidia" or "nouveau" or "nova_core");
-            if (nvidia is not null)
+            // proprietary driver: NVML (the only thing that knows temperature / power / VRAM of a GeForce)
+            if (gpus.Any(g => g.Vendor == GpuVendor.Nvidia && g.Driver == "nvidia"))
             {
-                if (nvidia.Driver == "nvidia")
-                {
-                    nvml ??= NvmlLibrary.TryLoad();
-                    if (nvml is not null) return new NvmlGpuControl(ctx, nvidia, nvml);
-                }
-                return new SysfsGpuControl(ctx, nvidia, isNvidia: true);
+                IGpuControl nvidia = new NvidiaGpuControl();
+                if (nvidia.IsValid) return nvidia;
+                nvidia.Dispose();
             }
 
             // AMD dGPU: not the boot VGA device on a hybrid laptop, or lots of dedicated memory
-            PciGpu? amd = gpus.FirstOrDefault(g => g.Vendor == GpuVendor.Amd && g.Driver == "amdgpu" && IsDiscreteAmd(g));
-            if (amd is not null) return new SysfsGpuControl(ctx, amd, isNvidia: false);
+            if (gpus.Any(g => g.Vendor == GpuVendor.Amd && g.Driver == "amdgpu" && SysfsAmdGpuDriver.IsDiscrete(ctx.Root, g)))
+            {
+                IGpuControl amd = new AmdGpuControl(new SysfsAmdGpuDriver(ctx));
+                if (amd.IsValid) return amd;
+                amd.Dispose();
+            }
+
+            PciGpu? nouveau = gpus.FirstOrDefault(g => g.Vendor == GpuVendor.Nvidia && g.Driver is "nouveau" or "nova_core");
+            if (nouveau is not null) return new SysfsGpuControl(ctx, nouveau, isNvidia: true);
 
             PciGpu? intel = gpus.FirstOrDefault(g => g.Vendor == GpuVendor.Intel && g.Driver is "i915" or "xe" && HasDedicatedMemory(g));
             if (intel is not null) return new SysfsGpuControl(ctx, intel, isNvidia: false);
@@ -50,13 +57,18 @@ public sealed class LinuxGpuProvider : IGpuProvider
         return null;
     }
 
+    /// <summary>The APU graphics (OLED power savings / telemetry), null when there is no amdgpu iGPU.</summary>
     public IGpuControl? CreateAmdApu()
     {
         try
         {
-            PciGpu? apu = PciGpu.Enumerate(ctx.Root)
-                .FirstOrDefault(g => g.Vendor == GpuVendor.Amd && g.Driver == "amdgpu" && !IsDiscreteAmd(g));
-            return apu is null ? null : new SysfsGpuControl(ctx, apu, isNvidia: false);
+            var driver = new SysfsAmdGpuDriver(ctx);
+            if (!driver.HasIntegrated && !driver.HasDiscrete)
+            {
+                driver.Dispose();
+                return null;
+            }
+            return new AmdGpuControl(driver);
         }
         catch (Exception ex)
         {
@@ -65,29 +77,42 @@ public sealed class LinuxGpuProvider : IGpuProvider
         }
     }
 
-    private bool IsDiscreteAmd(PciGpu gpu)
+    public IAmdGpuDriver? CreateAmdDriver() => new SysfsAmdGpuDriver(ctx);
+
+    /// <summary>
+    /// Runtime PM state of the NVIDIA dGPU (read from sysfs, never touches the device): suspended = Asleep (Eco mode
+    /// idle), otherwise Active. Unknown without an NVIDIA GPU so that Core falls back to asking the driver.
+    /// </summary>
+    public GpuPowerState GetDiscretePowerState()
     {
-        long? vram = ctx.Root.ReadLong(gpu.SysfsDir + "/mem_info_vram_total");
-        if (vram is > 3L * 1024 * 1024 * 1024) return true;   // APUs carve out at most a few GB
-        if (vram is not null && gpu.IsBootVga) return false;
-        return !gpu.IsBootVga && vram is > 1L * 1024 * 1024 * 1024;
+        try
+        {
+            PciGpu? nvidia = PciGpu.Enumerate(ctx.Root).FirstOrDefault(g => g.Vendor == GpuVendor.Nvidia);
+            if (nvidia is null) return GpuPowerState.Unknown;
+            return nvidia.IsSuspended ? GpuPowerState.Asleep : GpuPowerState.Active;
+        }
+        catch
+        {
+            return GpuPowerState.Unknown;
+        }
     }
 
     private bool HasDedicatedMemory(PciGpu gpu)
         => ctx.Root.ReadLong(gpu.SysfsDir + "/mem_info_vram_total") is > 0
            || ctx.Root.DirectoryExists(gpu.SysfsDir + "/lmem_total_bytes") || ctx.Root.FileExists(gpu.SysfsDir + "/lmem_total_bytes");
 
+    // Intel iGPU shared memory size is a Windows driver registry value: nothing to configure on Linux
     public bool InitIntelVram() => false;
 
     public void SetIntelVramIndex(int index)
     {
-        // Windows only: adapter index of the dedicated Intel GPU for the legacy IntelVram helper
     }
 
+    /// <summary>Releases the NVML handle (Eco mode: lets the driver power the GPU down).</summary>
     public void UnloadNative()
     {
-        nvml?.Dispose();
-        nvml = null;
+        try { NvmlHelper.Shutdown(); }
+        catch { }
     }
 }
 
@@ -179,6 +204,20 @@ internal static class GpuProcessKiller
         "nvidia-persiste", "nvidia-persistenced", "nvidia-powerd", "supergfxd",
     };
 
+    /// <summary>Distinct process names (comm) holding a matching device node open, compositors and ourselves excluded.</summary>
+    public static List<string> FindNames(LinuxContext ctx, Func<string, bool> deviceMatch)
+    {
+        var names = new List<string>();
+        foreach (int pid in ProcFs.FindFileUsers(ctx.Root, deviceMatch, Environment.ProcessId))
+        {
+            if (pid <= 1) continue;
+            string name = ctx.Root.ReadText($"/proc/{pid}/comm") ?? "";
+            if (name.Length == 0 || Protected.Contains(name) || names.Contains(name)) continue;
+            names.Add(name);
+        }
+        return names;
+    }
+
     public static void Kill(LinuxContext ctx, Func<string, bool> deviceMatch)
     {
         foreach (int pid in ProcFs.FindFileUsers(ctx.Root, deviceMatch, Environment.ProcessId))
@@ -246,215 +285,5 @@ internal static class PciIds
             }
         }
         return null;
-    }
-}
-
-// ---------------------------------------------------------------------------------------------- NVML
-
-internal sealed unsafe class NvmlLibrary : IDisposable
-{
-    private const int Success = 0;
-
-    private nint library;
-    private readonly delegate* unmanaged<int> init;
-    private readonly delegate* unmanaged<int> shutdown;
-    private readonly delegate* unmanaged<byte*, nint*, int> byPciBusId;
-    private readonly delegate* unmanaged<uint, nint*, int> byIndex;
-    private readonly delegate* unmanaged<nint, byte*, uint, int> getName;
-    private readonly delegate* unmanaged<nint, uint, uint*, int> getTemperature;
-    private readonly delegate* unmanaged<nint, uint*, int> getUtilization;
-    private readonly delegate* unmanaged<nint, ulong*, int> getMemory;
-    private readonly delegate* unmanaged<nint, uint*, int> getPower;
-    private readonly object gate = new();
-    private bool initialised;
-
-    private NvmlLibrary(nint library)
-    {
-        this.library = library;
-        init = (delegate* unmanaged<int>)Export("nvmlInit_v2");
-        shutdown = (delegate* unmanaged<int>)Export("nvmlShutdown");
-        byPciBusId = (delegate* unmanaged<byte*, nint*, int>)Export("nvmlDeviceGetHandleByPciBusId_v2");
-        byIndex = (delegate* unmanaged<uint, nint*, int>)Export("nvmlDeviceGetHandleByIndex_v2");
-        getName = (delegate* unmanaged<nint, byte*, uint, int>)Export("nvmlDeviceGetName");
-        getTemperature = (delegate* unmanaged<nint, uint, uint*, int>)Export("nvmlDeviceGetTemperature");
-        getUtilization = (delegate* unmanaged<nint, uint*, int>)Export("nvmlDeviceGetUtilizationRates");
-        getMemory = (delegate* unmanaged<nint, ulong*, int>)Export("nvmlDeviceGetMemoryInfo");
-        getPower = (delegate* unmanaged<nint, uint*, int>)Export("nvmlDeviceGetPowerUsage");
-    }
-
-    private nint Export(string name)
-        => NativeLibrary.TryGetExport(library, name, out nint address) ? address : 0;
-
-    public static NvmlLibrary? TryLoad()
-    {
-        foreach (string name in new[] { "libnvidia-ml.so.1", "libnvidia-ml.so" })
-        {
-            try
-            {
-                if (NativeLibrary.TryLoad(name, out nint handle))
-                {
-                    var lib = new NvmlLibrary(handle);
-                    if (lib.init != null && lib.getTemperature != null) return lib;
-                    lib.Dispose();
-                }
-            }
-            catch { }
-        }
-        return null;
-    }
-
-    public bool EnsureInit()
-    {
-        lock (gate)
-        {
-            if (initialised) return true;
-            try { initialised = init() == Success; }
-            catch { initialised = false; }
-            return initialised;
-        }
-    }
-
-    public nint? OpenDevice(string pciAddress)
-    {
-        if (!EnsureInit()) return null;
-        lock (gate)
-        {
-            nint handle;
-            if (byPciBusId != null)
-            {
-                byte[] id = Encoding.ASCII.GetBytes(pciAddress + "\0");
-                fixed (byte* p = id)
-                    if (byPciBusId(p, &handle) == Success) return handle;
-            }
-            if (byIndex != null && byIndex(0, &handle) == Success) return handle;
-        }
-        return null;
-    }
-
-    public string? Name(nint device)
-    {
-        if (getName == null) return null;
-        byte* buffer = stackalloc byte[96];
-        lock (gate)
-        {
-            if (getName(device, buffer, 96) != Success) return null;
-        }
-        return Marshal.PtrToStringAnsi((nint)buffer);
-    }
-
-    public int? Temperature(nint device)
-    {
-        uint value;
-        lock (gate)
-        {
-            if (getTemperature == null || getTemperature(device, 0, &value) != Success) return null;
-        }
-        return (int)value;
-    }
-
-    public int? Utilization(nint device)
-    {
-        uint* rates = stackalloc uint[2];
-        lock (gate)
-        {
-            if (getUtilization == null || getUtilization(device, rates) != Success) return null;
-        }
-        return (int)rates[0];
-    }
-
-    public (long usedMb, long totalMb)? Memory(nint device)
-    {
-        ulong* mem = stackalloc ulong[3]; // total, free, used
-        lock (gate)
-        {
-            if (getMemory == null || getMemory(device, mem) != Success) return null;
-        }
-        return ((long)(mem[2] / (1024 * 1024)), (long)(mem[0] / (1024 * 1024)));
-    }
-
-    public float? Power(nint device)
-    {
-        uint milliWatt;
-        lock (gate)
-        {
-            if (getPower == null || getPower(device, &milliWatt) != Success) return null;
-        }
-        if (milliWatt > 1_000_000) return null;
-        return milliWatt / 1000f;
-    }
-
-    public void Dispose()
-    {
-        lock (gate)
-        {
-            if (initialised && shutdown != null)
-            {
-                try { shutdown(); } catch { }
-            }
-            initialised = false;
-            if (library != 0)
-            {
-                try { NativeLibrary.Free(library); } catch { }
-                library = 0;
-            }
-        }
-    }
-}
-
-internal sealed class NvmlGpuControl : IGpuControl
-{
-    private readonly LinuxContext ctx;
-    private readonly PciGpu gpu;
-    private readonly NvmlLibrary nvml;
-    private nint? device;
-    private string? name;
-
-    public NvmlGpuControl(LinuxContext ctx, PciGpu gpu, NvmlLibrary nvml)
-    {
-        this.ctx = ctx;
-        this.gpu = gpu;
-        this.nvml = nvml;
-    }
-
-    public bool IsNvidia => true;
-    public bool IsValid => true;
-
-    public string FullName
-    {
-        get
-        {
-            if (name is not null) return name;
-            if (Active() && Handle() is nint h && nvml.Name(h) is { } n) return name = n;
-            return PciIds.Describe(ctx.Root, GpuVendor.Nvidia, gpu.DeviceId) ?? "NVIDIA GPU";
-        }
-    }
-
-    /// <summary>false while the dGPU is runtime-suspended (do not wake it).</summary>
-    private bool Active()
-    {
-        string? status = ctx.Root.ReadText(gpu.SysfsDir + "/power/runtime_status");
-        return !string.Equals(status, "suspended", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private nint? Handle() => device ??= nvml.OpenDevice(gpu.Address);
-
-    public int? GetCurrentTemperature() => Active() && Handle() is nint h ? nvml.Temperature(h) : null;
-
-    public int? GetGpuUse() => Active() && Handle() is nint h ? nvml.Utilization(h) : null;
-
-    public (long usedMb, long totalMb)? GetVramInfo() => Active() && Handle() is nint h ? nvml.Memory(h) : null;
-
-    public float? GetGpuPower() => Active() ? (Handle() is nint h ? nvml.Power(h) : null) : 0f;
-
-    public void KillGPUApps()
-    {
-        GpuProcessKiller.Kill(ctx, target => target.StartsWith("/dev/nvidia", StringComparison.Ordinal)
-                                             && !target.StartsWith("/dev/nvidia-modeset", StringComparison.Ordinal)
-                                             && !target.StartsWith("/dev/nvidiactl", StringComparison.Ordinal));
-    }
-
-    public void Dispose()
-    {
-        device = null;
     }
 }

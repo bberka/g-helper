@@ -267,8 +267,13 @@ internal sealed class RyzenSmuLinux
 /// <summary>
 /// ICpuTuning on Linux. AMD: ryzen_smu module (TDP, curve optimizer, thermal limit, PM table). Intel: package power from
 /// RAPL powercap / the msr module (the legacy app only reads power on Intel, limits go through ACPI).
+///
+/// This does not go through Core's PawnCpuTuning / <see cref="PawnIO.IPawnIo"/>: the ryzen_smu kernel module exposes
+/// finished SMU commands (smu_args + mp1_smu_cmd / rsmu_cmd files), not the raw register access of the PawnIO module
+/// protocol that Core's RyzenSmuService speaks, so there is nothing to adapt and <see cref="ICpuTuning.CreatePawnIo"/>
+/// stays null. The command table is the same RyzenAdj derived one.
 /// </summary>
-public sealed class LinuxCpuTuning : ICpuTuning
+public sealed class LinuxCpuTuning : ICpuTuning, ICpuFamilyInfo
 {
     private const string RaplEnergy = "/sys/class/powercap/intel-rapl:0/energy_uj";
     private const string RaplRange = "/sys/class/powercap/intel-rapl:0/max_energy_range_uj";
@@ -317,6 +322,15 @@ public sealed class LinuxCpuTuning : ICpuTuning
             return smu is { CanSend: true } ? smu : null;
         }
     }
+
+    /// <summary>
+    /// SMU command family ("Renoir", "Mobile", "Raphael", ...) resolved from the CPUID family / model, null until
+    /// <see cref="Initialize"/> ran or when the CPU is not a known Ryzen. Core re-applies limits based on it.
+    /// </summary>
+    public string? CpuFamily => smu is { Family: not RyzenFamily.Unknown } s ? s.Family.ToString() : null;
+
+    /// <summary>The ryzen_smu module does not report a marketing code name.</summary>
+    public string? CpuCodeName => null;
 
     public bool CanSetTDP() => Smu is not null;
     public bool CanSetCoAll() => Smu is not null;

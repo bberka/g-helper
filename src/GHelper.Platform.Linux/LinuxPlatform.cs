@@ -79,6 +79,7 @@ public sealed class LinuxPlatform : IPlatform, IDisposable
         if (asus.IsValueCreated) asus.Value.Dispose();
         if (power.IsValueCreated) power.Value.Dispose();
         if (input.IsValueCreated) input.Value.Dispose();
+        if (display.IsValueCreated) display.Value.Dispose();
         if (audio.IsValueCreated) audio.Value.Dispose();
         if (cpuTuning.IsValueCreated) cpuTuning.Value.Dispose();
         if (gpu.IsValueCreated) gpu.Value.UnloadNative();
