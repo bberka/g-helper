@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!--
+  Install as /usr/share/polkit-1/actions/org.ghelper.policy
+  The exec.path annotation must match the installed location of ghelper-root-launcher.
+-->
+<policyconfig>
+  <vendor>G-Helper</vendor>
+  <vendor_url>https://github.com/bberka/g-helper</vendor_url>
+
+  <action id="org.ghelper.run-elevated">
+    <description>Run G-Helper with administrator rights</description>
+    <message>Authentication is required to let G-Helper change hardware settings that need administrator rights</message>
+    <icon_name>ghelper</icon_name>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin_keep</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/lib/ghelper/ghelper-root-launcher</annotate>
+    <annotate key="org.freedesktop.policykit.exec.allow_gui">true</annotate>
+  </action>
+</policyconfig>

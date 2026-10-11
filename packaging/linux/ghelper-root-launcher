@@ -1,0 +1,47 @@
+#!/bin/sh
+# pkexec entry point of G-Helper (see org.ghelper.policy).
+#
+#   pkexec /usr/lib/ghelper/ghelper-root-launcher [NAME=value ...] -- <ignored program path> [argument ...]
+#
+# G-Helper's RunAsAdmin passes the display/session environment as NAME=value words because pkexec scrubs the
+# environment. This wrapper is the ONLY program the polkit action authorises, so it must not be a generic "run as root":
+#   * only an allow-list of environment variables is imported (never PATH, LD_*, ...),
+#   * the program that is started is always the ghelper binary installed next to this script, the path given by the
+#     caller is ignored,
+#   * arguments are limited to plain words (letters, digits, '-', '_', '.', '=').
+
+dir=$(dirname "$(readlink -f "$0")")
+target="$dir/ghelper"
+[ -x "$target" ] || { echo "ghelper-root-launcher: $target not found" >&2; exit 127; }
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --)
+            shift
+            break
+            ;;
+        DISPLAY=*|XAUTHORITY=*|WAYLAND_DISPLAY=*|XDG_RUNTIME_DIR=*|XDG_SESSION_TYPE=*|XDG_CURRENT_DESKTOP=*|\
+        XDG_CONFIG_HOME=*|XDG_DATA_HOME=*|DBUS_SESSION_BUS_ADDRESS=*|LANG=*|GHELPER_TAKEOVER=*|GHELPER_STARTUP=*)
+            export "$1"
+            shift
+            ;;
+        *)
+            shift
+            ;;
+    esac
+done
+
+# the first word after "--" is the caller's idea of the executable: drop it
+[ $# -gt 0 ] && shift
+
+for arg in "$@"; do
+    case "$arg" in
+        *[!A-Za-z0-9_.=-]*|'')
+            echo "ghelper-root-launcher: rejected argument" >&2
+            exit 64
+            ;;
+    esac
+done
+
+# PKEXEC_UID is set by pkexec itself; G-Helper uses it to find the invoking user's configuration
+exec "$target" "$@"
