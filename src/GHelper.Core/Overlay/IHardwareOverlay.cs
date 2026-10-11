@@ -8,6 +8,10 @@ namespace GHelper.Overlay
     public interface IHardwareOverlay
     {
         void StartOverlay();
+
+        /// <summary>Close the overlay window (legacy HardwareOverlay.StopOverlay). Default: nothing to stop.</summary>
+        void StopOverlay() { }
+
         void SetDragKey(bool down);
         void SuspendForDisplayOff();
         void ResumeForDisplayOn();

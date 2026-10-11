@@ -20,4 +20,10 @@
     <ProjectReference Include="..\..\src\GHelper.App\GHelper.App.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- the fake platform of the engine tests, shared by the MainBackend tests -->
+    <Compile Include="..\GHelper.Tests\Engine\FakePlatform.cs" Link="Fakes\FakePlatform.cs" />
+    <Compile Include="..\GHelper.Tests\Engine\EngineTestBase.cs" Link="Fakes\EngineTestBase.cs" />
+  </ItemGroup>
+
 </Project>

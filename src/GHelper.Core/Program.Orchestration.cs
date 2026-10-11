@@ -77,7 +77,7 @@ namespace GHelper
             gpuControl = new GPUModeControl();
             allyControl = new AllyControl();
             clamshellControl = new ClamshellModeControl();
-            matrixControl = new AniMatrixControl();
+            matrixControl = AniMatrixControl.Instance; // one device handle: InputDispatcher uses the same instance
 
             if (!ProcessHelper.TryAcquireSingleInstance())
             {

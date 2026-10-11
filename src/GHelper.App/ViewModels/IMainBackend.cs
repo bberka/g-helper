@@ -23,7 +23,15 @@ public enum MainAction
 
     AllyControllerMode, AllyBacklight, AllyController, AutoTdp, FpsLimit, OverlayAlly,
 
+    /// <summary>Click on the "Discharging: 12W" text (legacy LabelBattery_Click: toggle watts / percent).</summary>
+    BatteryStatusClick,
     BatteryFull, BatteryReport, ChargeLabelClick,
+    /// <summary>Pointer enters / leaves the "Battery Charge" text (legacy shows the battery health while hovered).</summary>
+    ChargeHoverEnter, ChargeHoverLeave,
+    /// <summary>Pointer enters / leaves the 100% button (legacy shows "Battery limit: full" in the charge text).</summary>
+    BatteryFullHoverEnter, BatteryFullHoverLeave,
+    /// <summary>Pointer entered a peripheral button (legacy re-reads the battery of a device that is not ready).</summary>
+    PeripheralHover1, PeripheralHover2, PeripheralHover3,
 
     VersionClick, Updates, Donate, DonateAlreadyDonated, DonateNotInterested,
     Armoury, AmdOled, EnergySaver,

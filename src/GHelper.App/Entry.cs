@@ -17,8 +17,8 @@ namespace GHelper.App;
 public static class Entry
 {
     /// <summary>
-    /// Wave 2 hook: the legacy "charge" action (restore battery limit + keyboard backlight and exit, no UI).
-    /// Returns the process exit code. Left null in the shell; the process then exits 0 immediately.
+    /// The legacy "charge" action (restore battery limit + keyboard backlight and exit, no UI), run by the scheduled
+    /// logon task. Returns the process exit code. Defaults to <see cref="RunHeadlessCharge"/>; tests may replace it.
     /// </summary>
     public static Func<LaunchOptions, int>? HeadlessCharge { get; set; }
 
@@ -47,7 +47,17 @@ public static class Entry
         ApplyLanguage();
 
         if (options.IsHeadless)
-            return HeadlessCharge?.Invoke(options) ?? 0;
+        {
+            try
+            {
+                return (HeadlessCharge ?? RunHeadlessCharge).Invoke(options);
+            }
+            catch (Exception ex)
+            {
+                AppLog.Write("Charge: " + ex);
+                return 1;
+            }
+        }
 
         try
         {
@@ -58,6 +68,16 @@ public static class Entry
             AppLog.Write("Fatal: " + ex);
             return 1;
         }
+    }
+
+    /// <summary>
+    /// Core's one shot start-up task (no windows, no tray): battery limit + keyboard backlight. <c>Program.Ui</c> is the
+    /// null host here, so the final <c>Ui.Quit()</c> of the charge routine is a no-op and the process just returns.
+    /// </summary>
+    public static int RunHeadlessCharge(LaunchOptions options)
+    {
+        Program.Charge();
+        return 0;
     }
 
     /// <summary>Also used by the designer and the headless tests.</summary>
