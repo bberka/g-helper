@@ -11,7 +11,7 @@ namespace GHelper.Platform.Windows.Vendor;
 /// Armoury Crate / ASUS service handling (legacy AsusService), Windows Dynamic Lighting (DynamicLightingHelper), the
 /// Keystone proximity sound and device problem detection (DeviceHelper).
 /// </summary>
-public sealed class WindowsVendorServices : IVendorServices, IDynamicLightingEffects, IAsusChargeLimitSync
+public sealed class WindowsVendorServices : IVendorServices, IDynamicLightingEffects, IAsusChargeLimitSync, IDriverInventory
 {
     private const string LightingKey = @"HKEY_CURRENT_USER\Software\Microsoft\Lighting";
     private const string LightingValue = "AmbientLightingEnabled";
@@ -297,6 +297,19 @@ public sealed class WindowsVendorServices : IVendorServices, IDynamicLightingEff
         using var key = Registry.LocalMachine.OpenSubKey(ChargingRateKey, writable: true);
         key?.SetValue("ChargingRate", value, RegistryValueKind.DWord);
     }
+
+    // --- IDriverInventory (ASUS driver update list) ---------------------------------------------
+
+    public List<InstalledDriver> BuildInventory() => OperatingSystem.IsWindows() ? DriverInventory.Build() : [];
+
+    public string? GetMcuFirmwareVersion() => OperatingSystem.IsWindows() ? DriverInventory.McuFirmwareVersion() : null;
+
+    public string? GetFirmwareVersion(string title) => OperatingSystem.IsWindows() ? DriverInventory.FirmwareVersion(title) : null;
+
+    public Dictionary<string, string> BuildStagedVersions(HashSet<string> hardwareIds, CancellationToken token) =>
+        OperatingSystem.IsWindows() ? DriverInventory.StagedVersions(hardwareIds, token) : new Dictionary<string, string>();
+
+    public HashSet<string> GetInstalledStorePackages() => OperatingSystem.IsWindows() ? DriverInventory.StorePackages() : [];
 
     // --- GPU problem detection ----------------------------------------------------------------
 
